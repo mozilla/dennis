@@ -180,6 +180,20 @@ def pirate_transform(s):
     return u''.join(out)
 
 
+def tokenize(s):
+    """Breaks s into strings and Python formatting tokens
+
+    This preserves whitespace.
+
+    :arg s: the string to tokenize
+
+    :returns: list of tokens---every even one is a Python formatting
+        token
+
+    """
+    return INTERP_RE.split(s)
+
+
 class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
     def __init__(self):
         HTMLParser.HTMLParser.__init__(self)
@@ -213,9 +227,10 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
         self.s += '</' + tag + '>'
 
     def handle_data(self, data):
-        # We don't want to munge placeholders, so split on them,
-        # keeping them in the list, then xform every other token.
-        toks = INTERP_RE.split(data)
+        # We don't want to munge Python formatting tokens, so split on
+        # them, keeping them in the list, then xform every other
+        # token.
+        toks = tokenize(data)
 
         for i, tok in enumerate(toks):
             if i % 2:
