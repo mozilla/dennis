@@ -32,14 +32,7 @@ This is how I name my software projects.
 Project details
 ===============
 
-:Code:
-    http://github.com/willkg/dennis
-
-Documentation:
-    http://dennis.rtfd.org/ (not yet)
-
-Issue tracker:
-    https://github.com/willkg/dennis/issues
-
-License:
-    BSD 3-clause; see LICENSE file
+:Code:          http://github.com/willkg/dennis
+:Documentation: http://dennis.rtfd.org/ (not yet)
+:Issue tracker: https://github.com/willkg/dennis/issues
+:License:       BSD 3-clause; see LICENSE file
