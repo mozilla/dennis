@@ -12,7 +12,7 @@ import os
 
 
 READMEFILE = 'README.rst'
-VERSIONFILE = os.path.join('steve', '__init__.py')
+VERSIONFILE = os.path.join('dennis', '__init__.py')
 VSRE = r"""^__version__ = ['"]([^'"]*)['"]"""
 
 
@@ -34,7 +34,7 @@ setup(
     zip_safe=True,
     packages=find_packages(),
     include_package_data=True,
-    scripts=['scripts/dennis-cmd'],
+    scripts=['bin/dennis-cmd'],
     install_requires=[
         'polib',
     ],
