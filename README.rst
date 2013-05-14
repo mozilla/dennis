@@ -6,9 +6,10 @@ dennis is a command line tool for translating and linting .po files.
 
 It includes the following subcommands:
 
-* **translate**: Translates .po files into Pirate!
+* **translate**: Translates .po files into Pirate! which is helpful
+  for l10n testing, development, finding unicode/layout issues, etc.
 * **lint**: Lints .po files making sure Python formatting tokens are
-  correct
+  correct in translated files.
 
 
 Why is it called dennis?
