@@ -31,28 +31,42 @@ from dennis.tools import extract_tokens, is_token, tokenize
 TERMINAL = Terminal()
 
 
-FINE = 0            # translated and source text have same tokens
-NOT_TRANSLATED = 1  # text hasn't been translated
-MISSING_TOKENS = 2  # translated text is missing tokens from source
-WRONG_TOKENS = 3    # translated text has tokens not in source
-
 def compare_tokens(id_tokens, str_tokens):
+    """Compares str_tokens to id_tokens
+
+    This returns two lists:
+
+    * list of missing tokens: any tokens in id_tokens that aren't also in
+      str_tokens
+
+    * list of invalid tokens: any tokens in str_tokens that aren't also in
+      id_tokens --- these are the ones that cause errors when interpolating
+
+
+    :arg id_tokens: list of tokens from the source text
+    :arg str_tokens: list of tokens from the translated text
+
+    :returns: tuple of (list of missing tokens, list of invalid tokens)
+
+    """
     if str_tokens is None:
         # If str_tokens is None, they haven't translated the msgid, so
         # there's no entry. I'm pretty sure this only applies to
         # plurals.
-        return NOT_TRANSLATED
+        return [], []
 
-    for id_token, str_token in itertools.izip_longest(
-        id_tokens, str_tokens, fillvalue=None):
-       
-        if id_token is None:
-            return WRONG_TOKENS
-        if str_token is None:
-            return MISSING_TOKENS
-        if id_token != str_token:
-            return WRONG_TOKENS
-    return FINE
+    invalid_tokens = []
+    missing_tokens = []
+
+    for token in id_tokens:
+        if token not in str_tokens:
+            missing_tokens.append(token)
+
+    for token in str_tokens:
+        if token not in id_tokens:
+            invalid_tokens.append(token)
+
+    return missing_tokens, invalid_tokens
 
 
 def format_with_errors(text, req_tokens):
@@ -66,60 +80,53 @@ def format_with_errors(text, req_tokens):
 
 
 def verify(msgid, id_text, id_tokens, str_text, str_tokens, index):
+    """Verifies strings, prints messages to console
+
+    :returns: True if there were errors, False otherwise
+
+    """
     # If the str_text is empty, there's no translation which we consider
     # "fine".
     if not str_text.strip():
         return True
 
-    ret = compare_tokens(id_tokens, str_tokens)
+    missing, invalid = compare_tokens(id_tokens, str_tokens)
 
-    # If the text isn't translated, we consider that "fine".
-    if ret == NOT_TRANSLATED:
-        return True
-
-    if ret == FINE:
+    if not missing and not invalid:
         return True
 
     print ''
 
-    if ret == WRONG_TOKENS:
-        label = TERMINAL.bold_red('Invalid tokens')
-    elif ret == MISSING_TOKENS:
-        label = TERMINAL.bold_yellow('Missing tokens')
+    if missing:
+        print u'{label}: {tokens}'.format(
+            label=TERMINAL.bold_yellow('Warning: missing tokens'),
+            tokens=u', '.join(missing))
 
-    print u'{label}: {id_tokens} VS. {str_tokens}'.format(
-        label=label,
-        id_tokens=u', '.join(id_tokens),
-        str_tokens=u', '.join(str_tokens))
+    if invalid:
+        print u'{label}: {tokens}'.format(
+            label=TERMINAL.bold_red('Error: invalid tokens'),
+            tokens=', '.join(invalid))
 
-    name = 'msgid'
-    if len(msgid) <= 50:
-        print '{0}: "{1}"'.format(name, msgid)
-    else:
-        print '{0}:'.format(name)
-        print msgid
+    name = TERMINAL.yellow('msgid')
+    print '{0}: "{1}"'.format(name, msgid)
 
     if index is not None:
         # Print the plural
-        if len(id_text) <= 50:
-            print '{0}: "{1}"'.format(name, id_text)
-        else:
-            print '{0}:'.format(name)
-            print id_text
+        name = TERMINAL.yellow('msgid_plural')
+        print '{0}: "{1}"'.format(name, id_text)
 
     # Print the translated string with token errors
     if index is not None:
         name = 'msgstr[{index}]'.format(index=index)
     else:
         name = 'msgstr'
-    if len(str_text) <= 50:
-        print u'{0}: "{1}"'.format(
-            name, format_with_errors(str_text, id_tokens))
-    else:
-        print u'{0}:'.format(name)
-        print format_with_errors(str_text, id_tokens)
+    print u'{0}: "{1}"'.format(
+        TERMINAL.yellow(name), format_with_errors(str_text, id_tokens))
 
-    return False
+    if invalid:
+        return False
+
+    return True
 
 
 def verify_file(fname):
@@ -133,7 +140,7 @@ def verify_file(fname):
         print '{fname} is not a .po file.'.format(fname=fname)
         return 1
 
-    print 'Working on {fname}'.format(fname=fname)
+    print 'Working on {fname}'.format(fname=os.path.abspath(fname))
 
     po = polib.pofile(fname)
 
@@ -168,13 +175,14 @@ def verify_file(fname):
         count += 1
 
     print ('\nVerified {count} messages in {fname}. '
-           '{badcount} possible errors.'.format(
+           '{badcount} errors.'.format(
             count=count, fname=fname, badcount=bad_count))
 
     return bad_count
 
 
 def verify_directory(dir_):
+    """Verifies all the .po files in directory tree dir_"""
     po_files = {}
     for root, dirs, files in os.walk(dir_):
         for fn in files:
