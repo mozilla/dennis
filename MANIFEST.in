@@ -1,0 +1,7 @@
+include README.rst
+include LICENSE
+include AUTHORS
+include CHANGELOG
+include CONTRIBUTORS
+
+recursive-include dennis *
