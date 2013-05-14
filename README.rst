@@ -87,7 +87,7 @@ following properties:
 
 1. it's longer than the English equivalent (tests layout issues)
 2. it's different than the English equivalent (tests missing gettext calls)
-3, every string ends up with a non-ascii character (tests unicode handling)
+3. every string ends up with a non-ascii character (tests unicode handling)
 4. looks close enough to the English equivalent that you can quickly
    figure out what's wrong (doesn't test your reading comprehension)
 
