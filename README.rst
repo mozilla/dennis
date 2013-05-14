@@ -2,25 +2,13 @@
 Read me
 ======
 
-dennis is a command line utility for dealing with localization files.
+dennis is a command line tool for translating and linting .po files.
 
-It includes the following:
+It includes the following subcommands:
 
-* **PIRATE!**
-
-  Create a test locale by "translating" the strings in your messages.pot
-  file into PIRATE! This translation has the following properties:
-
-  1. every string has at least one unicode character in it
-  2. every string is longer than the original msgid
-  3. every string looks different than the original string, but
-     it's still readable
-
-* **locale linter**
-
-  This "lints" a .po file looking for Python string formatting tokens
-  and making sure that the tokens in the msgstr are the same as the
-  ones in the msgid.
+* **translate**: Translates .po files into Pirate!
+* **lint**: Lints .po files making sure Python formatting tokens are
+  correct
 
 
 Why is it called dennis?
