@@ -1,7 +1,12 @@
 include README.rst
 include LICENSE
-include AUTHORS
 include CHANGELOG
 include CONTRIBUTORS
+include setup.py
+include requirements-dev.txt
+include MANIFEST.in
 
-recursive-include dennis *
+include bin/dennis-cmd
+
+recursive-include dennis *.py
+recursive-include docs *.py *.rst Makefile
