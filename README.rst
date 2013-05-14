@@ -39,6 +39,15 @@ It's not on PyPI, yet. So this is how you install it for now.
     pip install https://github.com/willkg/dennis/archive/master.zip#egg=dennis
 
 
+(Optional) Install `blessings
+<https://pypi.python.org/pypi/blessings/>`_ if you want fancy
+color-coded output.
+
+::
+
+    pip install blessings
+
+
 Basic usage until I write real docs
 ===================================
 
