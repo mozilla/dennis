@@ -1,4 +1,4 @@
-from dennis.translater import tokenize
+from dennis.tools import tokenize
 
 from nose.tools import eq_
 

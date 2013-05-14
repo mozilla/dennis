@@ -1,72 +1,125 @@
 import itertools
 import os
-import re
 
 import polib
 
+try:
+    from blessings import Terminal
+except ImportError:
+    class MockBlessedThing(object):
+        def __call__(self, s):
+            return s
 
-INTERP_RE = re.compile(
-    r'('
-    r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs%])'
-    r'|'
-    r'(?:\{\S+?\})'
-    r')')
+        def __str__(self):
+            return ''
 
+        def __repr__(self):
+            return ''
 
-def asciify(thing):
-    if isinstance(thing, basestring):
-        return thing.encode('ascii', 'replace')
-    elif isinstance(thing, (list, tuple)):
-        return [asciify(s) for s in thing]
-    return repr(thing)
+        def __unicode__(self):
+            return ''
 
+    class Terminal(object):
+        def __getattr__(self, attr, default=None):
+            return MockBlessedThing()
 
-def extract_tokens(msg):
-    try:
-        tokens = [token for token in INTERP_RE.findall(msg)]
-        tokens.sort()
-        return tuple(tokens)
-    except TypeError:
-        print 'TYPEERROR', repr(msg)
+from dennis.tools import extract_tokens, is_token, tokenize
 
 
-def equal(id_tokens, str_tokens):
+# blessings.Terminal and our mock Terminal don't maintain any state
+# so we can just make it global
+TERMINAL = Terminal()
+
+
+FINE = 0            # translated and source text have same tokens
+NOT_TRANSLATED = 1  # text hasn't been translated
+MISSING_TOKENS = 2  # translated text is missing tokens from source
+WRONG_TOKENS = 3    # translated text has tokens not in source
+
+def compare_tokens(id_tokens, str_tokens):
     if str_tokens is None:
-        # This means they haven't translated the msgid, so there's
-        # no entry. I'm pretty sure this only applies to plurals.
-        return True
-
-    id_tokens = list(id_tokens)
-    str_tokens = list(str_tokens)
+        # If str_tokens is None, they haven't translated the msgid, so
+        # there's no entry. I'm pretty sure this only applies to
+        # plurals.
+        return NOT_TRANSLATED
 
     for id_token, str_token in itertools.izip_longest(
         id_tokens, str_tokens, fillvalue=None):
-        if id_token is None or str_token is None:
-            return False
+       
+        if id_token is None:
+            return WRONG_TOKENS
+        if str_token is None:
+            return MISSING_TOKENS
         if id_token != str_token:
-            return False
-    return True
+            return WRONG_TOKENS
+    return FINE
+
+
+def format_with_errors(text, req_tokens):
+    output = []
+    for token in tokenize(text):
+        if is_token(token) and token not in req_tokens:
+            output.append(TERMINAL.bold_red(token))
+        else:
+            output.append(token)
+    return u''.join(output)
 
 
 def verify(msgid, id_text, id_tokens, str_text, str_tokens, index):
-    # If the token lists aren't equal and there's a msgstr, then
-    # that's a problem. If there's no msgstr, it means it hasn't been
-    # translated.
-    if not equal(id_tokens, str_tokens) and str_text.strip():
-        print ('\nError for msgid: {msgid}\n'
-               'tokens: {id_tokens} VS. {str_tokens}\n'
-               '{key}: {id_text}\n'
-               'msgstr{index}: {str_text}'.format(
-                index='[{index}]'.format(index=index) if index is not None else '',
-                key='id' if index in (None, '0') else 'plural',
-                msgid=asciify(msgid),
-                id_text=asciify(id_text),
-                id_tokens=', '.join(asciify(id_tokens)),
-                str_text=asciify(str_text),
-                str_tokens=', '.join(asciify(str_tokens))))
-        return False
+    # If the str_text is empty, there's no translation which we consider
+    # "fine".
+    if not str_text.strip():
+        return True
 
-    return True
+    ret = compare_tokens(id_tokens, str_tokens)
+
+    # If the text isn't translated, we consider that "fine".
+    if ret == NOT_TRANSLATED:
+        return True
+
+    if ret == FINE:
+        return True
+
+    print ''
+
+    if ret == WRONG_TOKENS:
+        label = TERMINAL.bold_red('Invalid tokens')
+    elif ret == MISSING_TOKENS:
+        label = TERMINAL.bold_yellow('Missing tokens')
+
+    print u'{label}: {id_tokens} VS. {str_tokens}'.format(
+        label=label,
+        id_tokens=u', '.join(id_tokens),
+        str_tokens=u', '.join(str_tokens))
+
+    name = 'msgid'
+    if len(msgid) <= 50:
+        print '{0}: "{1}"'.format(name, msgid)
+    else:
+        print '{0}:'.format(name)
+        print msgid
+
+    if index is not None:
+        # Print the plural
+        if len(id_text) <= 50:
+            print '{0}: "{1}"'.format(name, id_text)
+        else:
+            print '{0}:'.format(name)
+            print id_text
+
+    # Print the translated string with token errors
+    if index is not None:
+        name = 'msgstr[{index}]'.format(index=index)
+    else:
+        name = 'msgstr'
+    if len(str_text) <= 50:
+        print u'{0}: "{1}"'.format(
+            name, format_with_errors(str_text, id_tokens))
+    else:
+        print u'{0}:'.format(name)
+        print format_with_errors(str_text, id_tokens)
+
+    return False
 
 
 def verify_file(fname):
@@ -121,9 +174,9 @@ def verify_file(fname):
     return bad_count
 
 
-def verify_directory(dir):
+def verify_directory(dir_):
     po_files = {}
-    for root, dirs, files in os.walk(dir):
+    for root, dirs, files in os.walk(dir_):
         for fn in files:
             if not fn.endswith('.po'):
                 continue

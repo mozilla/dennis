@@ -3,6 +3,9 @@ import polib
 import re
 import string
 
+from dennis.tools import tokenize
+
+
 DEBUG = False
 
 
@@ -178,20 +181,6 @@ def pirate_transform(s):
             s = s[1:]
 
     return u''.join(out)
-
-
-def tokenize(s):
-    """Breaks s into strings and Python formatting tokens
-
-    This preserves whitespace.
-
-    :arg s: the string to tokenize
-
-    :returns: list of tokens---every even one is a Python formatting
-        token
-
-    """
-    return INTERP_RE.split(s)
 
 
 class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
