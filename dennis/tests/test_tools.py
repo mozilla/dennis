@@ -1,9 +1,10 @@
-from dennis.tools import tokenize
+from dennis.tools import VariableTokenizer
 
 from nose.tools import eq_
 
 
-def test_tokenize():
+def test_python_tokenizing():
+    vartok = VariableTokenizer(['python'])
     for string, expected in [
         ('Hello %s', ['Hello ', '%s', '']),
         ('Hello %(username)s', ['Hello ', '%(username)s', '']),
@@ -12,6 +13,4 @@ def test_tokenize():
         ('Hello {user}{name}', ['Hello ', '{user}', '', '{name}', '']),
         ('Products and Services', ['Products and Services']),
         ]:
-        eq_(tokenize(string), expected)
-
-    return 0
+        eq_(vartok.tokenize(string), expected)

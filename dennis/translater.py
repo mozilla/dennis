@@ -3,14 +3,10 @@ import polib
 import re
 import string
 
-from dennis.tools import tokenize
+from dennis.tools import VariableTokenizer
 
 
 DEBUG = False
-
-
-INTERP_RE = re.compile(
-    r'((?:%(?:[(].+?[)])?[#0 +-]?[.\d*]*[hlL]?[diouxXeEfFgGcrs%])|(?:\{.+?\}))')
 
 
 COLOR = [
@@ -114,7 +110,6 @@ def pirate_transform(s):
     :returns: Pirated string.
 
     """
-    old_s = s
     out = []
 
     in_word = False  # in a word?
@@ -184,9 +179,10 @@ def pirate_transform(s):
 
 
 class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
-    def __init__(self):
+    def __init__(self, vartok):
         HTMLParser.HTMLParser.__init__(self)
         self.s = ''
+        self.vartok = vartok
 
     def result(self):
         return self.s
@@ -219,7 +215,7 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
         # We don't want to munge Python formatting tokens, so split on
         # them, keeping them in the list, then xform every other
         # token.
-        toks = tokenize(data)
+        toks = self.vartok.tokenize(data)
 
         for i, tok in enumerate(toks):
             if i % 2:
@@ -234,56 +230,60 @@ class HtmlAwareMessageMunger(HTMLParser.HTMLParser):
         self.s += '&' + name + ';'
 
 
-def split_ending(s):
-    ending = []
-    while s:
-        if s[-1] in '.,":;?!':
-            ending.insert(0, s[-1])
-            s = s[:-1]
-        else:
-            return s, u''.join(ending)
+class Translator(object):
+    def __init__(self, var_types):
+        self.vartok = VariableTokenizer(var_types)
 
-    return u'', ''.join(ending)
+    def split_ending(self, s):
+        ending = []
+        while s:
+            if s[-1] in '.,":;?!':
+                ending.insert(0, s[-1])
+                s = s[:-1]
+            else:
+                return s, u''.join(ending)
 
+        return u'', ''.join(ending)
 
-def translate_string(s):
-    # If it consists solely of whitespace, skip it.
-    if is_whitespace(s):
-        return s
+    def translate_string(self, s):
+        # If it consists solely of whitespace, skip it.
+        if is_whitespace(s):
+            return s
 
-    hamm = HtmlAwareMessageMunger()
-    hamm.feed(s)
-    out = hamm.result()
+        hamm = HtmlAwareMessageMunger(self.vartok)
+        hamm.feed(s)
+        out = hamm.result()
 
-    # Add color which causes every string to be longer.
-    s, ending = split_ending(out)
-    out = s + u' ' + COLOR[len(out) % len(COLOR)] + ending
+        # Add color which causes every string to be longer.
+        s, ending = self.split_ending(out)
+        out = s + u' ' + COLOR[len(out) % len(COLOR)] + ending
 
-    # This guarantees that every string has at least one
-    # unicode charater
-    if '!' not in out:
-        out = out + u'!'
+        # This guarantees that every string has at least one
+        # unicode charater
+        if '!' not in out:
+            out = out + u'!'
 
-    # Replace all ! with related unicode character.
-    out = out.replace(u'!', u'\u2757')
-    return out
+        # Replace all ! with related unicode character.
+        out = out.replace(u'!', u'\u2757')
+        return out
 
+    def translate_file(self, fname):
+        po = polib.pofile(fname)
+        po.metadata['Language'] = 'Pirate'
+        po.metadata['Plural-Forms'] = 'nplurals=2; plural= n != 1'
+        po.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
+        count = 0
+        for entry in po:
+            if entry.msgid_plural:
+                entry.msgstr_plural['0'] = self.translate_string(
+                    entry.msgid)
+                entry.msgstr_plural['1'] = self.translate_string(
+                    entry.msgid_plural)
+            else:
+                entry.msgstr = self.translate_string(entry.msgid)
 
-def translate_file(fname):
-    po = polib.pofile(fname)
-    po.metadata['Language'] = 'Pirate'
-    po.metadata['Plural-Forms'] = 'nplurals=2; plural= n != 1'
-    po.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
-    count = 0
-    for entry in po:
-        if entry.msgid_plural:
-            entry.msgstr_plural['0'] = translate_string(entry.msgid)
-            entry.msgstr_plural['1'] = translate_string(entry.msgid_plural)
-        else:
-            entry.msgstr = translate_string(entry.msgid)
-
-        if 'fuzzy' in entry.flags:
-            entry.flags.remove('fuzzy')  # clear the fuzzy flag
-        count += 1
-    print 'Munged %d messages in %s' % (count, fname)
-    po.save()
+            if 'fuzzy' in entry.flags:
+                entry.flags.remove('fuzzy')  # clear the fuzzy flag
+            count += 1
+        print 'Munged %d messages in %s' % (count, fname)
+        po.save()

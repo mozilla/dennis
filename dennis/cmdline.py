@@ -4,8 +4,9 @@ import sys
 from optparse import OptionParser
 
 from dennis import __version__
-from dennis.translater import translate_string, translate_file
-from dennis.linter import verify_directory, verify_file
+from dennis.translater import Translator
+from dennis.linter import Linter
+from dennis.tools import get_types
 
 
 USAGE = '%prog [options] [command] [command-options]'
@@ -25,6 +26,13 @@ def lint(command, argv):
         'usage: %prog lint [ FILE | DIR ]',
         description='Lints a .po file for mismatched Python string '
         'formatting tokens.')
+    parser.add_option(
+        '-t', '--type',
+        dest='types',
+        help=('Comma-separated list of variable types. Available: ' +
+              get_types()),
+        metavar='TYPES',
+        default='python')
 
     (options, args) = parser.parse_args(argv)
 
@@ -32,19 +40,30 @@ def lint(command, argv):
         parser.print_help()
         return 1
 
+    var_types = options.types.split(',')
+    linter = Linter(var_types)
+
     if os.path.isdir(args[0]):
-        return verify_directory(args[0])
+        return linter.verify_directory(args[0])
 
     # Return 0 if everything was fine or 1 if there were errors.
-    return verify_file(args[0]) != 0
+    return linter.verify_file(args[0]) != 0
 
 
 def translate(command, argv):
     parser = build_parser(
-        'usage: %prog tramslate [-s STRING <STRING> ... | FILENAME <FILENAME> ...]',
+        'usage: %prog tramslate '
+        '[-s STRING <STRING> ... | FILENAME <FILENAME> ...]',
         description='Translates a string or a .po file into Pirate.',
-        epilog='Note: Translating files is done in-place replacing the original '
-        'file.')
+        epilog='Note: Translating files is done in-place replacing '
+        'the original file.')
+    parser.add_option(
+        '-t', '--type',
+        dest='types',
+        help=('Comma-separated list of variable types. Available: ' +
+              get_types()),
+        metavar='TYPES',
+        default='python')
     parser.add_option(
         '-s', '--string',
         action='store_true',
@@ -57,13 +76,16 @@ def translate(command, argv):
         parser.print_help()
         return 1
 
+    var_types = options.types.split(',')
+    translator = Translator(var_types)
+
     if options.strings:
         for arg in args:
-            print translate_string(arg)
+            print translator.translate_string(arg)
         return 0
 
     for arg in args:
-        translate_file(arg)
+        translator.translate_file(arg)
     return 0
 
 
