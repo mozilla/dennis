@@ -40,7 +40,7 @@ def nwc(c):
 
 
 def is_whitespace(s):
-    return re.match('^\\s*$', s) != None
+    return re.match('^\\s*$', s) is not None
 
 
 # List of transform rules. The tuples have:

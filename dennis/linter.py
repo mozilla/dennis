@@ -158,8 +158,9 @@ class Linter(object):
 
             count += 1
 
-        print ('\nVerified {count} messages in {fname}. '
-               '{badcount} errors.'.format(
+        print (
+            '\nVerified {count} messages in {fname}. '
+            '{badcount} errors.'.format(
                 count=count, fname=fname, badcount=bad_count))
 
         return bad_count

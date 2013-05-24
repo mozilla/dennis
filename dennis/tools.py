@@ -55,7 +55,7 @@ class VariableTokenizer(object):
             types.
 
         """
-        if var_types == None:
+        if var_types is None:
             var_types = VAR_TYPES.keys()
 
         # Convert names to classes
