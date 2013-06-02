@@ -180,6 +180,7 @@ class Linter(object):
 
         total_errors = sum(val for key, val in po_files.items())
         if total_errors == 0:
+            print 'No problems found!'
             return 0
 
         print 'Problem locale files:'
