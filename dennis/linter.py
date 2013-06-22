@@ -4,6 +4,7 @@ from dennis.tools import VariableTokenizer
 
 
 class LintError(object):
+    """Holds all the data involved in a lint error"""
     def __init__(self, msgid, id_text, id_tokens, str_text, str_tokens,
                  index, missing, invalid):
         self.msgid = msgid
@@ -19,6 +20,7 @@ class LintError(object):
 
 class Linter(object):
     def __init__(self, var_types):
+        # FIXME - this is a horrible name
         self.vartok = VariableTokenizer(var_types)
 
     def compare_tokens(self, id_tokens, str_tokens):
@@ -59,10 +61,14 @@ class Linter(object):
 
         return missing_tokens, invalid_tokens
 
-    def verify(self, msgid, id_text, id_tokens, str_text, str_tokens, index):
+    def verify(self, msgid, id_text, id_tokens, str_text, str_tokens,
+               index):
         """Verifies strings, prints messages to console
 
-        :returns: True if there were errors, False otherwise
+        Lots of arguments.
+
+        :returns: None if it was fine or a LintError if there were
+            problems
 
         """
         # If the str_text is empty, there's no translation which we
@@ -120,6 +126,18 @@ class Linter(object):
 
 
 def format_with_errors(terminal, vartok, text, available_tokens):
+    """Turns invalid tokens in the text red for output
+
+    :arg terminal: a blessings Terminal or mock Terminal
+    :arg vartok: the variable tokenizer to use
+    :arg text: the text holding the tokens
+    :arg available_tokens: valid tokens that should be in the
+        text---anything else is an invalid token and will be turned
+        bold red.
+
+    :returns: the text with invalid tokens bold red
+
+    """
     output = []
     for token in vartok.tokenize(text):
         if vartok.is_token(token) and token not in available_tokens:
