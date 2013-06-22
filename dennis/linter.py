@@ -1,13 +1,20 @@
-import os
-
 import polib
 
-from dennis.tools import VariableTokenizer, Terminal
+from dennis.tools import VariableTokenizer
 
 
-# blessings.Terminal and our mock Terminal don't maintain any state
-# so we can just make it global
-TERMINAL = Terminal()
+class LintError(object):
+    def __init__(self, msgid, id_text, id_tokens, str_text, str_tokens,
+                 index, missing, invalid):
+        self.msgid = msgid
+        self.id_text = id_text
+        self.id_tokens = id_tokens
+        self.str_text = str_text
+        self.str_tokens = str_tokens
+        self.index = index
+
+        self.missing_tokens = missing
+        self.invalid_tokens = invalid
 
 
 class Linter(object):
@@ -52,15 +59,6 @@ class Linter(object):
 
         return missing_tokens, invalid_tokens
 
-    def format_with_errors(self, text, req_tokens):
-        output = []
-        for token in self.vartok.tokenize(text):
-            if self.vartok.is_token(token) and token not in req_tokens:
-                output.append(TERMINAL.bold_red(token))
-            else:
-                output.append(token)
-        return u''.join(output)
-
     def verify(self, msgid, id_text, id_tokens, str_text, str_tokens, index):
         """Verifies strings, prints messages to console
 
@@ -70,64 +68,27 @@ class Linter(object):
         # If the str_text is empty, there's no translation which we
         # consider "fine".
         if not str_text.strip():
-            return True
+            return None
 
         missing, invalid = self.compare_tokens(id_tokens, str_tokens)
 
         if not missing and not invalid:
-            return True
+            return None
 
-        print ''
-
-        if missing:
-            print u'{label}: {tokens}'.format(
-                label=TERMINAL.bold_yellow('Warning: missing tokens'),
-                tokens=u', '.join(missing))
-
-        if invalid:
-            print u'{label}: {tokens}'.format(
-                label=TERMINAL.bold_red('Error: invalid tokens'),
-                tokens=', '.join(invalid))
-
-        name = TERMINAL.yellow('msgid')
-        print '{0}: "{1}"'.format(name, msgid)
-
-        if index is not None:
-            # Print the plural
-            name = TERMINAL.yellow('msgid_plural')
-            print '{0}: "{1}"'.format(name, id_text)
-
-        # Print the translated string with token errors
-        if index is not None:
-            name = 'msgstr[{index}]'.format(index=index)
-        else:
-            name = 'msgstr'
-        print u'{0}: "{1}"'.format(
-            TERMINAL.yellow(name),
-            self.format_with_errors(str_text, id_tokens))
-
-        if invalid:
-            return False
-
-        return True
+        return LintError(msgid, id_text, id_tokens, str_text, str_tokens,
+                         index, missing, invalid)
 
     def verify_file(self, fname):
-        """Verifies file fname
+        """Verifies strings in file.
 
-        This prints to stdout errors it found in fname. It returns the
-        number of errors.
+        :arg fname: filename to verify
+
+        :returns: list of LintError objects
 
         """
-        if not fname.endswith('.po'):
-            print '{fname} is not a .po file.'.format(fname=fname)
-            return 1
-
-        print 'Working on {fname}'.format(fname=os.path.abspath(fname))
-
         po = polib.pofile(fname)
 
-        count = 0
-        bad_count = 0
+        errors = []
 
         for entry in po:
             if not entry.msgid_plural:
@@ -136,9 +97,9 @@ class Linter(object):
                 id_tokens = self.vartok.extract_tokens(entry.msgid)
                 str_tokens = self.vartok.extract_tokens(entry.msgstr)
 
-                if not self.verify(entry.msgid, entry.msgid, id_tokens,
-                                   entry.msgstr, str_tokens, None):
-                    bad_count += 1
+                errors.append(self.verify(entry.msgid, entry.msgid,
+                                          id_tokens, entry.msgstr,
+                                          str_tokens, None))
 
             else:
                 for key in sorted(entry.msgstr_plural.keys()):
@@ -151,43 +112,18 @@ class Linter(object):
 
                     str_tokens = self.vartok.extract_tokens(
                         entry.msgstr_plural[key])
-                    if not self.verify(entry.msgid, text, id_tokens,
-                                       entry.msgstr_plural[key], str_tokens,
-                                       key):
-                        bad_count += 1
+                    errors.append(self.verify(entry.msgid, text, id_tokens,
+                                              entry.msgstr_plural[key],
+                                              str_tokens, key))
 
-            count += 1
+        return errors
 
-        print (
-            '\nVerified {count} messages in {fname}. '
-            '{badcount} errors.'.format(
-                count=count, fname=fname, badcount=bad_count))
 
-        return bad_count
-
-    def verify_directory(self, dir_):
-        """Verifies all the .po files in directory tree dir_"""
-        po_files = {}
-        for root, dirs, files in os.walk(dir_):
-            for fn in files:
-                if not fn.endswith('.po'):
-                    continue
-
-                fn = os.path.join(root, fn)
-
-                po_files[fn] = self.verify_file(fn)
-                print '---'
-
-        total_errors = sum(val for key, val in po_files.items())
-        if total_errors == 0:
-            print 'No problems found!'
-            return 0
-
-        print 'Problem locale files:'
-        po_files = sorted([(val, key) for key, val in po_files.items()],
-                          reverse=True)
-        for val, key in po_files:
-            if val:
-                print '{val:>5} {key}'.format(key=key, val=val)
-
-        return 1
+def format_with_errors(terminal, vartok, text, available_tokens):
+    output = []
+    for token in vartok.tokenize(text):
+        if vartok.is_token(token) and token not in available_tokens:
+            output.append(terminal.bold_red(token))
+        else:
+            output.append(token)
+    return u''.join(output)
