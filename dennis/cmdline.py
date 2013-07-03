@@ -25,23 +25,23 @@ def err(s):
 
 
 def print_lint_error(vartok, lint_error):
-    if lint_error.missing_tokens:
-        print u'{label}: {tokens}'.format(
-            label=TERMINAL.bold_yellow('Warning: missing tokens'),
-            tokens=u', '.join(lint_error.missing_tokens))
-
     if lint_error.invalid_tokens:
         print u'{label}: {tokens}'.format(
             label=TERMINAL.bold_red('Error: invalid tokens'),
             tokens=', '.join(lint_error.invalid_tokens))
 
+    if lint_error.missing_tokens:
+        print u'{label}: {tokens}'.format(
+            label=TERMINAL.bold_yellow('Warning: missing tokens'),
+            tokens=u', '.join(lint_error.missing_tokens))
+
     name = TERMINAL.yellow('msgid')
-    print '{0}: "{1}"'.format(name, lint_error.msgid)
+    print u'{0}: "{1}"'.format(name, lint_error.msgid)
 
     if lint_error.index is not None:
         # Print the plural
         name = TERMINAL.yellow('msgid_plural')
-        print '{0}: "{1}"'.format(name, lint_error.id_text)
+        print u'{0}: "{1}"'.format(name, lint_error.id_text)
 
     # Print the translated string with token errors
     if lint_error.index is not None:
@@ -92,52 +92,88 @@ def lint(command, argv):
     else:
         po_files = [args[0]]
 
-    worst = ('', 0)
-    invalid = 0
-    missing = 0
+    files_to_errors = {}
+    total_error_count = 0
+    total_warning_count = 0
+    total_files_with_errors = 0
 
     for fn in po_files:
         if not fn.endswith('.po'):
             continue
 
         fn = os.path.abspath(fn)
-        print TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn))
 
         results = linter.verify_file(fn)
 
+        # This is the total number of strings examined.
         count = len(results)
-        bad_count = 0
 
+        problems = [r for r in results if r]
+
+        # We don't want to print output for files that are fine, so we
+        # update the bookkeeping and move on.
+        if not problems:
+            files_to_errors[fn] = (0, 0)
+            continue
+
+        print TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn))
+
+        error_count = 0
+        warning_count = 0
         for result in results:
             if not result:
                 continue
 
             if result.invalid_tokens:
-                invalid += 1
+                total_error_count += 1
+                error_count += 1
             if result.missing_tokens:
-                missing += 1
+                total_warning_count += 1
+                warning_count += 1
 
             if result.invalid_tokens or result.missing_tokens:
                 print_lint_error(linter.vartok, result)
 
-            if result.invalid_tokens:
-                bad_count += 1
+        files_to_errors[fn] = (error_count, warning_count)
 
-        if bad_count > worst[1]:
-            worst = (fn, bad_count)
+        if error_count > 0:
+            total_files_with_errors += 1
 
-        print 'Total: {count} Errors: {bad_count}'.format(
-            count=count, bad_count=bad_count)
+        print (
+            'Total: {count:5}  Warnings: {warnings:5}  Errors: {errors:5}'
+            .format(count=count, warnings=warning_count, errors=error_count))
         print ''
 
     if len(po_files) > 1:
-        print 'Number of files examined: {count}'.format(count=len(po_files))
-        print 'Total errors: {count}'.format(count=invalid)
-        print 'Worst: {fname} {count}'.format(
-            fname=worst[0], count=worst[1])
+        print 'Final Tally:'
+        print ''
+
+        print 'Number of files examined:          {count:5}'.format(
+            count=len(po_files))
+        print 'Total number of files with errors: {count:5}'.format(
+            count=total_files_with_errors)
+        print 'Total number of warnings:          {count:5}'.format(
+            count=total_warning_count)
+        print 'Total number of errors:            {count:5}'.format(
+            count=total_error_count)
+        print ''
+
+        file_counts = [
+            (counts[0], counts[1], fn.split(os.sep)[-3], fn.split(os.sep)[-1])
+            for (fn, counts) in files_to_errors.items()]
+
+        print 'Warnings  Errors  Filename'
+        file_counts = reversed(sorted(file_counts))
+        for error_count, warning_count, locale, fn in file_counts:
+            if not error_count and not warning_count:
+                continue
+
+            print ' {warnings:5}     {errors:5}  {locale} ({fn})'.format(
+                warnings=warning_count, errors=error_count, fn=fn,
+                locale=locale)
 
     # Return 0 if everything was fine or 1 if there were errors.
-    return 1 if invalid else 0
+    return 1 if total_error_count else 0
 
 
 def translate(command, argv):

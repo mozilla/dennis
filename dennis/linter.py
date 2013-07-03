@@ -18,48 +18,29 @@ class LintError(object):
         self.invalid_tokens = invalid
 
 
+def compare_lists(list_a, list_b):
+    """Compares contents of two lists
+
+    This returns two lists:
+
+    * list of tokens in list_a missing from list_b
+
+    * list of tokens in list_b missing from list_a
+
+    :returns: tuple of (list of tokens in list_a not in list_b, list
+        of tokens in list_b not in list_a)
+
+    """
+    return (
+        [token for token in list_a if token not in list_b],
+        [token for token in list_b if token not in list_a]
+    )
+
+
 class Linter(object):
     def __init__(self, var_types):
         # FIXME - this is a horrible name
         self.vartok = VariableTokenizer(var_types)
-
-    def compare_tokens(self, id_tokens, str_tokens):
-        """Compares str_tokens to id_tokens
-
-        This returns two lists:
-
-        * list of missing tokens: any tokens in id_tokens that aren't
-          also in str_tokens
-
-        * list of invalid tokens: any tokens in str_tokens that aren't
-          also in id_tokens --- these are the ones that cause errors
-          when interpolating
-
-
-        :arg id_tokens: list of tokens from the source text
-        :arg str_tokens: list of tokens from the translated text
-
-        :returns: tuple of (list of missing tokens, list of invalid tokens)
-
-        """
-        if str_tokens is None:
-            # If str_tokens is None, they haven't translated the
-            # msgid, so there's no entry. I'm pretty sure this only
-            # applies to plurals.
-            return [], []
-
-        invalid_tokens = []
-        missing_tokens = []
-
-        for token in id_tokens:
-            if token not in str_tokens:
-                missing_tokens.append(token)
-
-        for token in str_tokens:
-            if token not in id_tokens:
-                invalid_tokens.append(token)
-
-        return missing_tokens, invalid_tokens
 
     def verify(self, msgid, id_text, id_tokens, str_text, str_tokens,
                index):
@@ -76,7 +57,13 @@ class Linter(object):
         if not str_text.strip():
             return None
 
-        missing, invalid = self.compare_tokens(id_tokens, str_tokens)
+        if not str_tokens:
+            # If str_tokens is None, they haven't translated the
+            # msgid, so there's no entry. I'm pretty sure this only
+            # applies to plurals.
+            missing, invalid = [], []
+        else:
+            missing, invalid = compare_lists(id_tokens, str_tokens)
 
         if not missing and not invalid:
             return None
