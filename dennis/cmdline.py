@@ -17,14 +17,24 @@ TERMINAL = Terminal()
 
 
 def build_parser(usage, **kwargs):
+    """Builds an OptionParser with the specified kwargs."""
     return OptionParser(usage=usage, version=VERSION, **kwargs)
 
 
 def err(s):
+    """Prints a single-line string to stderr."""
     sys.stderr.write(s + '\n')
 
 
 def print_lint_error(vartok, lint_error):
+    """Prints a LintError to stdout
+
+    :arg vartok: VariableTokenizer instance
+    :arg lint_error: a LintError to print
+
+    Prints it to stdout. It also colorizes it using blessings
+    if blessings is available.
+    """
     if lint_error.invalid_tokens:
         print u'{label}: {tokens}'.format(
             label=TERMINAL.bold_red('Error: invalid tokens'),
@@ -56,7 +66,8 @@ def print_lint_error(vartok, lint_error):
     print ''
 
 
-def lint(command, argv):
+def lint_cmd(command, argv):
+    """Lints a .po file or directory of files."""
     parser = build_parser(
         'usage: %prog lint [ FILE | DIR ]',
         description='Lints a .po file for mismatched Python string '
@@ -176,7 +187,8 @@ def lint(command, argv):
     return 1 if total_error_count else 0
 
 
-def translate(command, argv):
+def translate_cmd(command, argv):
+    """Translate a single string or .po file of strings."""
     parser = build_parser(
         'usage: %prog tramslate '
         '[-s STRING <STRING> ... | FILENAME <FILENAME> ...]',
@@ -215,17 +227,17 @@ def translate(command, argv):
     return 0
 
 
-HANDLERS = (
-    ('lint', lint, 'Lints a .po file or directory of files.'),
-    ('translate', translate, 'Translate a string or file.'),
-    )
+def get_handlers():
+    handlers = [(name.replace('_cmd', ''), fun, fun.__doc__)
+                for name, fun in globals().items()
+                if name.endswith('_cmd')]
+    return handlers
 
 
 def cmdline_handler(scriptname, argv):
     print '%s version %s' % (scriptname, __version__)
 
-    # TODO: Rewrite using subparsers.
-    handlers = HANDLERS
+    handlers = get_handlers()
 
     if not argv or argv[0] in ('-h', '--help'):
         parser = build_parser("%prog [command]")
