@@ -3,22 +3,7 @@ import polib
 from dennis.tools import VariableTokenizer
 
 
-class LintError(object):
-    """Holds all the data involved in a lint error"""
-    def __init__(self, msgid, id_text, id_tokens, str_text, str_tokens,
-                 index, missing, invalid):
-        self.msgid = msgid
-        self.id_text = id_text
-        self.id_tokens = id_tokens
-        self.str_text = str_text
-        self.str_tokens = str_tokens
-        self.index = index
-
-        self.missing_tokens = missing
-        self.invalid_tokens = invalid
-
-
-def compare_lists(list_a, list_b):
+def _compare_lists(list_a, list_b):
     """Compares contents of two lists
 
     This returns two lists:
@@ -37,51 +22,47 @@ def compare_lists(list_a, list_b):
     )
 
 
+class LintItem(object):
+    """Holds all the data involved in a lint item"""
+    def __init__(self, poentry, msgid, msgid_text, msgid_tokens,
+                 msgstr_text, msgstr_tokens, index):
+        self.poentry = poentry
+
+        self.msgid = msgid
+        self.msgid_text = msgid_text
+        self.msgid_tokens = msgid_tokens
+        self.msgstr_text = msgstr_text
+        self.msgstr_tokens = msgstr_tokens
+        self.index = index
+
+        # If the str_text is empty, there's no translation which we
+        # consider "fine".
+        if not msgstr_text.strip():
+            self.missing, self.invalid = [], []
+        else:
+            self.missing, self.invalid = _compare_lists(
+                msgid_tokens, msgstr_tokens)
+
+
 class Linter(object):
     def __init__(self, var_types):
         # FIXME - this is a horrible name
         self.vartok = VariableTokenizer(var_types)
 
-    def verify(self, msgid, id_text, id_tokens, str_text, str_tokens,
-               index):
-        """Verifies strings, prints messages to console
-
-        Lots of arguments.
-
-        :returns: None if it was fine or a LintError if there were
-            problems
-
-        """
-        # If the str_text is empty, there's no translation which we
-        # consider "fine".
-        if not str_text.strip():
-            return None
-
-        if not str_tokens:
-            # If str_tokens is None, they haven't translated the
-            # msgid, so there's no entry. I'm pretty sure this only
-            # applies to plurals.
-            missing, invalid = [], []
-        else:
-            missing, invalid = compare_lists(id_tokens, str_tokens)
-
-        if not missing and not invalid:
-            return None
-
-        return LintError(msgid, id_text, id_tokens, str_text, str_tokens,
-                         index, missing, invalid)
-
-    def verify_file(self, fname):
+    def verify_file(self, filename_or_string):
         """Verifies strings in file.
 
-        :arg fname: filename to verify
+        :arg filename_or_string: filename to verify or the contents of
+            a pofile as a string
 
-        :returns: list of LintError objects
+        :returns: for each string in the pofile, this returns a None
+            if there were no issues or a LintError if there were
+            issues
 
         """
-        po = polib.pofile(fname)
+        po = polib.pofile(filename_or_string)
 
-        errors = []
+        results = []
 
         for entry in po:
             if not entry.msgid_plural:
@@ -90,9 +71,10 @@ class Linter(object):
                 id_tokens = self.vartok.extract_tokens(entry.msgid)
                 str_tokens = self.vartok.extract_tokens(entry.msgstr)
 
-                errors.append(self.verify(entry.msgid, entry.msgid,
-                                          id_tokens, entry.msgstr,
-                                          str_tokens, None))
+                results.append(
+                    LintItem(entry, entry.msgid, entry.msgid,
+                             id_tokens, entry.msgstr,
+                             str_tokens, None))
 
             else:
                 for key in sorted(entry.msgstr_plural.keys()):
@@ -105,11 +87,12 @@ class Linter(object):
 
                     str_tokens = self.vartok.extract_tokens(
                         entry.msgstr_plural[key])
-                    errors.append(self.verify(entry.msgid, text, id_tokens,
-                                              entry.msgstr_plural[key],
-                                              str_tokens, key))
+                    results.append(
+                        LintItem(entry, entry.msgid, text, id_tokens,
+                                 entry.msgstr_plural[key],
+                                 str_tokens, key))
 
-        return errors
+        return results
 
 
 def format_with_errors(terminal, vartok, text, available_tokens):

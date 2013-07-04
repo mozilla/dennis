@@ -1,6 +1,8 @@
+from unittest import TestCase
+
 from nose.tools import eq_
 
-from dennis.linter import compare_lists
+from dennis.linter import _compare_lists, _verify
 
 
 def test_compare_lists():
@@ -10,4 +12,4 @@ def test_compare_lists():
     ]
 
     for list_a, list_b, expected in tests:
-        eq_(compare_lists(list_a, list_b), expected)
+        eq_(_compare_lists(list_a, list_b), expected)

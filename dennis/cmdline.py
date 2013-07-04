@@ -35,15 +35,15 @@ def print_lint_error(vartok, lint_error):
     Prints it to stdout. It also colorizes it using blessings
     if blessings is available.
     """
-    if lint_error.invalid_tokens:
+    if lint_error.invalid:
         print u'{label}: {tokens}'.format(
             label=TERMINAL.bold_red('Error: invalid tokens'),
-            tokens=', '.join(lint_error.invalid_tokens))
+            tokens=', '.join(lint_error.invalid))
 
-    if lint_error.missing_tokens:
+    if lint_error.missing:
         print u'{label}: {tokens}'.format(
             label=TERMINAL.bold_yellow('Warning: missing tokens'),
-            tokens=u', '.join(lint_error.missing_tokens))
+            tokens=u', '.join(lint_error.missing))
 
     name = TERMINAL.yellow('msgid')
     print u'{0}: "{1}"'.format(name, lint_error.msgid)
@@ -51,7 +51,7 @@ def print_lint_error(vartok, lint_error):
     if lint_error.index is not None:
         # Print the plural
         name = TERMINAL.yellow('msgid_plural')
-        print u'{0}: "{1}"'.format(name, lint_error.id_text)
+        print u'{0}: "{1}"'.format(name, lint_error.msgid_text)
 
     # Print the translated string with token errors
     if lint_error.index is not None:
@@ -61,7 +61,7 @@ def print_lint_error(vartok, lint_error):
     print u'{0}: "{1}"'.format(
         TERMINAL.yellow(name),
         format_with_errors(
-            TERMINAL, vartok, lint_error.str_text, lint_error.id_tokens))
+            TERMINAL, vartok, lint_error.msgstr_text, lint_error.msgid_tokens))
 
     print ''
 
@@ -116,11 +116,13 @@ def lint_cmd(command, argv):
         # This is the total number of strings examined.
         count = len(results)
 
-        problems = [r for r in results if r]
+        # Extract all the problematic LintItems--they have non-empty
+        # missing or invalid lists.
+        problem_results = [r for r in results if r.missing or r.invalid]
 
         # We don't want to print output for files that are fine, so we
         # update the bookkeeping and move on.
-        if not problems:
+        if not problem_results:
             files_to_errors[fn] = (0, 0)
             continue
 
@@ -128,19 +130,18 @@ def lint_cmd(command, argv):
 
         error_count = 0
         warning_count = 0
-        for result in results:
+        for result in problem_results:
             if not result:
                 continue
 
-            if result.invalid_tokens:
+            if result.invalid:
                 total_error_count += 1
                 error_count += 1
-            if result.missing_tokens:
+            if result.missing:
                 total_warning_count += 1
                 warning_count += 1
 
-            if result.invalid_tokens or result.missing_tokens:
-                print_lint_error(linter.vartok, result)
+            print_lint_error(linter.vartok, result)
 
         files_to_errors[fn] = (error_count, warning_count)
 
