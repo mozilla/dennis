@@ -23,7 +23,7 @@ def build_parser(usage, **kwargs):
 
 def err(s):
     """Prints a single-line string to stderr."""
-    sys.stderr.write(s + '\n')
+    sys.stderr.write('Error: ' + s + '\n')
 
 
 def print_lint_error(vartok, lint_error):
@@ -72,8 +72,10 @@ def lint_cmd(command, argv):
         'usage: %prog lint [ FILE | DIR ]',
         description='Lints a .po file for mismatched Python string '
         'formatting tokens.')
+    # FIXME: move printing of available types to epilog. also rename
+    # types to something more accurate like "variable formats".
     parser.add_option(
-        '-t', '--type',
+        '-t', '--types',
         dest='types',
         help=('Comma-separated list of variable types. Available: ' +
               get_types()),
@@ -86,19 +88,14 @@ def lint_cmd(command, argv):
         parser.print_help()
         return 1
 
-    var_types = options.types.split(',')
-    linter = Linter(var_types)
+    linter = Linter(options.types.split(','))
 
     if os.path.isdir(args[0]):
         po_files = []
         for root, dirs, files in os.walk(args[0]):
-            for fn in files:
-                if not fn.endswith('.po'):
-                    continue
-
-                fn = os.path.join(root, fn)
-
-                po_files.append(fn)
+            po_files.extend(
+                [os.path.join(root, fn) for fn in files
+                 if fn.endswith('.po')])
 
     else:
         po_files = [args[0]]
@@ -195,8 +192,10 @@ def translate_cmd(command, argv):
         description='Translates a string or a .po file into Pirate.',
         epilog='Note: Translating files is done in-place replacing '
         'the original file.')
+    # FIXME: move printing of available types to epilog. also rename
+    # types to something more accurate like "variable formats".
     parser.add_option(
-        '-t', '--type',
+        '-t', '--types',
         dest='types',
         help=('Comma-separated list of variable types. Available: ' +
               get_types()),
@@ -214,8 +213,7 @@ def translate_cmd(command, argv):
         parser.print_help()
         return 1
 
-    var_types = options.types.split(',')
-    translator = Translator(var_types)
+    translator = Translator(options.types.split(','))
 
     if options.strings:
         for arg in args:
@@ -234,18 +232,24 @@ def get_handlers():
     return handlers
 
 
-def cmdline_handler(scriptname, argv):
+def print_help(scriptname):
     print '%s version %s' % (scriptname, __version__)
 
     handlers = get_handlers()
 
+    parser = build_parser("%prog [command]")
+    parser.print_help()
+    print ''
+    print 'Commands:'
+    for command_str, _, command_help in handlers:
+        print '    %-14s %s' % (command_str, command_help)
+
+
+def cmdline_handler(scriptname, argv):
+    handlers = get_handlers()
+
     if not argv or argv[0] in ('-h', '--help'):
-        parser = build_parser("%prog [command]")
-        parser.print_help()
-        print ''
-        print 'Commands:'
-        for command_str, _, command_help in handlers:
-            print '    %-14s %s' % (command_str, command_help)
+        print_help(scriptname)
         return 0
 
     if '--version' in argv:
@@ -255,9 +259,10 @@ def cmdline_handler(scriptname, argv):
     command = argv.pop(0)
     for (cmd, fun, hlp) in handlers:
         if cmd == command:
+            print '%s version %s' % (scriptname, __version__)
             return fun(command, argv)
 
     err('Command "{0}" does not exist.'.format(command))
-    for cmd, fun, hlp in handlers:
-        err('    %-14s %s' % (cmd, hlp))
+    print_help(scriptname)
+
     return 1

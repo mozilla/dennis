@@ -21,8 +21,8 @@ except ImportError:
 import re
 
 
-class PythonVar(object):
-    """Handles %(foo)s and {foo} syntax."""
+class PythonVarType(object):
+    """Python %(foo)s and {foo} syntax"""
     name = 'python'
     regexp = (
         r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs%])'
@@ -32,9 +32,10 @@ class PythonVar(object):
 
 
 VAR_TYPES = dict(
-    (var_class.name, var_class) for var_class in [
-        PythonVar
-    ])
+    (var_class.name, (var_class, var_class.__doc__))
+    for name, var_class in globals().items()
+    if name.endswith('VarType')
+)
 
 
 class UnknownVarType(Exception):
@@ -42,7 +43,12 @@ class UnknownVarType(Exception):
 
 
 def get_types():
-    return ', '.join(sorted(VAR_TYPES.keys()))
+    return ', '.join(
+        [
+            '{name} ({desc})'.format(name=name, desc=data[1])
+            for name, data in sorted(VAR_TYPES.items())
+        ]
+    )
 
 
 class VariableTokenizer(object):
@@ -63,7 +69,7 @@ class VariableTokenizer(object):
 
         for v in var_types:
             try:
-                self.var_types.append(VAR_TYPES[v])
+                self.var_types.append(VAR_TYPES[v][0])
             except KeyError:
                 raise UnknownVarType(
                     '{0} is not a known variable type'.format(v))
