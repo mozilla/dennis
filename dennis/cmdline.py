@@ -66,8 +66,11 @@ def print_lint_error(vartok, lint_error):
     print ''
 
 
-def lint_cmd(command, argv):
+def lint_cmd(scriptname, command, argv):
     """Lints a .po file or directory of files."""
+    if not '--quiet' in argv:
+        print '%s version %s' % (scriptname, __version__)
+
     parser = build_parser(
         'usage: %prog lint [ FILE | DIR ]',
         description='Lints a .po file for mismatched Python string '
@@ -81,6 +84,11 @@ def lint_cmd(command, argv):
               get_types()),
         metavar='TYPES',
         default='python')
+    parser.add_option(
+        '-q', '--quiet',
+        action='store_true',
+        dest='quiet',
+        help='quiet all output')
 
     (options, args) = parser.parse_args(argv)
 
@@ -126,7 +134,8 @@ def lint_cmd(command, argv):
             files_to_errors[fn] = (0, 0)
             continue
 
-        print TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn))
+        if not options.quiet:
+            print TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn))
 
         error_count = 0
         warning_count = 0
@@ -141,19 +150,21 @@ def lint_cmd(command, argv):
                 total_warning_count += 1
                 warning_count += 1
 
-            print_lint_error(linter.vartok, result)
+            if not options.quiet:
+                print_lint_error(linter.vartok, result)
 
         files_to_errors[fn] = (error_count, warning_count)
 
         if error_count > 0:
             total_files_with_errors += 1
 
-        print (
-            'Total: {count:5}  Warnings: {warnings:5}  Errors: {errors:5}'
-            .format(count=count, warnings=warning_count, errors=error_count))
-        print ''
+        if not options.quiet:
+            print (
+                'Total: {count:5}  Warnings: {warnings:5}  Errors: {errors:5}'
+                .format(count=count, warnings=warning_count, errors=error_count))
+            print ''
 
-    if len(po_files) > 1:
+    if len(po_files) > 1 and not options.quiet:
         print 'Final Tally:'
         print ''
 
@@ -185,8 +196,10 @@ def lint_cmd(command, argv):
     return 1 if total_error_count else 0
 
 
-def translate_cmd(command, argv):
+def translate_cmd(scriptname, command, argv):
     """Translate a single string or .po file of strings."""
+    print '%s version %s' % (scriptname, __version__)
+
     parser = build_parser(
         'usage: %prog tramslate '
         '[-s STRING <STRING> ... | FILENAME <FILENAME> ...]',
@@ -260,8 +273,7 @@ def cmdline_handler(scriptname, argv):
     command = argv.pop(0)
     for (cmd, fun, hlp) in handlers:
         if cmd == command:
-            print '%s version %s' % (scriptname, __version__)
-            return fun(command, argv)
+            return fun(scriptname, command, argv)
 
     err('Command "{0}" does not exist.'.format(command))
     print_help(scriptname)
