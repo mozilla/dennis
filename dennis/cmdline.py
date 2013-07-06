@@ -5,7 +5,7 @@ from optparse import OptionParser
 from dennis import __version__
 from dennis.linter import Linter, format_with_errors
 from dennis.tools import get_types, Terminal
-from dennis.translater import Translator
+from dennis.translator import Translator
 
 
 USAGE = '%prog [options] [command] [command-options]'

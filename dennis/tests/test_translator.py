@@ -3,7 +3,7 @@ from unittest import TestCase
 from nose.tools import eq_
 
 from dennis.tools import VariableTokenizer
-from dennis.translater import (
+from dennis.translator import (
     HTMLExtractorTransform, PirateTransform, Token, Translator)
 
 
