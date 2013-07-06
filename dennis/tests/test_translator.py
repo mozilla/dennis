@@ -13,28 +13,29 @@ class PirateTest(TestCase):
     def test_basic(self):
         data = [
             (u'Hello',
-             u'Hello ahoy\u2757'),
+             u'\'ello ahoy\u2757'),
 
             (u'Hello %(username)s',
-             u'Hello %(usarrname)s aye\u2757'),
+             u'\'ello %(username)s ahoy\u2757'),
 
             (u'Hello %s',
-             u'Hello %s cap\'n\u2757'),
+             u'\'ello %s cap\'n\u2757'),
 
             (u'Hello {user}{name}',
-             u'Hello {userr}{name} aye\u2757'),
+             u'\'ello {user}{name} ahoy\u2757'),
 
             (u'Products and Services',
-             u'Products and Services cap\'n\u2757'),
+             u'Products and Sarrvices yo-ho-ho\u2757'),
 
             (u'Get community support',
-             u'Get community support cap\'n\u2757'),
+             u'Get community supparrt yo-ho-ho\u2757'),
 
             (u'Your input helps make Mozilla better',
-             u'Your input helps make Mozilla better shiver me timbers\u2757'),
+             u'Yerr input \'elps make Mozillar betterr prepare to '
+             u'be boarded\u2757'),
 
             (u'Super browsing',
-             u'Super browsing arrRRr\u2757'),
+             u'Superr browsin\' arrRRRrrr\u2757'),
         ]
 
         for text, expected in data:
@@ -89,14 +90,14 @@ class TranslatorTest(TestCase):
     def test_pirate_translate(self):
         trans = Translator(['python'], ['pirate'])
         eq_(trans.translate_string(u'hello'),
-            u'hello ahoy\u2757')
+            u'\'ello ahoy\u2757')
 
         # Note, this doesn't work right because it's not accounting
         # for html. But it's correct for this test.
         eq_(trans.translate_string(u'<b>hello</b>'),
-            u'<b>hello</b> prepare to be boarded\u2757')
+            u'<b>\'ello</b> prepare to be boarded\u2757')
 
     def test_html_pirate_translate(self):
         trans = Translator(['python'], ['html', 'pirate'])
         eq_(trans.translate_string(u'<b>hello</b>'),
-            u'<b>hello ahoy\u2757</b>')
+            u'<b>\'ello ahoy\u2757</b>')

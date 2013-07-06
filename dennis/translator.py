@@ -70,9 +70,9 @@ class PirateTransform(Transform):
             out = u''
             for i, part in enumerate(vartok.tokenize(token.s)):
                 if i % 2 == 0:
-                    out += part
-                else:
                     out += self.pirate_transform(part)
+                else:
+                    out += part
 
             # Add color which causes every string to be longer.
             s, ending = self.split_ending(out)
@@ -372,7 +372,7 @@ class Translator(object):
         po = polib.pofile(fname)
 
         # FIXME - This might be a bit goofy
-        po.metadata['Language'] = self.pipeline_spec
+        po.metadata['Language'] = ",".join(self.pipeline_spec)
         po.metadata['Plural-Forms'] = 'nplurals=2; plural= n != 1'
         po.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
         count = 0
