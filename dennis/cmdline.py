@@ -216,6 +216,12 @@ def translate_cmd(scriptname, command, argv):
         metavar='TYPES',
         default='python')
     parser.add_option(
+        '-p', '--pipeline',
+        dest='pipeline',
+        help='Translate pipeline.',
+        metavar='PIPELINE',
+        default='html,pirate')
+    parser.add_option(
         '-s', '--string',
         action='store_true',
         dest='strings',
@@ -227,7 +233,8 @@ def translate_cmd(scriptname, command, argv):
         parser.print_help()
         return 1
 
-    translator = Translator(options.types.split(','))
+    translator = Translator(
+        options.types.split(','), options.pipeline.split(','))
 
     if options.strings:
         for arg in args:
