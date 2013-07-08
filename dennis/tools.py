@@ -18,6 +18,7 @@ except ImportError:
         def __getattr__(self, attr, default=None):
             return MockBlessedThing()
 
+import optparse
 import re
 
 
@@ -43,12 +44,8 @@ class UnknownVarType(Exception):
 
 
 def get_types():
-    return ', '.join(
-        [
-            '{name} ({desc})'.format(name=name, desc=data[1])
-            for name, data in sorted(VAR_TYPES.items())
-        ]
-    )
+    """Return name and description for all types"""
+    return [(name, data[1]) for name, data in sorted(VAR_TYPES.items())]
 
 
 class VariableTokenizer(object):
@@ -104,3 +101,44 @@ class VariableTokenizer(object):
 
     def is_token(self, text):
         return self.var_re.match(text) is not None
+
+
+class BetterArgumentParser(optparse.OptionParser):
+    """OptionParser that allows for additional help sections
+
+    OptionParser can take a description and an epilog, but it
+    textwraps them which destroys all formatting. This allows us to
+    have additional sections after the epilog which can maintain
+    formatting.
+
+    When creating the parser, pass in a ``sections`` kw argument with
+    a list of tuples of the form ``(text, boolean)``. The text is the
+    section text. The boolean indicates whether or not to textwrap the
+    text.
+
+    Example::
+
+        BetterArgumentParser(usage='usage: %prog blah blah', version='1.0',
+            sections=[
+                ('List\nof\nthings', False),  # Maintains format
+                ('List\nof\nthings', True),   # Textwrapped
+            ])
+
+    """
+    def __init__(self, *args, **kw):
+        if 'sections' in kw:
+            self.sections = kw.pop('sections')
+        else:
+            self.sections = []
+        optparse.OptionParser.__init__(self, *args, **kw)
+
+    def format_help(self, formatter=None):
+        help_text = optparse.OptionParser.format_help(self, formatter)
+        for (section, raw) in self.sections:
+            if raw:
+                help_text += section
+            else:
+                help_text += self._format_text(section)
+            help_text += '\n'
+
+        return help_text

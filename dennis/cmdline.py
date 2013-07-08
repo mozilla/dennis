@@ -1,11 +1,10 @@
 import os
 import sys
-from optparse import OptionParser
 
 from dennis import __version__
 from dennis.linter import Linter, format_with_errors
-from dennis.tools import get_types, Terminal
-from dennis.translator import Translator
+from dennis.tools import BetterArgumentParser, Terminal, get_types
+from dennis.translator import Translator, get_available_pipeline_parts
 
 
 USAGE = '%prog [options] [command] [command-options]'
@@ -18,12 +17,31 @@ TERMINAL = Terminal()
 
 def build_parser(usage, **kwargs):
     """Builds an OptionParser with the specified kwargs."""
-    return OptionParser(usage=usage, version=VERSION, **kwargs)
+    return BetterArgumentParser(usage=usage, version=VERSION, **kwargs)
 
 
 def err(s):
     """Prints a single-line string to stderr."""
     sys.stderr.write('Error: ' + s + '\n')
+
+
+def format_types():
+    return (
+        '\nAvailable Types:\n' +
+        '\n'.join(
+            ['  {name:10}  {desc}'.format(name=name, desc=desc)
+             for name, desc in get_types()])
+    )
+
+
+def format_pipeline_parts():
+    parts = sorted(get_available_pipeline_parts().items())
+    return (
+        '\nAvailable Pipeline Parts:\n' +
+        '\n'.join(
+            ['  {name:10}  {desc}'.format(name=name, desc=cls.__doc__)
+             for name, cls in parts])
+    )
 
 
 def print_lint_error(vartok, lint_error):
@@ -74,14 +92,14 @@ def lint_cmd(scriptname, command, argv):
     parser = build_parser(
         'usage: %prog lint [ FILE | DIR ]',
         description='Lints a .po file for mismatched Python string '
-        'formatting tokens.')
-    # FIXME: move printing of available types to epilog. also rename
-    # types to something more accurate like "variable formats".
+        'formatting tokens.',
+        sections=[
+            (format_types(), True),
+        ])
     parser.add_option(
         '-t', '--types',
         dest='types',
-        help=('Comma-separated list of variable types. Available: ' +
-              get_types()),
+        help='Comma-separated list of variable types. See Available Types.',
         metavar='TYPES',
         default='python')
     parser.add_option(
@@ -205,20 +223,23 @@ def translate_cmd(scriptname, command, argv):
         '[-s STRING <STRING> ... | FILENAME <FILENAME> ...]',
         description='Translates a string or a .po file into Pirate.',
         epilog='Note: Translating files is done in-place replacing '
-        'the original file.')
+        'the original file.',
+        sections=[
+            (format_types(), True),
+            (format_pipeline_parts(), True),
+        ])
     # FIXME: move printing of available types to epilog. also rename
     # types to something more accurate like "variable formats".
     parser.add_option(
         '-t', '--types',
         dest='types',
-        help=('Comma-separated list of variable types. Available: ' +
-              get_types()),
+        help='Comma-separated list of variable types. See Available Types.',
         metavar='TYPES',
         default='python')
     parser.add_option(
         '-p', '--pipeline',
         dest='pipeline',
-        help='Translate pipeline.',
+        help='Translate pipeline. See Available Pipeline Parts.',
         metavar='PIPELINE',
         default='html,pirate')
     parser.add_option(
@@ -263,7 +284,7 @@ def print_help(scriptname):
     print ''
     print 'Commands:'
     for command_str, _, command_help in handlers:
-        print '    %-14s %s' % (command_str, command_help)
+        print '  {cmd:10}  {hlp}'.format(cmd=command_str, hlp=command_help)
 
 
 def cmdline_handler(scriptname, argv):

@@ -54,6 +54,7 @@ class Transform(object):
 
 
 class PirateTransform(Transform):
+    """Translates text into Pirate!"""
     name = 'pirate'
 
     def __init__(self):
@@ -261,7 +262,7 @@ class PirateTransform(Transform):
 
 
 class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
-    """Tokenizes out HTML bits."""
+    """Tokenizes HTML bits so only text is translated."""
     name = 'html'
 
     def __init__(self):
@@ -325,11 +326,13 @@ class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
         self.new_tokens.append(Token('&' + name + ';', 'html', False))
 
 
-def get_available_pipeline_parts_of_awesome():
+def get_available_pipeline_parts():
     pipeline_parts = {}
 
     for name, thing in globals().items():
-        if name.endswith('Transform') and issubclass(thing, Transform):
+        if (name.endswith('Transform')
+            and issubclass(thing, Transform)
+            and thing.name):
             pipeline_parts[thing.name] = thing
 
     return pipeline_parts
@@ -340,7 +343,7 @@ class InvalidPipeline(Exception):
 
 
 def convert_pipeline(pipeline_spec):
-    pipeline_parts = get_available_pipeline_parts_of_awesome()
+    pipeline_parts = get_available_pipeline_parts()
 
     try:
         pipeline = [pipeline_parts[part] for part in pipeline_spec]
