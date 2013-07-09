@@ -15,6 +15,10 @@ VERSION = '%prog ' + __version__
 TERMINAL = Terminal()
 
 
+def print_utf8(s):
+    print s.encode('utf-8')
+
+
 def build_parser(usage, **kwargs):
     """Builds an OptionParser with the specified kwargs."""
     return BetterArgumentParser(usage=usage, version=VERSION, **kwargs)
@@ -50,36 +54,46 @@ def print_lint_error(vartok, lint_error):
     :arg vartok: VariableTokenizer instance
     :arg lint_error: a LintError to print
 
-    Prints it to stdout. It also colorizes it using blessings
-    if blessings is available.
+    Prints it to stdout. It also colorizes it using blessings if
+    blessings is available.
     """
     if lint_error.invalid:
-        print u'{label}: {tokens}'.format(
-            label=TERMINAL.bold_red('Error: invalid tokens'),
-            tokens=', '.join(lint_error.invalid))
+        print_utf8(
+            u'{label}: {tokens}'.format(
+                label=TERMINAL.bold_red('Error: invalid tokens'),
+                tokens=', '.join(lint_error.invalid))
+        )
 
     if lint_error.missing:
-        print u'{label}: {tokens}'.format(
-            label=TERMINAL.bold_yellow('Warning: missing tokens'),
-            tokens=u', '.join(lint_error.missing))
+        print_utf8(
+            u'{label}: {tokens}'.format(
+                label=TERMINAL.bold_yellow('Warning: missing tokens'),
+                tokens=u', '.join(lint_error.missing))
+        )
 
     name = TERMINAL.yellow('msgid')
-    print u'{0}: "{1}"'.format(name, lint_error.msgid)
+    print_utf8(u'{0}: "{1}"'.format(name, lint_error.msgid))
 
     if lint_error.index is not None:
         # Print the plural
         name = TERMINAL.yellow('msgid_plural')
-        print u'{0}: "{1}"'.format(name, lint_error.msgid_text)
+        print_utf8(u'{0}: "{1}"'.format(name, lint_error.msgid_text))
 
     # Print the translated string with token errors
     if lint_error.index is not None:
         name = 'msgstr[{index}]'.format(index=lint_error.index)
     else:
         name = 'msgstr'
-    print u'{0}: "{1}"'.format(
-        TERMINAL.yellow(name),
-        format_with_errors(
-            TERMINAL, vartok, lint_error.msgstr_text, lint_error.msgid_tokens))
+
+
+    print_utf8(
+        u'{0}: "{1}"'.format(
+            TERMINAL.yellow(name),
+            format_with_errors(
+                TERMINAL, vartok, lint_error.msgstr_text,
+                lint_error.msgid_tokens)
+        )
+    )
 
     print ''
 
@@ -179,7 +193,8 @@ def lint_cmd(scriptname, command, argv):
         if not options.quiet:
             print (
                 'Total: {count:5}  Warnings: {warnings:5}  Errors: {errors:5}'
-                .format(count=count, warnings=warning_count, errors=error_count))
+                .format(count=count, warnings=warning_count,
+                        errors=error_count))
             print ''
 
     if len(po_files) > 1 and not options.quiet:

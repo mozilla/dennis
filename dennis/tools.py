@@ -5,15 +5,6 @@ except ImportError:
         def __call__(self, s):
             return s
 
-        def __str__(self):
-            return ''
-
-        def __repr__(self):
-            return ''
-
-        def __unicode__(self):
-            return ''
-
     class Terminal(object):
         def __getattr__(self, attr, default=None):
             return MockBlessedThing()
