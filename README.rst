@@ -31,9 +31,13 @@ This is how I name my software projects.
 Install
 =======
 
-It's not on PyPI, yet. So this is how you install it for now.
+To install a released version (highly suggested), do this::
 
-::
+    pip install dennis
+
+
+To install a bleeding edge version that won't work in new and magical
+ways, do this (you've been warned)::
 
     pip install https://github.com/willkg/dennis/archive/master.zip#egg=dennis
 
