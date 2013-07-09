@@ -59,6 +59,8 @@ class Linter(object):
             if there were no issues or a LintError if there were
             issues
 
+        :raises IOError: if the file is not a valid .po file or
+            doesn't exist
         """
         po = polib.pofile(filename_or_string)
 

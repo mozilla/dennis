@@ -151,7 +151,20 @@ def lint_cmd(scriptname, command, argv):
 
         fn = os.path.abspath(fn)
 
-        results = linter.verify_file(fn)
+        try:
+            results = linter.verify_file(fn)
+        except IOError as ioe:
+            # This is not a valid .po file. So mark it as an error.
+            print TERMINAL.bold_red('>>> Error opening file: {fn}'.format(
+                    fn=fn))
+            print TERMINAL.bold_red(ioe.message)
+            print ''
+
+            # FIXME - should we track this separately as an invalid
+            # file?
+            files_to_errors[fn] = (1, 0)
+            total_error_count += 1
+            continue
 
         # This is the total number of strings examined.
         count = len(results)
