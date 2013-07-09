@@ -6,7 +6,20 @@ What's new in dennis
    :local:
 
 
-Version 0.3: in development
+Version 0.3.1: in development
+=============================
+
+**API-breaking changes:**
+
+None
+
+**Changes**
+
+* c600064 Handle invalid .po files (#10)
+* 52f81f9 Fix lint output so it's utf-8 (#11)
+
+
+Version 0.3: July 8th, 2013
 ===========================
 
 **API-breaking changes:**
