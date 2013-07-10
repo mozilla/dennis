@@ -177,7 +177,7 @@ class PirateTransform(Transform):
     def split_ending(self, s):
         ending = []
         while s:
-            if s[-1] in '.,":;?!':
+            if s[-1] in '.,":;?!\n':
                 ending.insert(0, s[-1])
                 s = s[:-1]
             else:
