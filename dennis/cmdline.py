@@ -286,12 +286,19 @@ def translate_cmd(scriptname, command, argv):
         options.types.split(','), options.pipeline.split(','))
 
     if options.strings:
+        # Args are strings to be translated
         for arg in args:
             print translator.translate_string(arg)
-        return 0
 
-    for arg in args:
-        translator.translate_file(arg)
+    elif len(args) == 1 and args[0] == '-':
+        # Read everything from stdin, then translate it
+        print translator.translate_string(sys.stdin.read())
+
+    else:
+        # Args are filenames
+        for arg in args:
+            translator.translate_file(arg)
+
     return 0
 
 
