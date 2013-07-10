@@ -288,11 +288,11 @@ def translate_cmd(scriptname, command, argv):
     if options.strings:
         # Args are strings to be translated
         for arg in args:
-            print translator.translate_string(arg)
+            print_utf8(translator.translate_string(arg))
 
     elif len(args) == 1 and args[0] == '-':
         # Read everything from stdin, then translate it
-        print translator.translate_string(sys.stdin.read())
+        print_utf8(translator.translate_string(sys.stdin.read()))
 
     else:
         # Args are filenames
