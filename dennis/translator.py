@@ -53,12 +53,80 @@ class Transform(object):
         raise NotImplemented
 
 
+class EmptyTransform(Transform):
+    """Returns empty strings."""
+    name = 'empty'
+
+    def transform(self, vartok, token_stream):
+        return [Token('')]
+
+
+class XXXTransform(Transform):
+    """Adds xxx before and after string."""
+    name = 'xxx'
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            s, ending = self.split_ending(token.s)
+            s = u'xxx' + s + u'xxx' + ending
+            new_tokens.append(Token(s))
+
+        return new_tokens
+
+    def split_ending(self, s):
+        ending = []
+        while s:
+            if s[-1] in string.whitespace:
+                ending.insert(0, s[-1])
+                s = s[:-1]
+            else:
+                return s, u''.join(ending)
+
+        return u'', ''.join(ending)
+
+
+class AngleQuoteTransform(XXXTransform):
+    """Encloses string in unicode angle quotes."""
+    name = 'anglequote'
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            s, ending = self.split_ending(token.s)
+            s = u'\u00ab' + s + u'\u00bb' + ending
+            new_tokens.append(Token(s))
+
+        return new_tokens
+
+
+class ShoutyTransform(Transform):
+    """Translates into all caps."""
+    name = 'shouty'
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            new_tokens.append(Token(token.s.upper()))
+
+        return new_tokens
+
+
 class PirateTransform(Transform):
     """Translates text into Pirate!"""
     name = 'pirate'
-
-    def __init__(self):
-        pass
 
     def transform(self, vartok, token_stream):
         new_tokens = []
