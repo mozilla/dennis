@@ -43,7 +43,7 @@ def format_pipeline_parts():
     return (
         '\nAvailable Pipeline Parts:\n' +
         '\n'.join(
-            ['  {name:10}  {desc}'.format(name=name, desc=cls.__doc__)
+            ['  {name:10}  {desc}'.format(name=name, desc=cls.desc)
              for name, cls in parts])
     )
 

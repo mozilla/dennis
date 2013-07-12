@@ -38,6 +38,7 @@ class Token(object):
 
 class Transform(object):
     name = ''
+    desc = ''
 
     def transform(self, vartok, token_stream):
         """Takes a token stream and returns a token stream
@@ -54,16 +55,16 @@ class Transform(object):
 
 
 class EmptyTransform(Transform):
-    """Returns empty strings."""
     name = 'empty'
+    desc = 'Returns empty strings.'
 
     def transform(self, vartok, token_stream):
         return [Token('')]
 
 
 class XXXTransform(Transform):
-    """Adds xxx before and after string."""
     name = 'xxx'
+    desc = 'Adds xxx before and after string.'
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -91,8 +92,8 @@ class XXXTransform(Transform):
 
 
 class AngleQuoteTransform(XXXTransform):
-    """Encloses string in unicode angle quotes."""
     name = 'anglequote'
+    desc = 'Encloses string in unicode angle quotes.'
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -109,8 +110,8 @@ class AngleQuoteTransform(XXXTransform):
 
 
 class ShoutyTransform(Transform):
-    """Translates into all caps."""
     name = 'shouty'
+    desc = 'Translates into all caps.'
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -125,8 +126,8 @@ class ShoutyTransform(Transform):
 
 
 class PirateTransform(Transform):
-    """Translates text into Pirate!"""
     name = 'pirate'
+    desc = 'Translates text into Pirate!'
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -330,8 +331,8 @@ class PirateTransform(Transform):
 
 
 class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
-    """Tokenizes HTML bits so only text is translated."""
     name = 'html'
+    desc = 'Tokenizes HTML bits so only text is translated.'
 
     def __init__(self):
         HTMLParser.HTMLParser.__init__(self)
