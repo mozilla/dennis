@@ -52,7 +52,7 @@ Project details
 ===============
 
 :Code:          http://github.com/willkg/dennis
-:Documentation: http://dennis.rtfd.org/ (not yet)
+:Documentation: http://dennis.rtfd.org/
 :Issue tracker: https://github.com/willkg/dennis/issues
 :License:       BSD 3-clause; see LICENSE file
 
