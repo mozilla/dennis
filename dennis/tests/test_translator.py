@@ -185,3 +185,8 @@ class TranslatorTest(TestCase):
         trans = Translator(['python'], ['html', 'pirate'])
         eq_(trans.translate_string(u'<b>hello</b>'),
             u'<b>\'ello ahoy\u2757</b>')
+
+    def test_shouty_html_pirate_translate(self):
+        trans = Translator(['python'], ['shouty', 'html', 'pirate'])
+        eq_(trans.translate_string(u'<b>hello.</b>\n'),
+            u'<b>HELLO aye\u2757.</b>\n')

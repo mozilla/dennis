@@ -170,17 +170,20 @@ class PirateTransform(Transform):
                 else:
                     out += part
 
-            # Add color which causes every string to be longer.
-            s, ending = self.split_ending(out)
-            out = s + u' ' + self.COLOR[len(out) % len(self.COLOR)] + ending
+            # Add color which causes every string to be longer, but
+            # only if the string isn't entirely whitespace.
+            if not self.is_whitespace(out):
+                s, ending = self.split_ending(out)
+                out = (s + u' ' + self.COLOR[len(out) % len(self.COLOR)] +
+                       ending)
 
-            # This guarantees that every string has at least one
-            # unicode charater
-            if '!' not in out:
-                out = out + u'!'
+                # This guarantees that every string has at least one
+                # unicode charater
+                if '!' not in out:
+                    out = out + u'!'
 
-            # Replace all ! with related unicode character.
-            out = out.replace(u'!', u'\u2757')
+                # Replace all ! with related unicode character.
+                out = out.replace(u'!', u'\u2757')
 
             new_tokens.append(Token(out))
 
