@@ -19,6 +19,7 @@ None
 * 52f81f9 Fix lint output so it's utf-8 (#11)
 * 7da6add Tweak translator to allow for translating stdin (#13)
 * a5e3556 Add empty, xxx, anglequote and shouty transforms
+* 8cb1f2a Add redact'd transform
 
 
 Version 0.3: July 8th, 2013
