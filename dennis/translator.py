@@ -64,7 +64,7 @@ class EmptyTransform(Transform):
 
 class XXXTransform(Transform):
     name = 'xxx'
-    desc = 'Adds xxx before and after string.'
+    desc = 'Adds xxx before and after lines in a string.'
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -73,9 +73,14 @@ class XXXTransform(Transform):
                 new_tokens.append(token)
                 continue
 
-            s, ending = self.split_ending(token.s)
-            s = u'xxx' + s + u'xxx' + ending
-            new_tokens.append(Token(s))
+            new_s = []
+            s = token.s
+            for line in s.splitlines(True):
+                line, ending = self.split_ending(line)
+                line = u'xxx' + line + u'xxx' + ending
+                new_s.append(line)
+
+            new_tokens.append(Token(''.join(new_s)))
 
         return new_tokens
 

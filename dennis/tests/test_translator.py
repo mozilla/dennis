@@ -4,12 +4,31 @@ from nose.tools import eq_
 
 from dennis.tools import VariableTokenizer
 from dennis.translator import (
-    HTMLExtractorTransform, PirateTransform, Token, Translator)
+    AngleQuoteTransform, EmptyTransform, HTMLExtractorTransform,
+    PirateTransform, ShoutyTransform, Token, Translator, XXXTransform)
 
 
-class PirateTest(TestCase):
+class TransformTestCase(TestCase):
     vartok = VariableTokenizer(['python'])
 
+
+class EmptyTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello', u''),
+            (u'OMG!', u''),
+            (u'', u'')
+        ]
+
+        for text, expected in data:
+            et = EmptyTransform()
+            output = et.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class PirateTransformTest(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello',
@@ -84,6 +103,55 @@ class HTMLExtractorTest(TestCase):
                 Token(u'">', 'html', False),
             ]
         )
+
+
+class XXXTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello', u'xxxHelloxxx'),
+            (u'OMG!', u'xxxOMG!xxx'),
+            (u'Line\nWith\nCRs', u'xxxLinexxx\nxxxWithxxx\nxxxCRsxxx'),
+            (u'Line.  \nWith!\nCRs', u'xxxLine.xxx  \nxxxWith!xxx\nxxxCRsxxx')
+        ]
+
+        for text, expected in data:
+            xt = XXXTransform()
+            output = xt.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class AngleQuoteTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello', u'\xabHello\xbb'),
+            (u'OMG!', u'\xabOMG!\xbb'),
+            (u'Line\nWith\nCRs', u'\xabLine\nWith\nCRs\xbb'),
+            (u'Line.  \nWith!\nCRs', u'\xabLine.  \nWith!\nCRs\xbb'),
+        ]
+
+        for text, expected in data:
+            at = AngleQuoteTransform()
+            output = at.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class ShoutyTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello', u'HELLO'),
+            (u'OMG!', u'OMG!'),
+        ]
+
+        for text, expected in data:
+            st = ShoutyTransform()
+            output = st.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
 
 
 class TranslatorTest(TestCase):
