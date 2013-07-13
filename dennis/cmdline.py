@@ -248,7 +248,7 @@ def translate_cmd(scriptname, command, argv):
 
     parser = build_parser(
         'usage: %prog tramslate '
-        '[-s STRING <STRING> ... | FILENAME <FILENAME> ...]',
+        '[- | -s STRING <STRING> ... | FILENAME <FILENAME> ...]',
         description='Translates a string or a .po file into Pirate.',
         epilog='Note: Translating files is done in-place replacing '
         'the original file.',
