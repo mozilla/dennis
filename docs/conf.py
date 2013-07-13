@@ -49,7 +49,6 @@ copyright = u'2013, Will Kahn-Greene'
 # built documents.
 
 try:
-
     from dennis import __version__
     version = '.'.join(__version__.split('.')[:2])
     release = __version__
