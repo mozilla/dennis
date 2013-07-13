@@ -130,6 +130,27 @@ class ShoutyTransform(Transform):
         return new_tokens
 
 
+class RedactedTransform(Transform):
+    name = 'redacted'
+    desc = 'Redacts everything'
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            new_s = [
+                ('X' if c in string.ascii_uppercase else
+                 ('x' if c in string.ascii_lowercase else c))
+                for c in token.s
+            ]
+            new_tokens.append(Token(u''.join(new_s)))
+
+        return new_tokens
+
+
 class PirateTransform(Transform):
     name = 'pirate'
     desc = 'Translates text into Pirate!'

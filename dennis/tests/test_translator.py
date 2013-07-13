@@ -5,7 +5,8 @@ from nose.tools import eq_
 from dennis.tools import VariableTokenizer
 from dennis.translator import (
     AngleQuoteTransform, EmptyTransform, HTMLExtractorTransform,
-    PirateTransform, ShoutyTransform, Token, Translator, XXXTransform)
+    PirateTransform, RedactedTransform, ShoutyTransform, Token,
+    Translator, XXXTransform)
 
 
 class TransformTestCase(TestCase):
@@ -149,6 +150,21 @@ class ShoutyTransformTest(TransformTestCase):
         for text, expected in data:
             st = ShoutyTransform()
             output = st.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class RedactedTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello', u'Xxxxx'),
+            (u'OMG!', u'XXX!'),
+        ]
+
+        for text, expected in data:
+            rt = RedactedTransform()
+            output = rt.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
