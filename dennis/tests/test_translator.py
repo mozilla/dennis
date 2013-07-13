@@ -145,6 +145,7 @@ class ShoutyTransformTest(TransformTestCase):
         data = [
             (u'Hello', u'HELLO'),
             (u'OMG!', u'OMG!'),
+            (u'<b>Hello.</b>', u'<B>HELLO.</B>'),
         ]
 
         for text, expected in data:
