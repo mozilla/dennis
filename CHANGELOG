@@ -6,8 +6,8 @@ What's new in dennis
    :local:
 
 
-Version 0.3.1: in development
-=============================
+Version 0.3.1: July 15th, 2013
+==============================
 
 **API-breaking changes:**
 
@@ -20,6 +20,8 @@ None
 * 7da6add Tweak translator to allow for translating stdin (#13)
 * a5e3556 Add empty, xxx, anglequote and shouty transforms
 * 8cb1f2a Add redact'd transform
+* Documentation
+* Bug fixes
 
 
 Version 0.3: July 8th, 2013
