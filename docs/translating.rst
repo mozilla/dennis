@@ -71,6 +71,7 @@ name        description
 ==========  ================================================
 anglequote  Encloses string in unicode angle quotes.
 empty       Returns empty strings.
+haha        Adds haha! before sentences in a string.
 pirate      Translates text into Pirate!
 redacted    Redacts everything.
 shouty      Translates into all caps.
@@ -105,6 +106,14 @@ OMG! Why?!
 
 This is helpful for building .pot files from .po files. Also, it's
 sort of interesting to see a ui with no text in it.
+
+
+haha
+----
+
+Haha❗ Adds "Haha!" before sentences in a string. Haha❗ The exclamation
+point is a non-ASCII character, so this is both fun and tests unicode
+handling!
 
 
 pirate

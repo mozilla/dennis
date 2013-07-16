@@ -96,6 +96,56 @@ class XXXTransform(Transform):
         return u'', ''.join(ending)
 
 
+class HahaTransform(Transform):
+    name = 'haha'
+    desc = 'Adds haha! before sentences in a string.'
+
+
+    def transform(self, vartok, token_stream):
+        haha = u'Haha\u2757'
+
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            new_s = [haha + u' ']
+
+            for i, c in enumerate(token.s):
+                if c in ('.!?'):
+                    try:
+                        if token.s[i+1] == ' ':
+                            new_s.append(c)
+                            new_s.append(u' ')
+                            new_s.append(haha)
+                            continue
+                    except IndexError:
+                        pass
+                if c == '\n':
+                    new_s.append(c)
+                    new_s.append(haha)
+                    new_s.append(u' ')
+                    continue
+
+                new_s.append(c)
+
+            new_tokens.append(Token(''.join(new_s)))
+
+        return new_tokens
+
+    def split_ending(self, s):
+        ending = []
+        while s:
+            if s[-1] in string.whitespace:
+                ending.insert(0, s[-1])
+                s = s[:-1]
+            else:
+                return s, u''.join(ending)
+
+        return u'', ''.join(ending)
+
+
 class AngleQuoteTransform(XXXTransform):
     name = 'anglequote'
     desc = 'Encloses string in unicode angle quotes.'
