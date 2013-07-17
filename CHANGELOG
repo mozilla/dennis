@@ -15,7 +15,8 @@ None
 
 **Changes**
 
-* c778532 Add hahar transform
+* c778532 Add haha transform
+* e41bca8 Add --errorsonly flag to linter (#16)
 
 
 Version 0.3.1: July 15th, 2013
@@ -31,7 +32,7 @@ None
 * 52f81f9 Fix lint output so it's utf-8 (#11)
 * 7da6add Tweak translator to allow for translating stdin (#13)
 * a5e3556 Add empty, xxx, anglequote and shouty transforms
-* 8cb1f2a Add redact'd transform
+* 8cb1f2a Add redacted transform
 * Documentation
 * Bug fixes
 
