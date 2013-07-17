@@ -48,14 +48,16 @@ def format_pipeline_parts():
     )
 
 
-def print_lint_error(vartok, lint_error):
+def print_lint_error(vartok, lint_error, errors_only=False):
     """Prints a LintError to stdout
 
     :arg vartok: VariableTokenizer instance
     :arg lint_error: a LintError to print
+    :arg errors_only: True if we should only print errors
 
     Prints it to stdout. It also colorizes it using blessings if
     blessings is available.
+
     """
     if lint_error.invalid:
         print_utf8(
@@ -64,7 +66,7 @@ def print_lint_error(vartok, lint_error):
                 tokens=', '.join(lint_error.invalid))
         )
 
-    if lint_error.missing:
+    if lint_error.missing and not errors_only:
         print_utf8(
             u'{label}: {tokens}'.format(
                 label=TERMINAL.bold_yellow('Warning: missing tokens'),
@@ -121,6 +123,11 @@ def lint_cmd(scriptname, command, argv):
         action='store_true',
         dest='quiet',
         help='quiet all output')
+    parser.add_option(
+        '--errorsonly',
+        action='store_true',
+        dest='errorsonly',
+        help='only prints errors')
 
     (options, args) = parser.parse_args(argv)
 
@@ -152,6 +159,9 @@ def lint_cmd(scriptname, command, argv):
         fn = os.path.abspath(fn)
 
         try:
+            if not os.path.exists(fn):
+                raise IOError('File "{fn}" does not exist.'.format(fn=fn))
+
             results = linter.verify_file(fn)
         except IOError as ioe:
             # This is not a valid .po file. So mark it as an error.
@@ -195,8 +205,8 @@ def lint_cmd(scriptname, command, argv):
                 total_warning_count += 1
                 warning_count += 1
 
-            if not options.quiet:
-                print_lint_error(linter.vartok, result)
+            if not options.quiet and (result.invalid or not options.errorsonly):
+                print_lint_error(linter.vartok, result, options.errorsonly)
 
         files_to_errors[fn] = (error_count, warning_count)
 
