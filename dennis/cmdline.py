@@ -176,9 +176,6 @@ def lint_cmd(scriptname, command, argv):
             total_error_count += 1
             continue
 
-        # This is the total number of strings examined.
-        count = len(results)
-
         # Extract all the problematic LintItems--they have non-empty
         # missing or invalid lists.
         problem_results = [r for r in results if r.missing or r.invalid]
@@ -214,10 +211,9 @@ def lint_cmd(scriptname, command, argv):
             total_files_with_errors += 1
 
         if not options.quiet:
-            print (
-                'Total: {count:5}  Warnings: {warnings:5}  Errors: {errors:5}'
-                .format(count=count, warnings=warning_count,
-                        errors=error_count))
+            print 'Totals'
+            print '  Warnings: {warnings:5}'.format(warnings=warning_count)
+            print '  Errors:   {errors:5}'.format(errors=error_count)
             print ''
 
     if len(po_files) > 1 and not options.quiet:
