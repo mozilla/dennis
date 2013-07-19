@@ -250,7 +250,9 @@ def lint_cmd(scriptname, command, argv):
 
 def translate_cmd(scriptname, command, argv):
     """Translate a single string or .po file of strings."""
-    print '%s version %s' % (scriptname, __version__)
+    if '-' not in argv:
+        # Don't print version stuff if we're reading from stdin.
+        print '%s version %s' % (scriptname, __version__)
 
     parser = build_parser(
         'usage: %prog tramslate '

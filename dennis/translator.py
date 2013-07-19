@@ -508,6 +508,9 @@ class Translator(object):
         self.pipeline = convert_pipeline(self.pipeline_spec)
 
     def translate_string(self, s):
+        if isinstance(s, str):
+            s = s.decode('utf-8')
+
         # Create the initial token
         tokens = [Token(s)]
 
