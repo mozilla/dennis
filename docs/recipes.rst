@@ -93,3 +93,10 @@ HTML pages::
     #!/bin/bash
 
     (cat < "$1" | dennis-cmd translate --pipeline=html,pirate -) > "pirate_$1"
+
+
+Or show how you really feel about April fools day on the Internet::
+
+    #!/bin/bash
+
+    (cat < "$1" | dennis-cmd translate --pipeline=html,haha -) > "haha_$1"
