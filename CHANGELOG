@@ -17,6 +17,7 @@ None
 
 * c778532 Add haha transform
 * e41bca8 Add --errorsonly flag to linter (#16)
+* 759352d Fix UnicodeEncodeErrors wit' translate
 
 
 Version 0.3.1: July 15th, 2013
