@@ -10,7 +10,9 @@ linting all your .po files
 ==========================
 
 Sometimes it's good to just get a look at all the .po files and make
-sure they're ok::
+sure they're ok:
+
+.. code-block:: bash
 
     dennis-cmd lint locale/
 
@@ -25,7 +27,9 @@ Use the Dennis translator to find l10n issues in your application
 without having to bother your translators.
 
 For example, this translates strings into Pirate for a web application
-written in Python::
+written in Python:
+
+.. code-block:: bash
 
     #!/bin/bash
 
@@ -46,7 +50,9 @@ selective .mo compiling
 
 The Dennis linter returns an exit code of 1 if the file(s) it's
 linting have errors. You can trivially use this to selectively compile
-.po files into .mo files iff they are error free::
+.po files into .mo files iff they are error free:
+
+.. code-block:: bash
 
     #!/bin/bash
 
@@ -70,7 +76,9 @@ commit-msg git hook
 ===================
 
 You can automatically translate all future commit messages for your
-git project by creating a ``commit-msg`` hook like this::
+git project by creating a ``commit-msg`` hook like this:
+
+.. code-block:: bash
 
     #!/bin/bash
 
@@ -88,14 +96,18 @@ convert your web page into Pirate for April fools day
 =====================================================
 
 The Dennis translator can take content from stdin. Translate entire
-HTML pages::
+HTML pages:
+
+.. code-block:: bash
 
     #!/bin/bash
 
     (cat < "$1" | dennis-cmd translate --pipeline=html,pirate -) > "pirate_$1"
 
 
-Or show how you really feel about April fools day on the Internet::
+Or show how you really feel about April fools day on the Internet:
+
+.. code-block:: bash
 
     #!/bin/bash
 
