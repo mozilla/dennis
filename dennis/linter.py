@@ -1,53 +1,161 @@
+from collections import namedtuple
+
 import polib
 
 from dennis.tools import VariableTokenizer
 
 
-def _compare_lists(list_a, list_b):
-    """Compares contents of two lists
-
-    This returns two lists:
-
-    * list of tokens in list_a missing from list_b
-
-    * list of tokens in list_b missing from list_a
-
-    :returns: tuple of (list of tokens in list_a not in list_b, list
-        of tokens in list_b not in list_a)
-
-    """
-    return (
-        [token for token in list_a if token not in list_b],
-        [token for token in list_b if token not in list_a]
-    )
+TranslatedString = namedtuple(
+    'TranslatedString',
+    ('msgid_field', 'msgid_string', 'msgstr_field', 'msgstr_string'))
 
 
-class LintItem(object):
-    """Holds all the data involved in a lint item"""
-    def __init__(self, poentry, msgid, msgid_text, msgid_tokens,
-                 msgstr_text, msgstr_tokens, index):
+class LintedEntry(object):
+    def __init__(self, poentry):
         self.poentry = poentry
+        self.msgid = poentry.msgid
 
-        self.msgid = msgid
-        self.msgid_text = msgid_text
-        self.msgid_tokens = msgid_tokens
-        self.msgstr_text = msgstr_text
-        self.msgstr_tokens = msgstr_tokens
-        self.index = index
+        strs = []
 
-        # If the str_text is empty, there's no translation which we
-        # consider "fine".
-        if not msgstr_text.strip():
-            self.missing, self.invalid = [], []
+        if not poentry.msgid_plural:
+            strs.append(
+                TranslatedString(
+                    'msgid', poentry.msgid, 'msgstr', poentry.msgstr))
+
         else:
-            self.missing, self.invalid = _compare_lists(
-                msgid_tokens, msgstr_tokens)
+            for key in sorted(poentry.msgstr_plural.keys()):
+                if key == '0':
+                    # This is the 1 case
+                    msgid_field = 'msgid'
+                    text = poentry.msgid
+                else:
+                    msgid_field = 'msgid_plural'
+                    text = poentry.msgid_plural
+                strs.append(
+                    TranslatedString(
+                        msgid_field,
+                        text,
+                        'msgstr[{0}]'.format(key),
+                        poentry.msgstr_plural[key]))
+
+        # List of (msgid field, msgid string, msgstr field, msgstr
+        # string) tuples
+        self.strs = strs
+
+        self.warnings = []
+        self.errors = []
+
+    def add_warning(self, code, trstr, msg):
+        self.warnings.append((code, trstr, msg))
+
+    def add_error(self, code, trstr, msg):
+        self.errors.append((code, trstr, msg))
+
+    def has_problems(self):
+        return bool(self.warnings or self.errors)
+
+
+class LintRule(object):
+    name = ''
+    desc = ''
+
+    def lint(self, vartok, linted_entry):
+        """Takes a linted entry and adds errors and warnings
+
+        :arg vartok: the variable tokenizer to use for tokenizing
+            on variable tokens
+        :arg linted_entry: the LintedEntry to work on
+
+        """
+        raise NotImplemented
+
+
+class MismatchedVarsLintRule(LintRule):
+    name = 'mismatched'
+    desc = 'Checks for variables in one string not in the other'
+
+    @classmethod
+    def compare_lists(cls, list_a, list_b):
+        """Compares contents of two lists
+
+        This returns two lists:
+
+        * list of tokens in list_a missing from list_b
+
+        * list of tokens in list_b missing from list_a
+
+        :returns: tuple of (list of tokens in list_a not in list_b, list
+            of tokens in list_b not in list_a)
+
+        """
+        return (
+            [token for token in list_a if token not in list_b],
+            [token for token in list_b if token not in list_a]
+        )
+
+    def lint(self, vartok, linted_entry):
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            missing, invalid = self.compare_lists(
+                vartok.extract_tokens(trstr.msgid_string),
+                vartok.extract_tokens(trstr.msgstr_string))
+
+            if missing:
+                linted_entry.add_warning(
+                    self.name,
+                    trstr,
+                    'missing variables: {0}'.format(', '.join(missing)))
+
+            if invalid:
+                linted_entry.add_error(
+                    self.name,
+                    trstr,
+                    'invalid variables: {0}'.format(', '.join(invalid)))
+
+
+def get_available_lint_rules():
+    lint_rules = {}
+
+    for name, thing in globals().items():
+        if (name.endswith('LintRule')
+            and issubclass(thing, LintRule)
+            and thing.name):
+            lint_rules[thing.name] = thing
+
+    return lint_rules
+
+
+class InvalidRulesSpec(Exception):
+    pass
+
+
+def convert_rules(rules_spec):
+    lint_rules = get_available_lint_rules()
+
+    try:
+        rules = [lint_rules[rule]() for rule in rules_spec]
+    except KeyError:
+        raise InvalidRulesSpec(rules_spec)
+
+    return rules
 
 
 class Linter(object):
-    def __init__(self, var_types):
+    def __init__(self, var_types, rules_spec):
         # FIXME - this is a horrible name
         self.vartok = VariableTokenizer(var_types)
+        self.rules_spec = rules_spec
+        self.rules = convert_rules(self.rules_spec)
+
+    def lint_poentry(self, poentry):
+        linted_entry = LintedEntry(poentry)
+
+        for lint_rule in self.rules:
+            lint_rule.lint(self.vartok, linted_entry)
+
+        return linted_entry
 
     def verify_file(self, filename_or_string):
         """Verifies strings in file.
@@ -55,65 +163,11 @@ class Linter(object):
         :arg filename_or_string: filename to verify or the contents of
             a pofile as a string
 
-        :returns: for each string in the pofile, this returns a None
-            if there were no issues or a LintError if there were
-            issues
+        :returns: list of LintedEntry objects each with errors and
+            warnings
 
         :raises IOError: if the file is not a valid .po file or
             doesn't exist
         """
         po = polib.pofile(filename_or_string)
-
-        results = []
-
-        for entry in po:
-            if not entry.msgid_plural:
-                if not entry.msgid and entry.msgstr:
-                    continue
-                id_tokens = self.vartok.extract_tokens(entry.msgid)
-                str_tokens = self.vartok.extract_tokens(entry.msgstr)
-
-                results.append(
-                    LintItem(entry, entry.msgid, entry.msgid,
-                             id_tokens, entry.msgstr,
-                             str_tokens, None))
-
-            else:
-                for key in sorted(entry.msgstr_plural.keys()):
-                    if key == '0':
-                        # This is the 1 case.
-                        text = entry.msgid
-                    else:
-                        text = entry.msgid_plural
-                    id_tokens = self.vartok.extract_tokens(text)
-
-                    str_tokens = self.vartok.extract_tokens(
-                        entry.msgstr_plural[key])
-                    results.append(
-                        LintItem(entry, entry.msgid, text, id_tokens,
-                                 entry.msgstr_plural[key],
-                                 str_tokens, key))
-
-        return results
-
-
-def format_with_errors(terminal, vartok, text, available_tokens):
-    """Turns invalid tokens in the text red for output
-
-    :arg terminal: a blessings Terminal or mock Terminal
-    :arg vartok: the variable tokenizer to use
-    :arg text: the text holding the tokens
-    :arg available_tokens: valid tokens that should be in the
-        text---anything else is an invalid token and will be turned
-        bold red.
-
-    :returns: the text with invalid tokens bold red
-
-    """
-    output = []
-    for token in vartok.tokenize(text):
-        if vartok.is_token(token) and token not in available_tokens:
-            output.append(terminal.bold_red(token))
-        else:
-            output.append(token)
-    return u''.join(output)
+        return [self.lint_poentry(entry) for entry in po]

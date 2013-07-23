@@ -1,106 +1,134 @@
 from unittest import TestCase
 
 from nose.tools import eq_
+import polib
 
-from dennis.linter import _compare_lists, Linter
+from dennis.linter import MismatchedVarsLintRule, LintedEntry
+from dennis.tools import VariableTokenizer
 from dennis.tests import build_po_string
 
 
-def test_compare_lists():
-    tests = [
-        ([], [], ([], [])),
-        ([1, 2, 3], [3, 4, 5], ([1, 2], [4, 5])),
-    ]
-
-    for list_a, list_b, expected in tests:
-        eq_(_compare_lists(list_a, list_b), expected)
+def build_linted_entry(po_data):
+    po = polib.pofile(build_po_string(po_data))
+    poentry = list(po)[0]
+    return LintedEntry(poentry)
 
 
-class LinterTests(TestCase):
+class LintRuleTestCase(TestCase):
+    vartok = VariableTokenizer(['python'])
+
+
+class MismatchedVarsLintRuleTests(LintRuleTestCase):
+    mvlr = MismatchedVarsLintRule()
+
+    def test_compare_lists(self):
+        tests = [
+            ([], [], ([], [])),
+            ([1, 2, 3], [3, 4, 5], ([1, 2], [4, 5])),
+        ]
+
+        for list_a, list_b, expected in tests:
+            eq_(MismatchedVarsLintRule.compare_lists(list_a, list_b),
+                expected)
+
     def test_fine(self):
-        po_string = build_po_string(
+        linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo"\n'
             'msgstr "Oof"\n')
 
-        linter = Linter(['python'])
+        self.mvlr.lint(self.vartok, linted_entry)
 
-        results = linter.verify_file(po_string)
-        eq_(len(results), 1)
-        eq_(results[0].missing, [])
-        eq_(results[0].invalid, [])
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 0)
 
-        po_string = build_po_string(
+        linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo: {foo}"\n'
             'msgstr "Oof: {foo}"\n')
 
-        linter = Linter(['python'])
+        self.mvlr.lint(self.vartok, linted_entry)
 
-        results = linter.verify_file(po_string)
-        eq_(len(results), 1)
-        eq_(results[0].missing, [])
-        eq_(results[0].invalid, [])
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 0)
 
     def test_missing(self):
-        data = build_po_string(
+        linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo: {foo}"\n'
             'msgstr "Oof"\n')
 
-        linter = Linter(['python'])
+        self.mvlr.lint(self.vartok, linted_entry)
 
-        results = linter.verify_file(data)
-        eq_(len(results), 1)
-        eq_(results[0].missing, [u'{foo}'])
-        eq_(results[0].invalid, [])
+        eq_(len(linted_entry.warnings), 1)
+        eq_(linted_entry.warnings[0][2],
+            'missing variables: {foo}')
+        eq_(len(linted_entry.errors), 0)
 
-        data = build_po_string(
+        linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo: {foo} {bar} {baz}"\n'
             'msgstr "Oof: {foo}"\n')
 
-        linter = Linter(['python'])
+        self.mvlr.lint(self.vartok, linted_entry)
 
-        results = linter.verify_file(data)
-        eq_(len(results), 1)
-        eq_(results[0].missing, [u'{bar}', u'{baz}'])
-        eq_(results[0].invalid, [])
+        eq_(len(linted_entry.warnings), 1)
+        eq_(linted_entry.warnings[0][2],
+            'missing variables: {bar}, {baz}')
+        eq_(len(linted_entry.errors), 0)
 
     def test_invalid(self):
-        data = build_po_string(
+        linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo"\n'
             'msgstr "Oof: {foo}"\n')
 
-        linter = Linter(['python'])
+        self.mvlr.lint(self.vartok, linted_entry)
 
-        results = linter.verify_file(data)
-        eq_(len(results), 1)
-        eq_(results[0].missing, [])
-        eq_(results[0].invalid, [u'{foo}'])
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'invalid variables: {foo}')
 
-        data = build_po_string(
+        linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo: {foo}"\n'
             'msgstr "Oof: {foo} {bar} {baz}"\n')
 
-        linter = Linter(['python'])
+        self.mvlr.lint(self.vartok, linted_entry)
 
-        results = linter.verify_file(data)
-        eq_(len(results), 1)
-        eq_(results[0].missing, [])
-        eq_(results[0].invalid, [u'{bar}', u'{baz}'])
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'invalid variables: {bar}, {baz}')
 
     def test_complex(self):
-        data = build_po_string(
+        linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo: {bar} {baz}"\n'
             'msgstr "Oof: {foo} {bar}"\n')
 
-        linter = Linter(['python'])
+        self.mvlr.lint(self.vartok, linted_entry)
 
-        results = linter.verify_file(data)
-        eq_(len(results), 1)
-        eq_(results[0].missing, [u'{baz}'])
-        eq_(results[0].invalid, [u'{foo}'])
+        eq_(len(linted_entry.warnings), 1)
+        eq_(linted_entry.warnings[0][2],
+            'missing variables: {baz}')
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'invalid variables: {foo}')
+
+
+# class LinterLintTests(TestCase):
+#     def test_malformed_python_var(self):
+#         data = build_po_string(
+#             '#: kitsune/questions/templates/questions/answers.html:56\n'
+#             'msgid "%(count)s view"\n'
+#             'msgid_plural "%(count)s views"\n'
+#             'msgstr[0] "%(count) zoo"\n')
+
+#         linter = Linter(['python'])
+
+#         results = linter.verify_file(data)
+#         eq_(len(results), 1)
+#         eq_(results[0].missing, [u'%(count)s'])
+#         eq_(results[0].invalid, [u'%(count)'])

@@ -2,7 +2,7 @@ import os
 import sys
 
 from dennis import __version__
-from dennis.linter import Linter, format_with_errors
+from dennis.linter import Linter, get_available_lint_rules
 from dennis.tools import BetterArgumentParser, Terminal, get_types
 from dennis.translator import Translator, get_available_pipeline_parts
 
@@ -48,56 +48,14 @@ def format_pipeline_parts():
     )
 
 
-def print_lint_error(vartok, lint_error, errors_only=False):
-    """Prints a LintError to stdout
-
-    :arg vartok: VariableTokenizer instance
-    :arg lint_error: a LintError to print
-    :arg errors_only: True if we should only print errors
-
-    Prints it to stdout. It also colorizes it using blessings if
-    blessings is available.
-
-    """
-    if lint_error.invalid:
-        print_utf8(
-            u'{label}: {tokens}'.format(
-                label=TERMINAL.bold_red('Error: invalid tokens'),
-                tokens=', '.join(lint_error.invalid))
-        )
-
-    if lint_error.missing and not errors_only:
-        print_utf8(
-            u'{label}: {tokens}'.format(
-                label=TERMINAL.bold_yellow('Warning: missing tokens'),
-                tokens=u', '.join(lint_error.missing))
-        )
-
-    name = TERMINAL.yellow('msgid')
-    print_utf8(u'{0}: "{1}"'.format(name, lint_error.msgid))
-
-    if lint_error.index is not None:
-        # Print the plural
-        name = TERMINAL.yellow('msgid_plural')
-        print_utf8(u'{0}: "{1}"'.format(name, lint_error.msgid_text))
-
-    # Print the translated string with token errors
-    if lint_error.index is not None:
-        name = 'msgstr[{index}]'.format(index=lint_error.index)
-    else:
-        name = 'msgstr'
-
-
-    print_utf8(
-        u'{0}: "{1}"'.format(
-            TERMINAL.yellow(name),
-            format_with_errors(
-                TERMINAL, vartok, lint_error.msgstr_text,
-                lint_error.msgid_tokens)
-        )
+def format_lint_rules():
+    rules = sorted(get_available_lint_rules().items())
+    return (
+        '\nAvailable Lint Rules:\n' +
+        '\n'.join(
+            ['  {name:10}  {desc}'.format(name=name, desc=cls.desc)
+             for name, cls in rules])
     )
-
-    print ''
 
 
 def lint_cmd(scriptname, command, argv):
@@ -111,6 +69,7 @@ def lint_cmd(scriptname, command, argv):
         'formatting tokens.',
         sections=[
             (format_types(), True),
+            (format_lint_rules(), True),
         ])
     parser.add_option(
         '-t', '--types',
@@ -118,6 +77,13 @@ def lint_cmd(scriptname, command, argv):
         help='Comma-separated list of variable types. See Available Types.',
         metavar='TYPES',
         default='python')
+    parser.add_option(
+        '--rules',
+        dest='rules',
+        help=('Comma-separated list of lint rules to use. See Available Lint '
+              'Rules.'),
+        metavar='TYPES',
+        default='mismatched')
     parser.add_option(
         '-q', '--quiet',
         action='store_true',
@@ -135,7 +101,7 @@ def lint_cmd(scriptname, command, argv):
         parser.print_help()
         return 1
 
-    linter = Linter(options.types.split(','))
+    linter = Linter(options.types.split(','), options.rules.split(','))
 
     if os.path.isdir(args[0]):
         po_files = []
@@ -178,7 +144,7 @@ def lint_cmd(scriptname, command, argv):
 
         # Extract all the problematic LintItems--they have non-empty
         # missing or invalid lists.
-        problem_results = [r for r in results if r.missing or r.invalid]
+        problem_results = [r for r in results if r.has_problems()]
 
         # We don't want to print output for files that are fine, so we
         # update the bookkeeping and move on.
@@ -191,19 +157,35 @@ def lint_cmd(scriptname, command, argv):
 
         error_count = 0
         warning_count = 0
-        for result in problem_results:
-            if not result:
-                continue
-
-            if result.invalid:
+        for entry in problem_results:
+            # TODO: This is totally shite code.
+            for code, trstr, msg in entry.errors:
                 total_error_count += 1
                 error_count += 1
-            if result.missing:
+                if not options.quiet:
+                    print_utf8(TERMINAL.bold_red('Error: {0}: {1}'.format(
+                                code, msg)))
+                    if trstr.msgid_field != 'msgid':
+                        print_utf8('msgid: {0}'.format(entry.msgid))
+                    print_utf8(u'{0}: {1}'.format(
+                            trstr.msgid_field, trstr.msgid_string))
+                    print_utf8(u'{0}: {1}'.format(
+                            trstr.msgstr_field, trstr.msgstr_string))
+                    print ''
+
+            for code, trstr, msg in entry.warnings:
                 total_warning_count += 1
                 warning_count += 1
-
-            if not options.quiet and (result.invalid or not options.errorsonly):
-                print_lint_error(linter.vartok, result, options.errorsonly)
+                if not options.quiet and not options.errorsonly:
+                    print_utf8(TERMINAL.bold_yellow('Warning: {0}: {1}'.format(
+                                code, msg)))
+                    if trstr.msgid_field != 'msgid':
+                        print_utf8('msgid: {0}'.format(entry.msgid))
+                    print_utf8(u'{0}: {1}'.format(
+                            trstr.msgid_field, trstr.msgid_string))
+                    print_utf8(u'{0}: {1}'.format(
+                            trstr.msgstr_field, trstr.msgstr_string))
+                    print ''
 
         files_to_errors[fn] = (error_count, warning_count)
 
