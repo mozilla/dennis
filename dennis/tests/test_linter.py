@@ -119,7 +119,7 @@ class MismatchedVarsLintRuleTests(LintRuleTestCase):
             'invalid variables: {foo}')
 
 
-class LinterLintTests(LintRuleTestCase):
+class MalformedVarsLintRuleTests(LintRuleTestCase):
     mavlr = MalformedVarsLintRule()
 
     def test_malformed_python_var(self):
