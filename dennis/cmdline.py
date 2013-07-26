@@ -146,7 +146,8 @@ def lint_cmd(scriptname, command, argv):
 
         # Extract all the problematic LintItems--they have non-empty
         # missing or invalid lists.
-        problem_results = [r for r in results if r.has_problems()]
+        problem_results = [
+            r for r in results if r.has_problems(options.errorsonly)]
 
         # We don't want to print output for files that are fine, so we
         # update the bookkeeping and move on.
@@ -196,18 +197,20 @@ def lint_cmd(scriptname, command, argv):
 
         if not options.quiet:
             print 'Totals'
-            print '  Warnings: {warnings:5}'.format(warnings=warning_count)
+            if not options.errorsonly:
+                print '  Warnings: {warnings:5}'.format(warnings=warning_count)
             print '  Errors:   {errors:5}'.format(errors=error_count)
             print ''
 
     if len(po_files) > 1 and not options.quiet:
-        print 'Final totals:'
+        print 'Final totals'
         print '  Number of files examined:          {count:5}'.format(
             count=len(po_files))
         print '  Total number of files with errors: {count:5}'.format(
             count=total_files_with_errors)
-        print '  Total number of warnings:          {count:5}'.format(
-            count=total_warning_count)
+        if not options.errorsonly:
+            print '  Total number of warnings:          {count:5}'.format(
+                count=total_warning_count)
         print '  Total number of errors:            {count:5}'.format(
             count=total_error_count)
         print ''
@@ -216,13 +219,21 @@ def lint_cmd(scriptname, command, argv):
             (counts[0], counts[1], fn.split(os.sep)[-3], fn.split(os.sep)[-1])
             for (fn, counts) in files_to_errors.items()]
 
-        print 'Warnings  Errors  Filename'
+        # If we're showing errors only, then don't talk about warnings.
+        if options.errorsonly:
+            header = 'Errors  Filename'
+            line = ' {errors:5}  {locale} ({fn})'
+        else:
+            header = 'Warnings  Errors  Filename'
+            line = ' {warnings:5}     {errors:5}  {locale} ({fn})'
+
+        print header
         file_counts = reversed(sorted(file_counts))
         for error_count, warning_count, locale, fn in file_counts:
             if not error_count and not warning_count:
                 continue
 
-            print ' {warnings:5}     {errors:5}  {locale} ({fn})'.format(
+            print line.format(
                 warnings=warning_count, errors=error_count, fn=fn,
                 locale=locale)
 

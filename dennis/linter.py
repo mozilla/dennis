@@ -51,7 +51,9 @@ class LintedEntry(object):
     def add_error(self, code, trstr, msg):
         self.errors.append((code, trstr, msg))
 
-    def has_problems(self):
+    def has_problems(self, errorsonly=False):
+        if errorsonly:
+            return bool(self.errors)
         return bool(self.warnings or self.errors)
 
 
