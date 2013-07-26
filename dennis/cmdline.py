@@ -163,10 +163,10 @@ def lint_cmd(scriptname, command, argv):
                 total_error_count += 1
                 error_count += 1
                 if not options.quiet:
-                    print_utf8(TERMINAL.bold_red('Error: {0}: {1}'.format(
+                    print_utf8(TERMINAL.bold_red(u'Error: {0}: {1}'.format(
                                 code, msg)))
                     if trstr.msgid_field != 'msgid':
-                        print_utf8('msgid: {0}'.format(entry.msgid))
+                        print_utf8(u'msgid: {0}'.format(entry.msgid))
                     print_utf8(u'{0}: {1}'.format(
                             trstr.msgid_field, trstr.msgid_string))
                     print_utf8(u'{0}: {1}'.format(
@@ -177,10 +177,10 @@ def lint_cmd(scriptname, command, argv):
                 total_warning_count += 1
                 warning_count += 1
                 if not options.quiet and not options.errorsonly:
-                    print_utf8(TERMINAL.bold_yellow('Warning: {0}: {1}'.format(
+                    print_utf8(TERMINAL.bold_yellow(u'Warning: {0}: {1}'.format(
                                 code, msg)))
                     if trstr.msgid_field != 'msgid':
-                        print_utf8('msgid: {0}'.format(entry.msgid))
+                        print_utf8(u'msgid: {0}'.format(entry.msgid))
                     print_utf8(u'{0}: {1}'.format(
                             trstr.msgid_field, trstr.msgid_string))
                     print_utf8(u'{0}: {1}'.format(
@@ -199,16 +199,14 @@ def lint_cmd(scriptname, command, argv):
             print ''
 
     if len(po_files) > 1 and not options.quiet:
-        print 'Final Tally:'
-        print ''
-
-        print 'Number of files examined:          {count:5}'.format(
+        print 'Final totals:'
+        print '  Number of files examined:          {count:5}'.format(
             count=len(po_files))
-        print 'Total number of files with errors: {count:5}'.format(
+        print '  Total number of files with errors: {count:5}'.format(
             count=total_files_with_errors)
-        print 'Total number of warnings:          {count:5}'.format(
+        print '  Total number of warnings:          {count:5}'.format(
             count=total_warning_count)
-        print 'Total number of errors:            {count:5}'.format(
+        print '  Total number of errors:            {count:5}'.format(
             count=total_error_count)
         print ''
 
