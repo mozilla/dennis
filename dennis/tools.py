@@ -18,6 +18,7 @@ class Var(object):
     name = ''
     desc = ''
     regexp = ''
+    malformed_regexp = ''
 
 
 class PythonVar(Var):
@@ -27,6 +28,9 @@ class PythonVar(Var):
         r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs%])'
         r'|'
         r'(?:\{\S+?\})'
+    )
+    malformed_regexp = (
+        r'(?:%[(]\S+?[)] )'  # %(count)
     )
 
 
@@ -54,13 +58,13 @@ class VariableTokenizer(object):
             types.
 
         """
+        all_vars = get_available_vars()
+
         if vars_ is None:
-            vars_ = get_available_vars.keys()
+            vars_ = all_vars.keys()
 
         # Convert names to classes
         self.vars_ = []
-
-        all_vars = get_available_vars()
 
         for v in vars_:
             try:
@@ -75,6 +79,14 @@ class VariableTokenizer(object):
             '|'.join([vt.regexp for vt in self.vars_]) +
             r')'
         )
+
+        # Generate malformed variable regexp
+        self.malformed_vars_re = re.compile(
+            r'(' +
+            '|'.join([vt.malformed_regexp for vt in self.vars_]) +
+            r')'
+        )
+
 
     def tokenize(self, text):
         """Breaks s into strings and Python formatting tokens

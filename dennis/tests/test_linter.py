@@ -3,7 +3,8 @@ from unittest import TestCase
 from nose.tools import eq_
 import polib
 
-from dennis.linter import MismatchedVarsLintRule, LintedEntry
+from dennis.linter import (
+    MalformedVarsLintRule, MismatchedVarsLintRule, LintedEntry)
 from dennis.tools import VariableTokenizer
 from dennis.tests import build_po_string
 
@@ -118,17 +119,19 @@ class MismatchedVarsLintRuleTests(LintRuleTestCase):
             'invalid variables: {foo}')
 
 
-# class LinterLintTests(TestCase):
-#     def test_malformed_python_var(self):
-#         data = build_po_string(
-#             '#: kitsune/questions/templates/questions/answers.html:56\n'
-#             'msgid "%(count)s view"\n'
-#             'msgid_plural "%(count)s views"\n'
-#             'msgstr[0] "%(count) zoo"\n')
+class LinterLintTests(LintRuleTestCase):
+    mavlr = MalformedVarsLintRule()
 
-#         linter = Linter(['python'])
+    def test_malformed_python_var(self):
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "%(count)s view"\n'
+            'msgid_plural "%(count)s views"\n'
+            'msgstr[0] "%(count) zoo"\n')
 
-#         results = linter.verify_file(data)
-#         eq_(len(results), 1)
-#         eq_(results[0].missing, [u'%(count)s'])
-#         eq_(results[0].invalid, [u'%(count)'])
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: %(count)')

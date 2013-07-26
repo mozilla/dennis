@@ -72,6 +72,30 @@ class LintRule(object):
         raise NotImplemented
 
 
+class MalformedVarsLintRule(LintRule):
+    name = 'malformed'
+    desc = 'Checks for malformed variables that cause errors'
+
+    def lint(self, vartok, linted_entry):
+        malformed_re = vartok.malformed_vars_re
+
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            # For each Var class, we ask it to find malformed
+            for var in vartok.vars_:
+                malformed = malformed_re.findall(trstr.msgstr_string)
+                if not malformed:
+                    continue
+
+                malformed = [item.strip() for item in malformed]
+                linted_entry.add_error(
+                    self.name,
+                    trstr,
+                    u'malformed variables: {0}'.format(u', '.join(malformed)))
+
+
 class MismatchedVarsLintRule(LintRule):
     name = 'mismatched'
     desc = 'Checks for variables in one string not in the other'
