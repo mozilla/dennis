@@ -143,9 +143,8 @@ def convert_rules(rules_spec):
 
 
 class Linter(object):
-    def __init__(self, var_types, rules_spec):
-        # FIXME - this is a horrible name
-        self.vartok = VariableTokenizer(var_types)
+    def __init__(self, vars_, rules_spec):
+        self.vartok = VariableTokenizer(vars_)
         self.rules_spec = rules_spec
         self.rules = convert_rules(self.rules_spec)
 

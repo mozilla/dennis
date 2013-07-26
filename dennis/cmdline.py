@@ -3,7 +3,7 @@ import sys
 
 from dennis import __version__
 from dennis.linter import Linter, get_available_lint_rules
-from dennis.tools import BetterArgumentParser, Terminal, get_types
+from dennis.tools import BetterArgumentParser, Terminal, get_available_vars
 from dennis.translator import Translator, get_available_pipeline_parts
 
 
@@ -29,12 +29,13 @@ def err(s):
     sys.stderr.write('Error: ' + s + '\n')
 
 
-def format_types():
+def format_vars():
+    vars_ = sorted(get_available_vars().items())
     return (
-        '\nAvailable Types:\n' +
+        '\nAvailable Variable Formats:\n' +
         '\n'.join(
-            ['  {name:10}  {desc}'.format(name=name, desc=desc)
-             for name, desc in get_types()])
+            ['  {name:13}  {desc}'.format(name=name, desc=cls.desc)
+             for name, cls in vars_])
     )
 
 
@@ -43,7 +44,7 @@ def format_pipeline_parts():
     return (
         '\nAvailable Pipeline Parts:\n' +
         '\n'.join(
-            ['  {name:10}  {desc}'.format(name=name, desc=cls.desc)
+            ['  {name:13}  {desc}'.format(name=name, desc=cls.desc)
              for name, cls in parts])
     )
 
@@ -53,7 +54,7 @@ def format_lint_rules():
     return (
         '\nAvailable Lint Rules:\n' +
         '\n'.join(
-            ['  {name:10}  {desc}'.format(name=name, desc=cls.desc)
+            ['  {name:13}  {desc}'.format(name=name, desc=cls.desc)
              for name, cls in rules])
     )
 
@@ -68,21 +69,22 @@ def lint_cmd(scriptname, command, argv):
         description='Lints a .po file for mismatched Python string '
         'formatting tokens.',
         sections=[
-            (format_types(), True),
+            (format_vars(), True),
             (format_lint_rules(), True),
         ])
     parser.add_option(
-        '-t', '--types',
-        dest='types',
-        help='Comma-separated list of variable types. See Available Types.',
-        metavar='TYPES',
+        '--vars',
+        dest='vars',
+        help=('Comma-separated list of variable types. See Available Variable '
+              'Formats.'),
+        metavar='VARS',
         default='python')
     parser.add_option(
         '--rules',
         dest='rules',
         help=('Comma-separated list of lint rules to use. See Available Lint '
               'Rules.'),
-        metavar='TYPES',
+        metavar='RULES',
         default='mismatched')
     parser.add_option(
         '-q', '--quiet',
@@ -93,7 +95,7 @@ def lint_cmd(scriptname, command, argv):
         '--errorsonly',
         action='store_true',
         dest='errorsonly',
-        help='only prints errors')
+        help='only print errors')
 
     (options, args) = parser.parse_args(argv)
 
@@ -101,7 +103,7 @@ def lint_cmd(scriptname, command, argv):
         parser.print_help()
         return 1
 
-    linter = Linter(options.types.split(','), options.rules.split(','))
+    linter = Linter(options.vars.split(','), options.rules.split(','))
 
     if os.path.isdir(args[0]):
         po_files = []
@@ -241,16 +243,15 @@ def translate_cmd(scriptname, command, argv):
         epilog='Note: Translating files is done in-place replacing '
         'the original file.',
         sections=[
-            (format_types(), True),
+            (format_vars(), True),
             (format_pipeline_parts(), True),
         ])
-    # FIXME: move printing of available types to epilog. also rename
-    # types to something more accurate like "variable formats".
     parser.add_option(
-        '-t', '--types',
-        dest='types',
-        help='Comma-separated list of variable types. See Available Types.',
-        metavar='TYPES',
+        '--vars',
+        dest='vars',
+        help=('Comma-separated list of variable types. See Available Variable '
+              'Formats.'),
+        metavar='VARS',
         default='python')
     parser.add_option(
         '-p', '--pipeline',
@@ -271,7 +272,7 @@ def translate_cmd(scriptname, command, argv):
         return 1
 
     translator = Translator(
-        options.types.split(','), options.pipeline.split(','))
+        options.vars.split(','), options.pipeline.split(','))
 
     if options.strings:
         # Args are strings to be translated

@@ -13,9 +13,16 @@ import optparse
 import re
 
 
-class PythonVarType(object):
-    """Python %(foo)s and {foo} syntax"""
+class Var(object):
+    """Variable base class"""
+    name = ''
+    desc = ''
+    regexp = ''
+
+
+class PythonVar(Var):
     name = 'python'
+    desc = 'Python %(foo)s and {foo} syntax'
     regexp = (
         r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs%])'
         r'|'
@@ -23,49 +30,49 @@ class PythonVarType(object):
     )
 
 
-VAR_TYPES = dict(
-    (var_class.name, (var_class, var_class.__doc__))
-    for name, var_class in globals().items()
-    if name.endswith('VarType')
-)
+def get_available_vars():
+    return dict(
+        (thing.name, thing)
+        for name, thing in globals().items()
+        if (name.endswith('Var')
+            and issubclass(thing, Var)
+            and thing.name)
+    )
 
 
-class UnknownVarType(Exception):
+class UnknownVar(Exception):
     pass
 
 
-def get_types():
-    """Return name and description for all types"""
-    return [(name, data[1]) for name, data in sorted(VAR_TYPES.items())]
-
-
 class VariableTokenizer(object):
-    def __init__(self, var_types=None):
+    def __init__(self, vars_=None):
         """
-        :arg var_types: List of types.
+        :arg vars_: List of variable formats
 
             If None, creates a VariableTokenizer that tokenizes on all
             types of variables. Otherwise just recognizes the listed
             types.
 
         """
-        if var_types is None:
-            var_types = VAR_TYPES.keys()
+        if vars_ is None:
+            vars_ = get_available_vars.keys()
 
         # Convert names to classes
-        self.var_types = []
+        self.vars_ = []
 
-        for v in var_types:
+        all_vars = get_available_vars()
+
+        for v in vars_:
             try:
-                self.var_types.append(VAR_TYPES[v][0])
+                self.vars_.append(all_vars[v])
             except KeyError:
-                raise UnknownVarType(
+                raise UnknownVar(
                     '{0} is not a known variable type'.format(v))
 
         # Generate variable regexp
-        self.var_re = re.compile(
+        self.vars_re = re.compile(
             r'(' +
-            '|'.join([vt.regexp for vt in self.var_types]) +
+            '|'.join([vt.regexp for vt in self.vars_]) +
             r')'
         )
 
@@ -80,18 +87,18 @@ class VariableTokenizer(object):
             token
 
         """
-        return self.var_re.split(text)
+        return self.vars_re.split(text)
 
     def extract_tokens(self, text):
         """Returns sorted tuple of tokens in the text"""
         try:
-            tokens = [token for token in self.var_re.findall(text)]
+            tokens = [token for token in self.vars_re.findall(text)]
             return tuple(sorted(tokens))
         except TypeError:
             print 'TYPEERROR', repr(text)
 
     def is_token(self, text):
-        return self.var_re.match(text) is not None
+        return self.vars_re.match(text) is not None
 
 
 class BetterArgumentParser(optparse.OptionParser):
