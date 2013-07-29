@@ -6,10 +6,25 @@ What's new in dennis
    :local:
 
 
-Version 0.3.3: In development
-=============================
+Version 0.3.3: July 29th, 2013
+==============================
+
+**Backwards-incompatible changes**
+
+* cf668a3 Rename var_types to just var
+
+  If you were doing something like::
+
+      $ dennis-cmd lint --types=python ...
+      $ dennis-cmd translate --types=python ...
+
+  that ``--types`` argument is now ``--vars``.
 
 **Changes**
+
+* 952245c Tweak lint output to betterr do errorsonly
+* cc63144 Fix lint output issues
+* 6ee94a3 Overhaul linter to support multiple lint rules
 
 
 Version 0.3.2: July 23rd, 2013

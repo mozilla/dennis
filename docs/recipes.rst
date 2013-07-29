@@ -37,7 +37,7 @@ written in Python:
     cp locale/templates/LC_MESSAGES/messages.pot \
         locale/xx/LC_MESSAGES/messages.po
 
-    dennis-cmd translate --pipeline=html,pirate --types=python \
+    dennis-cmd translate --pipeline=html,pirate --vars=python \
         locale/xx/LC_MESSAGES/messages.po
 
 

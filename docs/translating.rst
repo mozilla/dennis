@@ -2,6 +2,17 @@
 Translating!
 ============
 
+Help
+====
+
+::
+
+    $ dennis-cmd translate --help
+
+
+Summary
+=======
+
 dennis can translate the strings in your ``.po`` file. For example,
 this does the default which extracts text from HTML strings and
 translates that text into Pirate::
@@ -33,20 +44,20 @@ transforms. For example, this is extra-piraty and shouty!::
 
 
 Dennis can translate around variable tokens in strings. By default, it
-translates around Python variable forms. You can specify other types
-to translate around::
+translates around Python variable forms. You can specify other
+variable formats to translate around::
 
-    $ denis-cmd translate --types=python
+    $ denis-cmd translate --vars=python
 
 
 .. Note::
 
-   The infrastructure is there for handling other types, but it
-   doesn't actually support other variable types, yet. Help me add
-   additional formats that are used in gettext strings!
+   The infrastructure is there for handling other variable formats,
+   but only Python formats have been coded. Help me add additional
+   formats that are used in your gettext strings!
 
 
-For help and a list of types and transforms, do this::
+For help and a list of variable formats and transforms, do this::
 
     $ dennis-cmd translate
 

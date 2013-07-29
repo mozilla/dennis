@@ -7,10 +7,11 @@ dennis is a command line tool for translating and linting .po files.
 It includes the following subcommands:
 
 * **translate**: Translates strings in ``.po`` files into something
-  else!  Comes with an HTML extractor (tokenizes strings so that only
-  the text is translated) and a Pirate! translation. This is helpful
-  for l10n testing, development, finding unicode/layout problems,
-  amazing your friends, hilarious April 1st shenanigans, etc.
+  else! Comes with an HTML extractor (tokenizes strings so that only
+  the text is translated) and a bunch of translations like
+  Pirate!. This is helpful for l10n testing, development, finding
+  unicode/layout problems, amazing your friends, hilarious April 1st
+  shenanigans, etc.
 
   The system allows for other translators and extractors using a
   loosely coupled pipeline.
@@ -19,9 +20,7 @@ It includes the following subcommands:
   as stdin---it doesn't have to be a ``.po`` file or in a ``.po``
   format.
 
-* **lint**: Lints ``.po`` files for cases where there are variable
-  formatting tokens in msg strings that aren't in the translated
-  strings and vice versa.
+* **lint**: Lints ``.po`` files for problems.
 
   The system allows for defining other variable formats.
 
@@ -32,13 +31,17 @@ Quick start
 Install::
 
     $ pip install dennis
-    $ pip install blessings  # Optional for pretty output
+    $ pip install blessings  # Optional for prettier output
 
-Lint::
+Lint a ``.po`` file for problems::
 
     $ dennis-cmd lint locale/fr/LC_MESSAGES/messages.po
 
-Translate::
+Lint all your ``.po`` files for errors::
+
+    $ dennis-cmd lint --errorsonly locale/
+
+Translate a ``.po`` file in place into Pirate!::
 
     $ dennis-cmd translate --pipeline=html,pirate \
         locale/xx/LC_MESSAGES/messages.po
@@ -61,20 +64,3 @@ Why is it called dennis?
 ========================
 
 This is how I name my software projects.
-
-
-Status
-======
-
-July 13th, 2013
-
-I added a bunch of tests and docs and transforms and stuff. It's
-fun. It works for me. It meets my needs.
-
-It's got missing bits and holes and stuff. If it doesn't meet your
-needs, add an issue to the tracker.
-
-I'm probably only going to work on things that interest me. For
-everything else, if you're interested in working on it, let me know
-first preferably by commenting on a relevant issue in the issue
-tracker.
