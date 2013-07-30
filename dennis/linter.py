@@ -195,4 +195,6 @@ class Linter(object):
             doesn't exist
         """
         po = polib.pofile(filename_or_string)
-        return [self.lint_poentry(entry) for entry in po]
+        return [
+            self.lint_poentry(entry) for entry in po.translated_entries()
+        ]

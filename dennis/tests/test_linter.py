@@ -4,9 +4,54 @@ from nose.tools import eq_
 import polib
 
 from dennis.linter import (
-    MalformedVarsLintRule, MismatchedVarsLintRule, LintedEntry)
+    MalformedVarsLintRule, MismatchedVarsLintRule, LintedEntry, Linter)
 from dennis.tools import VariableTokenizer
 from dennis.tests import build_po_string
+
+
+class LinterTest(TestCase):
+    def test_linter(self):
+        pofile = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo"\n'
+            'msgstr "Oof"\n')
+
+        linter = Linter(['python'], ['mismatched'])
+        results = linter.verify_file(pofile)
+
+        # This should give us one linted entry with no errors
+        # and no warnings in it.
+        eq_(len(results), 1)
+        eq_(len(results[0].errors), 0)
+        eq_(len(results[0].warnings), 0)
+
+    def test_linter_fuzzy_strings(self):
+        pofile = build_po_string(
+            '#, fuzzy\n'
+            '#~ msgid "Most Recent Message"\n'
+            '#~ msgid_plural "Last %(count)s Messages"\n'
+            '#~ msgstr[0] "Les {count} derniers messages"\n'
+            '#~ msgstr[1] "Les {count} derniers messages"\n')
+
+        linter = Linter(['python'], ['mismatched'])
+        results = linter.verify_file(pofile)
+
+        # There were no non-fuzzy strings, so nothing to lint.
+        eq_(len(results), 0)
+
+    def test_linter_untranslated_strings(self):
+        pofile = build_po_string(
+            '#, fuzzy\n'
+            '#~ msgid "Most Recent Message"\n'
+            '#~ msgid_plural "Last %(count)s Messages"\n'
+            '#~ msgstr[0] ""\n'
+            '#~ msgstr[1] ""\n')
+
+        linter = Linter(['python'], ['mismatched'])
+        results = linter.verify_file(pofile)
+
+        # There were no translated strings, so nothing to lint.
+        eq_(len(results), 0)
 
 
 def build_linted_entry(po_data):
