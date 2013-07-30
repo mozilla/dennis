@@ -6,6 +6,14 @@ What's new in dennis
    :local:
 
 
+Version 0.3.4: In development
+=============================
+
+**Changes**
+
+* 8a1d4a8 Make sure to lint only translated non-fuzzy strings
+
+
 Version 0.3.3: July 29th, 2013
 ==============================
 
