@@ -169,10 +169,10 @@ def lint_cmd(scriptname, command, argv):
                     print_utf8(TERMINAL.bold_red(u'Error: {0}: {1}'.format(
                                 code, msg)))
                     if trstr.msgid_field != 'msgid':
-                        print_utf8(u'msgid: {0}'.format(entry.msgid))
-                    print_utf8(u'{0}: {1}'.format(
+                        print_utf8(u'msgid: "{0}"'.format(entry.msgid))
+                    print_utf8(u'{0}: "{1}"'.format(
                             trstr.msgid_field, trstr.msgid_string))
-                    print_utf8(u'{0}: {1}'.format(
+                    print_utf8(u'{0}: "{1}"'.format(
                             trstr.msgstr_field, trstr.msgstr_string))
                     print ''
 
@@ -183,10 +183,10 @@ def lint_cmd(scriptname, command, argv):
                     print_utf8(TERMINAL.bold_yellow(u'Warning: {0}: {1}'.format(
                                 code, msg)))
                     if trstr.msgid_field != 'msgid':
-                        print_utf8(u'msgid: {0}'.format(entry.msgid))
-                    print_utf8(u'{0}: {1}'.format(
+                        print_utf8(u'msgid: "{0}"'.format(entry.msgid))
+                    print_utf8(u'{0}: "{1}"'.format(
                             trstr.msgid_field, trstr.msgid_string))
-                    print_utf8(u'{0}: {1}'.format(
+                    print_utf8(u'{0}: "{1}"'.format(
                             trstr.msgstr_field, trstr.msgstr_string))
                     print ''
 

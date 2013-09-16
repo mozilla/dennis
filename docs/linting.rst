@@ -87,6 +87,13 @@ Produces output like this::
 This runs multiple lint rules on all the strings in the ``.po`` file
 generating a list of errors and a list of warnings.
 
+Wait, but that's ugly and hard to read! If you install ``blessings``, it
+comes colorized and really easy to parse. All hail blessings!
+
+
+Warnings
+========
+
 **What's a warning?**
 
 It's an issue that probably indicates the translated string is
@@ -94,6 +101,24 @@ problematic, but it won't cause production code to die. For example,
 when the original string has a Python variable the translated string
 doesn't have. That's not great and probably means the translated
 string needs to be updated, but it won't throw an error in production.
+
+
+**List of warnings**
+
+    **mismatched variable tokens**
+        There are formatting variable tokens in the *original* string
+        that aren't in the *translated* string.
+
+        Example::
+
+            Warning: mismatched: missing variables: {0}
+            msgid: "{foo} bar"
+            msgstr: "bar"
+
+
+
+Errors
+======
 
 **What's an error?**
 
@@ -104,3 +129,33 @@ it will kick up a Python error. That causes the software to die, users
 to be unhappy, tires to go flat, people to work on weekends, mass
 hysteria, etc. No one likes that. I don't like that. You probably
 don't like that, either.
+
+
+**List of errors**
+
+    **mismatched variable tokens**
+        There are formatting variable tokens in the *translated* string
+        that aren't in the original string.
+
+        Example::
+
+            Error: mismatched: invalid variables: {foo}
+            msgid: "bar"
+            msgstr: "{foo} bar"
+
+    **malformed**
+        The variable in the translated string is malformed or there are
+        characters in the translated string that will cause it to be
+        parsed as if it had variables.
+
+        Example (Python)::
+
+            Error: malformed variables: {foo bar baz
+            msgid: "{foo} bar baz"
+            msgstr: "{foo bar baz"
+
+        Example (Python)::
+
+            Error: malformed variables: %(count)
+            msgid: "%(count)s view"
+            msgstr: "%(count) view"
