@@ -25,12 +25,18 @@ class PythonVar(Var):
     name = 'python'
     desc = 'Python %(foo)s and {foo} syntax'
     regexp = (
+        # %s and %(foo)s
         r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs%])'
         r'|'
+        # {foo}
         r'(?:\{\S+?\})'
     )
     malformed_regexp = (
-        r'(?:%[(]\S+?[)](?:\s|$))'  # %(count) with no type at the end
+        # %(count) with no type at end
+        r'(?:%[(]\S+?[)](?:\s|$))'
+        r'|'
+        # %{foo with no end curly brace
+        r'(?:\{[^\}]+$)'
     )
 
 

@@ -167,7 +167,7 @@ class MismatchedVarsLintRuleTests(LintRuleTestCase):
 class MalformedVarsLintRuleTests(LintRuleTestCase):
     mavlr = MalformedVarsLintRule()
 
-    def test_malformed_python_var(self):
+    def test_malformed_python_var_with_space(self):
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
             'msgid "%(count)s view"\n'
@@ -181,6 +181,7 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(linted_entry.errors[0][2],
             'malformed variables: %(count)')
 
+    def test_malformed_python_var_end_of_line(self):
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
             'msgid "%(count)s"\n'
@@ -193,3 +194,28 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
             'malformed variables: %(count)')
+
+    def test_malformed_python_var_missing_right_curly_brace(self):
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "{foo} bar is the best thing ever"\n'
+            'msgstr "{foo) bar is the best thing ever"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: {foo) bar is the best thing ever')
+
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "{foo}"\n'
+            'msgstr "{foo"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: {foo')
