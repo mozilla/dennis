@@ -30,7 +30,7 @@ class PythonVar(Var):
         r'(?:\{\S+?\})'
     )
     malformed_regexp = (
-        r'(?:%[(]\S+?[)] )'  # %(count)
+        r'(?:%[(]\S+?[)](?:\s|$))'  # %(count) with no type at the end
     )
 
 

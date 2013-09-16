@@ -180,3 +180,16 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
             'malformed variables: %(count)')
+
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "%(count)s"\n'
+            'msgid_plural "%(count)s"\n'
+            'msgstr[0] "%(count)"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: %(count)')
