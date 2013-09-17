@@ -11,6 +11,19 @@ Version 0.3.5: In development
 
 **Changes**
 
+* b432e1b Fix rules default
+
+  Running the linter with the default set of rules will now include
+  malformed variable linting.
+
+* 72083f9 Improve detect missing } with python vars
+* b8f3776 Improve linting docs
+
+  It includes a list of lint rules and what they do.
+
+* 6d9bac5 Detect missing } in Python formatting vars
+* 1a10c35 Fix detection of malformed formatting token at end of string
+
 
 Version 0.3.4: July 30th, 2013
 ==============================
