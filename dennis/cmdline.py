@@ -82,10 +82,10 @@ def lint_cmd(scriptname, command, argv):
     parser.add_option(
         '--rules',
         dest='rules',
-        help=('Comma-separated list of lint rules to use. See Available Lint '
-              'Rules.'),
+        help=('Comma-separated list of lint rules to use. Defaults to all '
+              'rules. See Available Lint Rules.'),
         metavar='RULES',
-        default='mismatched')
+        default='')
     parser.add_option(
         '-q', '--quiet',
         action='store_true',

@@ -160,6 +160,12 @@ class InvalidRulesSpec(Exception):
 def convert_rules(rules_spec):
     lint_rules = get_available_lint_rules()
 
+    # This removes empty strings from the rules_spec.
+    rules_spec = [rule for rule in rules_spec if rule]
+
+    if not rules_spec:
+        return [rule() for name, rule in lint_rules.items()]
+
     try:
         rules = [lint_rules[rule]() for rule in rules_spec]
     except KeyError:
