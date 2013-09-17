@@ -4,7 +4,7 @@
 # * 1.0a2
 # * 1.0b2
 # * 1.0
-__version__ = '0.3.5'
+__version__ = '0.3.6.dev'
 
 # Date in 'YYYYMMDD' or ''
-__releasedate__ = '20130917'
+__releasedate__ = ''
