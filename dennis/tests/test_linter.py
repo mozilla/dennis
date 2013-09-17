@@ -167,7 +167,7 @@ class MismatchedVarsLintRuleTests(LintRuleTestCase):
 class MalformedVarsLintRuleTests(LintRuleTestCase):
     mavlr = MalformedVarsLintRule()
 
-    def test_malformed_python_var_with_space(self):
+    def test_python_var_with_space(self):
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
             'msgid "%(count)s view"\n'
@@ -181,7 +181,7 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(linted_entry.errors[0][2],
             'malformed variables: %(count)')
 
-    def test_malformed_python_var_end_of_line(self):
+    def test_python_var_end_of_line(self):
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
             'msgid "%(count)s"\n'
@@ -195,7 +195,7 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(linted_entry.errors[0][2],
             'malformed variables: %(count)')
 
-    def test_malformed_python_var_missing_right_curly_brace(self):
+    def test_python_var_missing_right_curly_brace(self):
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
             'msgid "{foo} bar is the best thing ever"\n'
@@ -219,3 +219,28 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
             'malformed variables: {foo')
+
+    def test_python_var_missing_right_curly_brace_two_vars(self):
+        # Test right-most one
+        linted_entry = build_linted_entry(
+            'msgid "Value for key \\"{0}\\" exceeds the length of {1}"\n'
+            'msgstr "Valor para la clave \\"{0}\\" excede el tamano de {1]"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: {1]')
+
+        # Test left-most one
+        linted_entry = build_linted_entry(
+            'msgid "Value for key \\"{0}\\" exceeds the length of {1}"\n'
+            'msgstr "Valor para la clave \\"{0]\\" excede el tamano de {1}"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: {0]" excede el tamano de {')

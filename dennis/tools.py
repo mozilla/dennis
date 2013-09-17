@@ -35,8 +35,8 @@ class PythonVar(Var):
         # %(count) with no type at end
         r'(?:%[(]\S+?[)](?:\s|$))'
         r'|'
-        # %{foo with no end curly brace
-        r'(?:\{[^\}]+$)'
+        # %{foo with missing }
+        r'(?:\{[^\}]+(?:\{|$))'
     )
 
 
