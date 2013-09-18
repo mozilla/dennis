@@ -195,6 +195,18 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(linted_entry.errors[0][2],
             'malformed variables: %(count)')
 
+    def test_python_var_not_malformed(self):
+        """This used to be a false positive"""
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "%(stars)s by %(user)s on %(date)s (%(locale)s)"\n'
+            'msgstr "%(stars)s de %(user)s el %(date)s (%(locale)s)"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 0)
+
     def test_python_var_missing_right_curly_brace(self):
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
