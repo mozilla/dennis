@@ -77,26 +77,27 @@ Transforms
 
 Dennis currently supports the following transforms:
 
-==========  ================================================
+==========  ==================================================
 name        description
-==========  ================================================
+==========  ==================================================
 anglequote  Encloses string in unicode angle quotes.
+dubstep     Translates text into dubstep. It's an experience.
 empty       Returns empty strings.
 haha        Adds haha! before sentences in a string.
 pirate      Translates text into Pirate!
 redacted    Redacts everything.
 shouty      Translates into all caps.
 xxx         Adds xxx before and after lines in a string.
-==========  ================================================
+==========  ==================================================
 
 Aditionally, there's the html transform which extracts the bits to be
 translated, but doesn't do any translation itself:
 
-==========  ================================================
+==========  ==================================================
 name        description
-==========  ================================================
+==========  ==================================================
 html        Tokenizes HTML bits so only text is translated.
-==========  ================================================
+==========  ==================================================
 
 
 anglequote
@@ -106,6 +107,12 @@ The anglequote transform adds unicode angle quotes to the beginning
 and end of strings. This helps to make sure your code handles unicode
 strings and also some layout issues like when strings are cut off or
 overlapping.
+
+
+dubstep
+-------
+
+The dubstep transform is an experience.
 
 
 empty

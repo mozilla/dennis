@@ -180,6 +180,71 @@ class ShoutyTransform(Transform):
         return new_tokens
 
 
+class DubstepTransform(Transform):
+    name = 'dubstep'
+    desc = 'Translates into written form of dubstep.'
+
+    def bwaa(self, text=''):
+        """BWAAs based on how far into the string we are"""
+        tl = len(text) % 40
+
+        if tl < 7:
+            return u't-t-t-t'
+        if tl < 9:
+            return u'V\u221eP V\u221eP'
+        if tl < 11:
+            return u'....vvvVV'
+        if tl < 13:
+            return u'BWAAAaaT'
+
+        return (
+            u'B' +
+            (u'W' * (tl / 4)) +
+            (u'A' * (tl / 3)) +
+            (u'a' * (tl / 4)))
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            new_string = []
+            current_string = []
+
+            for i, c in enumerate(token.s):
+                # print i, c, new_string, current_string
+                if c == ' ':
+                    if i % 2:
+                        current_string.append(u' ')
+                        current_string.append(self.bwaa(u''.join(current_string)))
+
+                if c == '\n':
+                    new_string.append(u''.join(current_string))
+                    current_string = []
+
+                elif c in ('.!?'):
+                    try:
+                        if token.s[i+1] == ' ':
+                            new_string.append(u''.join(current_string))
+                            current_string = []
+                    except IndexError:
+                        pass
+
+                current_string.append(c)
+
+            if current_string:
+                new_string.append(u''.join(current_string))
+
+            new_string = u' '.join(new_string)
+            new_string = new_string + u' ' + self.bwaa(new_string) + u'\u2757'
+
+            new_tokens.append(Token(new_string))
+
+        return new_tokens
+
+
 class RedactedTransform(Transform):
     name = 'redacted'
     desc = 'Redacts everything'

@@ -4,9 +4,18 @@ from nose.tools import eq_
 
 from dennis.tools import VariableTokenizer
 from dennis.translator import (
-    AngleQuoteTransform, EmptyTransform, HahaTransform,
-    HTMLExtractorTransform, PirateTransform, RedactedTransform,
-    ShoutyTransform, Token, Translator, XXXTransform)
+    AngleQuoteTransform,
+    DubstepTransform,
+    EmptyTransform,
+    HTMLExtractorTransform,
+    HahaTransform,
+    PirateTransform,
+    RedactedTransform,
+    ShoutyTransform,
+    Token,
+    Translator,
+    XXXTransform
+)
 
 
 class TransformTestCase(TestCase):
@@ -22,8 +31,8 @@ class EmptyTransformTest(TransformTestCase):
         ]
 
         for text, expected in data:
-            et = EmptyTransform()
-            output = et.transform(self.vartok, [Token(text)])
+            trans = EmptyTransform()
+            output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
@@ -39,8 +48,8 @@ class HahaTransformTest(TransformTestCase):
         ]
 
         for text, expected in data:
-            ht = HahaTransform()
-            output = ht.transform(self.vartok, [Token(text)])
+            trans = HahaTransform()
+            output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
@@ -76,8 +85,48 @@ class PirateTransformTest(TransformTestCase):
         ]
 
         for text, expected in data:
-            pt = PirateTransform()
-            output = pt.transform(self.vartok, [Token(text)])
+            trans = PirateTransform()
+            output = trans.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class DubstepTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello',
+             u'Hello ....vvvVV\u2757'),
+
+            (u'Hello %(username)s',
+             (u'Hello ....vvvVV %(username)s '
+              u'BWWWWWWWWWAAAAAAAAAAAAAAaaaaaaaaa\u2757')),
+
+            (u'Hello %s',
+             u'Hello ....vvvVV %s BWWWWWWAAAAAAAAAaaaaaa\u2757'),
+
+            (u'Hello {user}{name}',
+             (u'Hello ....vvvVV {user}{name} '
+              u'BWWWWWWWWWAAAAAAAAAAAAAAaaaaaaaaa\u2757')),
+
+            (u'Products and Services',
+             u'Products and Services BWWWWWWWAAAAAAAAAAaaaaaaa\u2757'),
+
+            (u'Get community support',
+             (u'Get t-t-t-t community BWWWWWWWAAAAAAAAAAAaaaaaaa support '
+              u'BWWWWWAAAAAAAAaaaaa\u2757')),
+
+            (u'Your input helps make Mozilla better',
+             (u'Your input helps make BWWWWWWWAAAAAAAAAAAaaaaaaa Mozilla '
+              u'BWWWWWAAAAAAAAaaaaa better t-t-t-t\u2757')),
+
+            (u'Super browsing',
+             u'Super ....vvvVV browsing BWWWWWWWWAAAAAAAAAAAAaaaaaaaa\u2757'),
+        ]
+
+        for text, expected in data:
+            trans = DubstepTransform()
+            output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
@@ -87,11 +136,11 @@ class HTMLExtractorTest(TestCase):
     vartok = VariableTokenizer(['python'])
 
     def test_basic(self):
-        htmle = HTMLExtractorTransform()
-        output = htmle.transform(self.vartok, [Token('')])
+        trans = HTMLExtractorTransform()
+        output = trans.transform(self.vartok, [Token('')])
         eq_(output, [Token(u'', 'text', True)])
 
-        output = htmle.transform(self.vartok, [Token('<b>hi</b>')])
+        output = trans.transform(self.vartok, [Token('<b>hi</b>')])
         eq_(output,
             [
                 Token(u'<b>', 'html', False),
@@ -101,8 +150,8 @@ class HTMLExtractorTest(TestCase):
         )
 
     def test_alt_title(self):
-        htmle = HTMLExtractorTransform()
-        output = htmle.transform(self.vartok, [
+        trans = HTMLExtractorTransform()
+        output = trans.transform(self.vartok, [
                 Token('<img alt="foo">')])
         eq_(output,
             [
@@ -112,7 +161,7 @@ class HTMLExtractorTest(TestCase):
             ]
         )
 
-        output = htmle.transform(self.vartok, [
+        output = trans.transform(self.vartok, [
                 Token('<img title="foo">')])
         eq_(output,
             [
@@ -133,8 +182,8 @@ class XXXTransformTest(TransformTestCase):
         ]
 
         for text, expected in data:
-            xt = XXXTransform()
-            output = xt.transform(self.vartok, [Token(text)])
+            trans = XXXTransform()
+            output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
@@ -150,8 +199,8 @@ class AngleQuoteTransformTest(TransformTestCase):
         ]
 
         for text, expected in data:
-            at = AngleQuoteTransform()
-            output = at.transform(self.vartok, [Token(text)])
+            trans = AngleQuoteTransform()
+            output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
@@ -166,8 +215,8 @@ class ShoutyTransformTest(TransformTestCase):
         ]
 
         for text, expected in data:
-            st = ShoutyTransform()
-            output = st.transform(self.vartok, [Token(text)])
+            trans = ShoutyTransform()
+            output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
@@ -181,8 +230,8 @@ class RedactedTransformTest(TransformTestCase):
         ]
 
         for text, expected in data:
-            rt = RedactedTransform()
-            output = rt.transform(self.vartok, [Token(text)])
+            trans = RedactedTransform()
+            output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
             eq_(output, expected)
