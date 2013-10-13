@@ -6,6 +6,11 @@ dennis is a command line tool for translating and linting .po files.
 
 It includes the following subcommands:
 
+* **lint**: Lints ``.po`` files for problems including errors that
+  can cause your production system to crash.
+
+  The system allows for defining other variable formats.
+
 * **translate**: Translates strings in ``.po`` files into something
   else! Comes with an HTML extractor (tokenizes strings so that only
   the text is translated) and a bunch of translations like
@@ -18,11 +23,8 @@ It includes the following subcommands:
 
   This also works on strings passed in as command line arguments and
   as stdin---it doesn't have to be a ``.po`` file or in a ``.po``
-  format.
-
-* **lint**: Lints ``.po`` files for problems.
-
-  The system allows for defining other variable formats.
+  format. Dennis uses dennis to translate all dennis commit messages
+  into Pirate!. That's how cool dennis is!
 
 
 Quick start
