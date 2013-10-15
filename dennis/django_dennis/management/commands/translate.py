@@ -20,8 +20,8 @@ class Command(BaseCommand):
         # to do translating, though. Also, it turns out args has
         # different stuff in it depend on whether this command is run
         # through call_command() or ./manage.py. So we selectively nix
-        # some args ('manage.py' and 'polint') if they're there and if
-        # not, we don't worry about it.
+        # some args ('manage.py' and 'translate') if they're there and
+        # if not, we don't worry about it.
         if 'translate' in args:
             args = args[args.index('translate')+1:]
 
