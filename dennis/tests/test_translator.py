@@ -96,32 +96,30 @@ class DubstepTransformTest(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello',
-             u'Hello ....vvvVV\u2757'),
+             u'Hello t-t-t-t\u2757'),
 
             (u'Hello %(username)s',
-             (u'Hello ....vvvVV %(username)s '
-              u'BWWWWWWWWWAAAAAAAAAAAAAAaaaaaaaaa\u2757')),
+             u'Hello t-t-t-t %(username)s BWWWWWWAAAAAAAAaaaaaa\u2757'),
 
             (u'Hello %s',
-             u'Hello ....vvvVV %s BWWWWWWAAAAAAAAAaaaaaa\u2757'),
+             u'Hello t-t-t-t %s BWWWWAAAAAaaaa\u2757'),
 
             (u'Hello {user}{name}',
-             (u'Hello ....vvvVV {user}{name} '
-              u'BWWWWWWWWWAAAAAAAAAAAAAAaaaaaaaaa\u2757')),
+             u'Hello t-t-t-t {user}{name} BWWWWWWAAAAAAAAaaaaaa\u2757'),
 
             (u'Products and Services',
-             u'Products and Services BWWWWWWWAAAAAAAAAAaaaaaaa\u2757'),
+             u'Products and Services BWWWWWAAAAAAAaaaaa\u2757'),
 
             (u'Get community support',
-             (u'Get t-t-t-t community BWWWWWWWAAAAAAAAAAAaaaaaaa support '
-              u'BWWWWWAAAAAAAAaaaaa\u2757')),
+             (u'Get t-t-t-t community BWWWWWAAAAAAAaaaaa support '
+              u'V\u221eP V\u221eP\u2757')),
 
             (u'Your input helps make Mozilla better',
-             (u'Your input helps make BWWWWWWWAAAAAAAAAAAaaaaaaa Mozilla '
-              u'BWWWWWAAAAAAAAaaaaa better t-t-t-t\u2757')),
+             (u'Your input helps make BWWWWWAAAAAAAaaaaa Mozilla '
+              u'....vvvVV better BWWWWWWAAAAAAAAaaaaaa\u2757')),
 
             (u'Super browsing',
-             u'Super ....vvvVV browsing BWWWWWWWWAAAAAAAAAAAAaaaaaaaa\u2757'),
+             u'Super t-t-t-t browsing BWWWWWAAAAAAAaaaaa\u2757'),
         ]
 
         for text, expected in data:
