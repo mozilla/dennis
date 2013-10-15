@@ -6,12 +6,13 @@ What's new in dennis
    :local:
 
 
-Version 0.3.7: In development
-=============================
+Version 0.3.7: October 15th, 2013
+=================================
 
 **Changes**
 
 * 5787e12 Add dubstep translator
+* fd90046 Add shims so you can easily use with django
 
 
 Version 0.3.6: September 19th, 2013
