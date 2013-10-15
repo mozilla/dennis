@@ -8,7 +8,7 @@ from dennis.translator import Translator, get_available_pipeline_parts
 
 
 USAGE = '%prog [options] [command] [command-options]'
-VERSION = '%prog ' + __version__
+VERSION = 'dennis ' + __version__
 
 # blessings.Terminal and our mock Terminal don't maintain any state
 # so we can just make it global
@@ -62,7 +62,7 @@ def format_lint_rules():
 def lint_cmd(scriptname, command, argv):
     """Lints a .po file or directory of files."""
     if not '--quiet' in argv:
-        print '%s version %s' % (scriptname, __version__)
+        print 'dennis version {version}'.format(version=__version__)
 
     parser = build_parser(
         'usage: %prog lint [ FILE | DIR ]',
