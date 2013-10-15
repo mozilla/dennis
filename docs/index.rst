@@ -69,6 +69,7 @@ User guide
    changelog
    translating
    linting
+   django
    api
    recipes
 
