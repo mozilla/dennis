@@ -1,3 +1,4 @@
 polib
 Sphinx
 nose
+django
