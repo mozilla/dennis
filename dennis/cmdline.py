@@ -160,32 +160,31 @@ def lint_cmd(scriptname, command, argv):
 
         error_count = 0
         warning_count = 0
+
         for entry in problem_results:
-            # TODO: This is totally shite code.
-            for code, trstr, msg in entry.errors:
-                total_error_count += 1
-                error_count += 1
-                if not options.quiet:
+            total_error_count += len(entry.errors)
+            error_count += len(entry.errors)
+
+            if not options.quiet:
+                # TODO: This is totally shite code.
+                for code, trstr, msg in entry.errors:
                     print_utf8(TERMINAL.bold_red(u'Error: {0}: {1}'.format(
                                 code, msg)))
-                    if trstr.msgid_field != 'msgid':
-                        print_utf8(u'msgid: "{0}"'.format(entry.msgid))
-                    print_utf8(u'{0} "{1}"'.format(
-                            trstr.msgid_field, trstr.msgid_string))
+                    for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
+                        print_utf8(u'{0} "{1}"'.format(field, s))
                     print_utf8(u'{0} "{1}"'.format(
                             trstr.msgstr_field, trstr.msgstr_string))
                     print ''
 
-            for code, trstr, msg in entry.warnings:
-                total_warning_count += 1
-                warning_count += 1
-                if not options.quiet and not options.errorsonly:
+            total_warning_count +=  len(entry.warnings)
+            warning_count +=  len(entry.warnings)
+
+            if not options.quiet and not options.errorsonly:
+                for code, trstr, msg in entry.warnings:
                     print_utf8(TERMINAL.bold_yellow(u'Warning: {0}: {1}'.format(
                                 code, msg)))
-                    if trstr.msgid_field != 'msgid':
-                        print_utf8(u'msgid: "{0}"'.format(entry.msgid))
-                    print_utf8(u'{0} "{1}"'.format(
-                            trstr.msgid_field, trstr.msgid_string))
+                    for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
+                        print_utf8(u'{0} "{1}"'.format(field, s))
                     print_utf8(u'{0} "{1}"'.format(
                             trstr.msgstr_field, trstr.msgstr_string))
                     print ''

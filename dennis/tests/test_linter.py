@@ -163,6 +163,22 @@ class MismatchedVarsLintRuleTests(LintRuleTestCase):
         eq_(linted_entry.errors[0][2],
             'invalid variables: {foo}')
 
+    def test_plurals(self):
+        # It's possible for the msgid to have no variables in it and
+        # the msgid_plural to have variables in it. msgstr[n] strings
+        # should be compared against the set of variables in msgid and
+        # msgid_plural. This tests the common case.
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "1 reply"\n'
+            'msgid_plural "{n} replies"\n'
+            'msgstr[0] "{n} mooo"\n')
+
+        self.mvlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 0)
+
 
 class MalformedVarsLintRuleTests(LintRuleTestCase):
     mavlr = MalformedVarsLintRule()
