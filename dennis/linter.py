@@ -7,7 +7,7 @@ from dennis.tools import VariableTokenizer
 
 TranslatedString = namedtuple(
     'TranslatedString',
-    ('msgid_field', 'msgid_string', 'msgstr_field', 'msgstr_string'))
+    ('msgid_fields', 'msgid_strings', 'msgstr_field', 'msgstr_string'))
 
 
 class LintedEntry(object):
@@ -20,26 +20,22 @@ class LintedEntry(object):
         if not poentry.msgid_plural:
             strs.append(
                 TranslatedString(
-                    'msgid', poentry.msgid, 'msgstr', poentry.msgstr))
+                    ['msgid'], [poentry.msgid], 'msgstr', poentry.msgstr))
 
         else:
+            msgid_fields = ('msgid', 'msgid_plural')
+            msgid_strings = (poentry.msgid, poentry.msgid_plural)
+
             for key in sorted(poentry.msgstr_plural.keys()):
-                if key == '0':
-                    # This is the 1 case
-                    msgid_field = 'msgid'
-                    text = poentry.msgid
-                else:
-                    msgid_field = 'msgid_plural'
-                    text = poentry.msgid_plural
                 strs.append(
                     TranslatedString(
-                        msgid_field,
-                        text,
+                        msgid_fields,
+                        msgid_strings,
                         'msgstr[{0}]'.format(key),
                         poentry.msgstr_plural[key]))
 
-        # List of (msgid field, msgid string, msgstr field, msgstr
-        # string) tuples
+        # List of (msgid fields, msgid strings, msgstr field, msgstr
+        # string) namedtuples
         self.strs = strs
 
         self.warnings = []
@@ -124,9 +120,10 @@ class MismatchedVarsLintRule(LintRule):
             if not trstr.msgstr_string:
                 continue
 
-            missing, invalid = self.compare_lists(
-                vartok.extract_tokens(trstr.msgid_string),
-                vartok.extract_tokens(trstr.msgstr_string))
+            msgid_tokens = vartok.extract_tokens(' '.join(trstr.msgid_strings))
+            msgstr_tokens = vartok.extract_tokens(trstr.msgstr_string)
+
+            missing, invalid = self.compare_lists(msgid_tokens, msgstr_tokens)
 
             if missing:
                 linted_entry.add_warning(
