@@ -11,6 +11,8 @@ Version 0.3.8: In development
 
 **Changes**
 
+* ac9edf0 Fix problem identifyin' mismatch'd errors in plurals
+
 
 Version 0.3.7: October 15th, 2013
 =================================
