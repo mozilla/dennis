@@ -171,10 +171,25 @@ class MismatchedVarsLintRuleTests(LintRuleTestCase):
 
     def test_double_percent(self):
         # Double-percent shouldn't be picked up as a variable.
+        # Issue #28.
         linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "50% of the traffic"\n'
             'msgstr "more than 50%% of the traffic"\n')
+
+        self.mvlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 0)
+
+    def test_urlencoded_urls(self):
+        # urlencoding uses % and that shouldn't get picked up
+        # as variables.
+        # Issue #27.
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "OMG! Best url is http://example.com/foo"\n'
+            'msgstr "http://example.com/foo%20%E5%B4%A9%E6%BA%83 is best"\n')
 
         self.mvlr.lint(self.vartok, linted_entry)
 

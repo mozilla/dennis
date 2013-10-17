@@ -26,7 +26,10 @@ class PythonVar(Var):
     desc = 'Python %(foo)s and {foo} syntax'
     regexp = (
         # %s and %(foo)s
-        r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs])'
+        # Note: This doesn't support %E or %F because of problems
+        # with false positives and urlencoding. Theoretically those
+        # aren't getting used in gettext contexts anyhow.
+        r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs])'
         r'|'
         # {foo}
         r'(?:\{\S+?\})'
