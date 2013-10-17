@@ -11,7 +11,8 @@ Version 0.3.8: October 16th, 2013
 
 **Changes**
 
-* ac9edf0 Fix problem identifyin' mismatch'd errors in plurals
+* ac9edf0 Fix problem identifyin' mismatch'd errors in plurals (#25)
+  (Thanks Mike!)
 
 
 Version 0.3.7: October 15th, 2013
@@ -28,7 +29,8 @@ Version 0.3.6: September 19th, 2013
 
 **Changes**
 
-* 56b7372 Fix false positives like (%(count)s) in malformed lint rule.
+* 56b7372 Fix false positives like (%(count)s) in malformed lint rule. (#21)
+  (Thanks Kumar!)
 
 
 Version 0.3.5: September 17th, 2013
@@ -36,17 +38,12 @@ Version 0.3.5: September 17th, 2013
 
 **Changes**
 
-* b432e1b Fix rules default
-
-  Running the linter with the default set of rules will now include
-  malformed variable linting.
-
+* b432e1b Fix rules default -- Running the linter with the default set of
+  rules will now include malformed variable linting.  
 * 72083f9 Improve detect missing } with python vars
-* b8f3776 Improve linting docs
-
-  It includes a list of lint rules and what they do.
-
-* 6d9bac5 Detect missing } in Python formatting vars
+* b8f3776 Improve linting docs -- It includes a list of lint rules and what
+  they do.
+* 6d9bac5 Detect missing } in Python formatting vars (#20) (Thanks Kumar!)
 * 1a10c35 Fix detection of malformed formatting token at end of string
 
 
@@ -76,7 +73,7 @@ Version 0.3.3: July 29th, 2013
 
 * 952245c Tweak lint output to betterr do errorsonly
 * cc63144 Fix lint output issues
-* 6ee94a3 Overhaul linter to support multiple lint rules
+* 6ee94a3 Overhaul linter to support multiple lint rules (#18)
 
 
 Version 0.3.2: July 23rd, 2013
@@ -95,7 +92,7 @@ Version 0.3.1: July 15th, 2013
 **Changes**
 
 * c600064 Handle invalid .po files (#10)
-* 52f81f9 Fix lint output so it's utf-8 (#11)
+* 52f81f9 Fix lint output so it's utf-8 (#11) (Thanks Mike!)
 * 7da6add Tweak translator to allow for translating stdin (#13)
 * a5e3556 Add empty, xxx, anglequote and shouty transforms
 * 8cb1f2a Add redacted transform
