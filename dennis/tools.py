@@ -21,6 +21,7 @@ class Var(object):
     malformed_regexp = ''
 
 
+# http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
 class PythonVar(Var):
     name = 'python'
     desc = 'Python %(foo)s and {foo} syntax'
