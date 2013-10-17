@@ -96,25 +96,6 @@ class MismatchedVarsLintRule(LintRule):
     name = 'mismatched'
     desc = 'Checks for variables in one string not in the other'
 
-    @classmethod
-    def compare_lists(cls, list_a, list_b):
-        """Compares contents of two lists
-
-        This returns two lists:
-
-        * list of tokens in list_a missing from list_b
-
-        * list of tokens in list_b missing from list_a
-
-        :returns: tuple of (list of tokens in list_a not in list_b, list
-            of tokens in list_b not in list_a)
-
-        """
-        return (
-            [token for token in list_a if token not in list_b],
-            [token for token in list_b if token not in list_a]
-        )
-
     def lint(self, vartok, linted_entry):
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -123,7 +104,8 @@ class MismatchedVarsLintRule(LintRule):
             msgid_tokens = vartok.extract_tokens(' '.join(trstr.msgid_strings))
             msgstr_tokens = vartok.extract_tokens(trstr.msgstr_string)
 
-            missing, invalid = self.compare_lists(msgid_tokens, msgstr_tokens)
+            missing = msgid_tokens.difference(msgstr_tokens)
+            invalid = msgstr_tokens.difference(msgid_tokens)
 
             if missing:
                 linted_entry.add_warning(

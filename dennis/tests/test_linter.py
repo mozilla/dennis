@@ -67,16 +67,6 @@ class LintRuleTestCase(TestCase):
 class MismatchedVarsLintRuleTests(LintRuleTestCase):
     mvlr = MismatchedVarsLintRule()
 
-    def test_compare_lists(self):
-        tests = [
-            ([], [], ([], [])),
-            ([1, 2, 3], [3, 4, 5], ([1, 2], [4, 5])),
-        ]
-
-        for list_a, list_b, expected in tests:
-            eq_(MismatchedVarsLintRule.compare_lists(list_a, list_b),
-                expected)
-
     def test_fine(self):
         linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'

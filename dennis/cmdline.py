@@ -61,7 +61,7 @@ def format_lint_rules():
 
 def lint_cmd(scriptname, command, argv):
     """Lints a .po file or directory of files."""
-    if not '--quiet' in argv:
+    if not '--quiet' in argv and not '-q' in argv:
         print 'dennis version {version}'.format(version=__version__)
 
     parser = build_parser(
@@ -115,22 +115,20 @@ def lint_cmd(scriptname, command, argv):
     else:
         po_files = [args[0]]
 
+    po_files = [os.path.abspath(fn) for fn in po_files if fn.endswith('.po')]
+
     files_to_errors = {}
     total_error_count = 0
     total_warning_count = 0
     total_files_with_errors = 0
 
     for fn in po_files:
-        if not fn.endswith('.po'):
-            continue
-
-        fn = os.path.abspath(fn)
-
         try:
             if not os.path.exists(fn):
                 raise IOError('File "{fn}" does not exist.'.format(fn=fn))
 
             results = linter.verify_file(fn)
+
         except IOError as ioe:
             # This is not a valid .po file. So mark it as an error.
             print TERMINAL.bold_red('>>> Error opening file: {fn}'.format(
@@ -158,6 +156,7 @@ def lint_cmd(scriptname, command, argv):
         if not options.quiet:
             print TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn))
 
+        output = []
         error_count = 0
         warning_count = 0
 
@@ -168,26 +167,24 @@ def lint_cmd(scriptname, command, argv):
             if not options.quiet:
                 # TODO: This is totally shite code.
                 for code, trstr, msg in entry.errors:
-                    print_utf8(TERMINAL.bold_red(u'Error: {0}: {1}'.format(
-                                code, msg)))
+                    output.append(TERMINAL.bold_red(u'Error: {0}: {1}'.format(
+                        code, msg)))
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        print_utf8(u'{0} "{1}"'.format(field, s))
-                    print_utf8(u'{0} "{1}"'.format(
+                        output.append(u'{0} "{1}"'.format(field, s))
+                    output.append(u'{0} "{1}"\n'.format(
                             trstr.msgstr_field, trstr.msgstr_string))
-                    print ''
 
             total_warning_count +=  len(entry.warnings)
             warning_count +=  len(entry.warnings)
 
             if not options.quiet and not options.errorsonly:
                 for code, trstr, msg in entry.warnings:
-                    print_utf8(TERMINAL.bold_yellow(u'Warning: {0}: {1}'.format(
+                    output.append(TERMINAL.bold_yellow(u'Warning: {0}: {1}'.format(
                                 code, msg)))
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        print_utf8(u'{0} "{1}"'.format(field, s))
-                    print_utf8(u'{0} "{1}"'.format(
-                            trstr.msgstr_field, trstr.msgstr_string))
-                    print ''
+                        output.append(u'{0} "{1}"'.format(field, s))
+                    output.append(u'{0} "{1}"\n'.format(
+                        trstr.msgstr_field, trstr.msgstr_string))
 
         files_to_errors[fn] = (error_count, warning_count)
 
@@ -195,11 +192,12 @@ def lint_cmd(scriptname, command, argv):
             total_files_with_errors += 1
 
         if not options.quiet:
-            print 'Totals'
+            output.append(u'Totals')
             if not options.errorsonly:
-                print '  Warnings: {warnings:5}'.format(warnings=warning_count)
-            print '  Errors:   {errors:5}'.format(errors=error_count)
-            print ''
+                output.append(u'  Warnings: {warnings:5}'.format(warnings=warning_count))
+            output.append(u'  Errors:   {errors:5}\n'.format(errors=error_count))
+
+        print_utf8(u'\n'.join(output))
 
     if len(po_files) > 1 and not options.quiet:
         print 'Final totals'

@@ -110,8 +110,7 @@ class VariableTokenizer(object):
     def extract_tokens(self, text):
         """Returns sorted tuple of tokens in the text"""
         try:
-            tokens = [token for token in self.vars_re.findall(text)]
-            return tuple(sorted(tokens))
+            return set(token for token in self.vars_re.findall(text))
         except TypeError:
             print 'TYPEERROR', repr(text)
 
