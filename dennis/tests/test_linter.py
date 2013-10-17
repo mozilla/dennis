@@ -169,6 +169,18 @@ class MismatchedVarsLintRuleTests(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 0)
 
+    def test_double_percent(self):
+        # Double-percent shouldn't be picked up as a variable.
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "50% of the traffic"\n'
+            'msgstr "more than 50%% of the traffic"\n')
+
+        self.mvlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 0)
+
 
 class MalformedVarsLintRuleTests(LintRuleTestCase):
     mavlr = MalformedVarsLintRule()

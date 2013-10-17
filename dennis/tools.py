@@ -26,7 +26,7 @@ class PythonVar(Var):
     desc = 'Python %(foo)s and {foo} syntax'
     regexp = (
         # %s and %(foo)s
-        r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs%])'
+        r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxXeEfFgGcrs])'
         r'|'
         # {foo}
         r'(?:\{\S+?\})'
@@ -92,7 +92,6 @@ class VariableTokenizer(object):
             '|'.join([vt.malformed_regexp for vt in self.vars_]) +
             r')'
         )
-
 
     def tokenize(self, text):
         """Breaks s into strings and Python formatting tokens
