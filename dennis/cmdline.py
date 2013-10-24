@@ -277,6 +277,9 @@ def status_cmd(scriptname, command, argv):
                 print 'Comment: {0}'.format(poentry.comment)
             if poentry.tcomment:
                 print 'Translator comment: {0}'.format(poentry.tcomment)
+            if poentry.occurrences:
+                for occ in poentry.occurrences:
+                    print 'Occurs: {0}:{1}'.format(occ[0], occ[1])
             if poentry.flags:
                 print 'Flags: {0}'.format(poentry.flags)
             print 'msgid "{0}"'.format(poentry.msgid)
