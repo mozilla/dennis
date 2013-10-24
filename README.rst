@@ -11,6 +11,9 @@ It includes the following subcommands:
 
   The system allows for defining other variable formats.
 
+* **status**: Get a high-level status of a ``.po`` file including
+  a list of unstranslated strings.
+
 * **translate**: Translates strings in ``.po`` files into something
   else! Comes with an HTML extractor (tokenizes strings so that only
   the text is translated) and a bunch of translations like
