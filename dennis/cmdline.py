@@ -258,49 +258,63 @@ def status_cmd(scriptname, command, argv):
         parser.print_help()
         return 1
 
-    fn = args[0]
+    if os.path.isdir(args[0]):
+        po_files = []
+        for root, dirs, files in os.walk(args[0]):
+            po_files.extend(
+                [os.path.join(root, fn) for fn in files
+                 if fn.endswith('.po')])
+    else:
+        po_files = args
 
-    if not os.path.exists(fn):
-        raise IOError('File "{0}" does not exist.'.format(fn))
+    for fn in po_files:
+        try:
+            if not os.path.exists(fn):
+                raise IOError('File "{fn}" does not exist.'.format(fn=fn))
 
-    pofile = polib.pofile(fn)
+            pofile = polib.pofile(fn)
+        except IOError as ioe:
+            print TERMINAL.bold_red('>>> Error opening file: {fn}'.format(
+                    fn=fn))
+            print TERMINAL.bold_red(ioe.message)
+            continue
 
-    print ''
-    print 'File: {0}'.format(fn)
-    print ''
-
-    if options.showuntranslated:
-        print 'Untranslated strings:'
         print ''
-        for poentry in pofile.untranslated_entries():
-            if poentry.comment:
-                print 'Comment: {0}'.format(poentry.comment)
-            if poentry.tcomment:
-                print 'Translator comment: {0}'.format(poentry.tcomment)
-            if poentry.occurrences:
-                for occ in poentry.occurrences:
-                    print 'Occurs: {0}:{1}'.format(occ[0], occ[1])
-            if poentry.flags:
-                print 'Flags: {0}'.format(poentry.flags)
-            print 'msgid "{0}"'.format(poentry.msgid)
-            if poentry.msgid_plural:
-                print 'msgid_plural "{0}"'.format(poentry.msgid_plural)
+        print TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn))
+
+        print 'Metadata:'
+        for key in ('Language', 'Report-Msgid-Bugs-To', 'PO-Revision-Date',
+                    'Last-Translator', 'Language-Team', 'Plural-Forms'):
+            if key in pofile.metadata and pofile.metadata[key]:
+                print_utf8(u'  {0}: {1}'.format(key, pofile.metadata[key]))
+        print ''
+
+        if options.showuntranslated:
+            print 'Untranslated strings:'
             print ''
-        print '--'
+            for poentry in pofile.untranslated_entries():
+                if poentry.comment:
+                    print '#. {0}'.format(poentry.comment)
+                if poentry.tcomment:
+                    print '# {0}'.format(poentry.tcomment)
+                if poentry.occurrences:
+                    for occ in poentry.occurrences:
+                        print '#: {0}:{1}'.format(occ[0], occ[1])
+                if poentry.flags:
+                    print 'Flags: {0}'.format(poentry.flags)
+                print 'msgid "{0}"'.format(poentry.msgid)
+                if poentry.msgid_plural:
+                    print 'msgid_plural "{0}"'.format(poentry.msgid_plural)
+                print ''
 
-    print 'Metadata:'
-    for key in ('Report-Msgid-Bugs-To', 'PO-Revision-Date', 'Last-Translator',
-                'Language-Team', 'Language', 'Plural-Forms'):
-        if key in pofile.metadata and pofile.metadata[key]:
-            print '  {0}: {1}'.format(key, pofile.metadata[key])
-    print ''
-    print '--'
-
-    print 'Statistics:'
-    print '  # Translated:   {0}'.format(len(pofile.translated_entries()))
-    print '  # Fuzzy:        {0}'.format(len(pofile.fuzzy_entries()))
-    print '  # Untranslated: {0}'.format(len(pofile.untranslated_entries()))
-    print '  Percentage:     {0}'.format(pofile.percent_translated())
+        print 'Statistics:'
+        print '  # Translated:   {0}'.format(len(pofile.translated_entries()))
+        print '  # Fuzzy:        {0}'.format(len(pofile.fuzzy_entries()))
+        print '  # Untranslated: {0}'.format(len(pofile.untranslated_entries()))
+        if pofile.percent_translated() == 100:
+            print '  Percentage:     100% COMPLETE!'
+        else:
+            print '  Percentage:     {0}%'.format(pofile.percent_translated())
     return 0
 
 
