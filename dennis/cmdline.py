@@ -1,6 +1,8 @@
 import os
 import sys
 
+import polib
+
 from dennis import __version__
 from dennis.linter import Linter, get_available_lint_rules
 from dennis.tools import BetterArgumentParser, Terminal, get_available_vars
@@ -236,6 +238,67 @@ def lint_cmd(scriptname, command, argv):
 
     # Return 0 if everything was fine or 1 if there were errors.
     return 1 if total_error_count else 0
+
+
+def status_cmd(scriptname, command, argv):
+    """Shows status of a .po file."""
+    print 'dennis version {version}'.format(version=__version__)
+    parser = build_parser(
+        'usage: %prog status FILENAME',
+        description='Shows status of a .po file.')
+    parser.add_option(
+        '--showuntranslated',
+        action='store_true',
+        dest='showuntranslated',
+        help='show untranslated strings')
+
+    (options, args) = parser.parse_args(argv)
+
+    if not args:
+        parser.print_help()
+        return 1
+
+    fn = args[0]
+
+    if not os.path.exists(fn):
+        raise IOError('File "{0}" does not exist.'.format(fn))
+
+    pofile = polib.pofile(fn)
+
+    print ''
+    print 'File: {0}'.format(fn)
+    print ''
+
+    if options.showuntranslated:
+        print 'Untranslated strings:'
+        print ''
+        for poentry in pofile.untranslated_entries():
+            if poentry.comment:
+                print 'Comment: {0}'.format(poentry.comment)
+            if poentry.tcomment:
+                print 'Translator comment: {0}'.format(poentry.tcomment)
+            if poentry.flags:
+                print 'Flags: {0}'.format(poentry.flags)
+            print 'msgid "{0}"'.format(poentry.msgid)
+            if poentry.msgid_plural:
+                print 'msgid_plural "{0}"'.format(poentry.msgid_plural)
+            print ''
+        print '--'
+
+    print 'Metadata:'
+    for key in ('Report-Msgid-Bugs-To', 'PO-Revision-Date', 'Last-Translator',
+                'Language-Team', 'Language', 'Plural-Forms'):
+        if key in pofile.metadata and pofile.metadata[key]:
+            print '  {0}: {1}'.format(key, pofile.metadata[key])
+    print ''
+    print '--'
+
+    print 'Statistics:'
+    print '  # Translated:   {0}'.format(len(pofile.translated_entries()))
+    print '  # Fuzzy:        {0}'.format(len(pofile.fuzzy_entries()))
+    print '  # Untranslated: {0}'.format(len(pofile.untranslated_entries()))
+    print '  Percentage:     {0}'.format(pofile.percent_translated())
+    return 0
 
 
 def translate_cmd(scriptname, command, argv):
