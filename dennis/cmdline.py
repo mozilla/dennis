@@ -67,7 +67,7 @@ def lint_cmd(scriptname, command, argv):
         print 'dennis version {version}'.format(version=__version__)
 
     parser = build_parser(
-        'usage: %prog lint [ FILE | DIR ]',
+        'usage: %prog lint [ DIR | FILENAME <FILENAME> ... ]',
         description='Lints a .po file for mismatched Python string '
         'formatting tokens.',
         sections=[
@@ -115,7 +115,7 @@ def lint_cmd(scriptname, command, argv):
                  if fn.endswith('.po')])
 
     else:
-        po_files = [args[0]]
+        po_files = args
 
     po_files = [os.path.abspath(fn) for fn in po_files if fn.endswith('.po')]
 
@@ -244,7 +244,7 @@ def status_cmd(scriptname, command, argv):
     """Shows status of a .po file."""
     print 'dennis version {version}'.format(version=__version__)
     parser = build_parser(
-        'usage: %prog status FILENAME',
+        'usage: %prog status [ DIR | FILENAME <FILENAME> ... ]',
         description='Shows status of a .po file.')
     parser.add_option(
         '--showuntranslated',
