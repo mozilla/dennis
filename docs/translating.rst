@@ -88,6 +88,7 @@ pirate      Translates text into Pirate!
 redacted    Redacts everything.
 shouty      Translates into all caps.
 xxx         Adds xxx before and after lines in a string.
+zombie      Zombie.
 ==========  ==================================================
 
 Aditionally, there's the html transform which extracts the bits to be
@@ -163,6 +164,12 @@ xxx
 ---
 
 The xxx transform wraps all lines in strings with xxx.
+
+
+zombie
+------
+
+ThHA zHRmbARHA HGMZanRZZRHRMZm HGNMMZnRZ HGHAZBHG ARnHGHR zHRmbARHA❗
 
 
 html
