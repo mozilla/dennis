@@ -130,7 +130,7 @@ sort of interesting to see a ui with no text in it.
 haha
 ----
 
-Haha❗ Adds "Haha!" before sentences in a string. Haha❗ The exclamation
+Haha! Adds "Haha!" before sentences in a string. Haha! The exclamation
 point is a non-ASCII character, so this is both fun and tests unicode
 handling!
 
@@ -169,7 +169,7 @@ The xxx transform wraps all lines in strings with xxx.
 zombie
 ------
 
-ThHA zHRmbARHA HGMZanRZZRHRMZm HGNMMZnRZ HGHAZBHG ARnHGHR zHRmbARHA❗
+ThHA zHRmbARHA HGMZanRZZRHRMZm HGNMMZnRZ HGHAZBHG ARnHGHR zHRmbARHA!
 
 
 html
@@ -203,7 +203,7 @@ Example pipelines:
 
   Sample string::
 
-      <b>Dennis can make yerr dreams come true.</b> ye scalleywag❗
+      <b>Dennis can make yerr dreams come true.</b> ye scalleywag!
 
   Note that this isn't extracting HTML, so it just considers that
   whole thing a single string.
@@ -215,7 +215,7 @@ Example pipelines:
 
   Sample string::
 
-      <B>DENNIS CAN MAKE YOUR DREAMS COME TRUE.</B> ye scalleywag❗
+      <B>DENNIS CAN MAKE YOUR DREAMS COME TRUE.</B> ye scalleywag!
 
   Note that this isn't extracting HTML, so it just considers that
   whole thing a single string.
@@ -228,8 +228,8 @@ Example pipelines:
 
   Sample string::
 
-      <b>DENNIS CAN MAKE YARRRRR DREAMS COME TRUE PREPARE TO BE BOARD'D❗
-      YE LANDLUBBARRS❗ MATEY❗.</b>
+      <b>DENNIS CAN MAKE YARRRRR DREAMS COME TRUE PREPARE TO BE BOARD'D!
+      YE LANDLUBBARRS! MATEY!.</b>
 
 * ``empty,anglequote``
 
