@@ -6,12 +6,13 @@ What's new in dennis
    :local:
 
 
-Version 0.3.10: In development
-==============================
+Version 0.3.10: October 25th, 2013
+==================================
 
 **Changes**
 
 * f874578 Add status command
+* 8b99cfe Add zombie transform
 
 
 Version 0.3.9: October 17th, 2013
