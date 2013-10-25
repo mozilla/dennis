@@ -14,7 +14,8 @@ from dennis.translator import (
     ShoutyTransform,
     Token,
     Translator,
-    XXXTransform
+    XXXTransform,
+    ZombieTransform
 )
 
 
@@ -124,6 +125,35 @@ class DubstepTransformTest(TransformTestCase):
 
         for text, expected in data:
             trans = DubstepTransform()
+            output = trans.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class ZombieTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'', u'CZCPT!'),
+            (u'Hello', u'HHAMNMNHR RARRR!!!'),
+            (u'Hi\nHello', u'HAR\nHHAMNMNHR BR-R-R-RAINS!'),
+            (u'Hi   \nHello!\nmultiline',
+             u'HAR   \nHHAMNMNHR\u2757\nmNMMNHGARMNARnHA'),
+            (u'Hello %(username)s', u'HHAMNMNHR %(username)s'),
+            (u'Hello %s', u'HHAMNMNHR %s GRRRRRrrRR!!'),
+            (u'Hello {user}{name}', u'HHAMNMNHR {user}{name}'),
+            (u'Products and Services',
+             u'PMZHRGBNMZZHGRZ anGB SHAMZBBARZZHARZ'),
+            (u'Get community support',
+             u'GHAHG ZZHRmmNMnARHGRA RZNMBZBZHRMZHG'),
+            (u'Your input helps make Mozilla better',
+             (u'YHRNMMZ ARnBZNMHG hHAMNBZRZ maBGHA MHRzARMNMNa bHAHGHGHAMZ '
+              'BR-R-R-RAINS!')),
+            (u'Super browsing', u'SNMBZHAMZ bMZHRZMRZARng'),
+        ]
+
+        for text, expected in data:
+            trans = ZombieTransform()
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 

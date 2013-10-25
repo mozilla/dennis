@@ -245,6 +245,78 @@ class DubstepTransform(Transform):
         return new_tokens
 
 
+class ZombieTransform(Transform):
+    # Inspired by
+    # http://forum.rpg.net/showthread.php?218042-Necro-Urban-Dead-The-zombie-speech-project/
+    name = 'zombie'
+    desc = 'Zombie.'
+
+    zombish = {
+        'c': u'ZZ',
+        'd': u'GB',
+        'e': u'HA',
+        'f': u'ZR',
+        'i': u'AR',
+        'j': u'GA',
+        'k': u'BG',
+        'l': u'MN',
+        'o': u'HR',
+        'p': u'BZ',
+        'q': u'GH',
+        'r': u'MZ',
+        's': u'RZ',
+        't': u'HG',
+        'u': u'NM',
+        'v': u'BB',
+        'w': u'ZM',
+        'x': u'ZB',
+        'y': u'RA',
+    }
+
+    def last_bit(self, text=''):
+        tl = len(text) % 40
+
+        if tl < 7:
+            return u'CZCPT!'
+        if tl < 9:
+            return u'RAR!'
+        if tl < 11:
+            return u'RARRR!!!'
+        if tl < 13:
+            return u'GRRRRRrrRR!!'
+        if tl < 20:
+            return u'BR-R-R-RAINS!'
+        return u''
+
+    def zombie_transform(self, text):
+        new_string = u''.join([self.zombish.get(c, c) for c in text])
+        new_string = new_string.replace(u'.', u'\u2757')
+        new_string = new_string.replace(u'!', u'\u2757')
+        return new_string
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            new_string = []
+
+            for i, part in enumerate(vartok.tokenize(token.s)):
+                if i % 2 == 0:
+                    new_string.append(self.zombie_transform(part))
+                else:
+                    new_string.append(part)
+
+            new_string = u''.join(new_string)
+            new_string = new_string + u' ' + self.last_bit(new_string)
+            new_string = new_string.strip()
+            new_tokens.append(Token(new_string))
+
+        return new_tokens
+
+
 class RedactedTransform(Transform):
     name = 'redacted'
     desc = 'Redacts everything'
