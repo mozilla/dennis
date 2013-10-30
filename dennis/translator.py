@@ -556,6 +556,7 @@ class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
     def __init__(self):
         HTMLParser.HTMLParser.__init__(self)
         self.new_tokens = []
+        self.immutable_data_section = None
 
     def transform(self, vartok, token_stream):
         out = []
@@ -575,6 +576,10 @@ class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
         return out
 
     def handle_starttag(self, tag, attrs, closed=False):
+        # style and script contents should be immutable
+        if tag in ('style', 'script'):
+            self.immutable_data_section = tag
+
         # We want to translate alt and title values, but that's
         # it. So this gets a little goofy looking token-wise.
 
@@ -603,10 +608,15 @@ class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
         self.handle_starttag(tag, attrs, closed=True)
 
     def handle_endtag(self, tag):
+        self.immutable_data_section = None
         self.new_tokens.append(Token('</' + tag + '>', 'html', False))
 
     def handle_data(self, data):
-        self.new_tokens.append(Token(data))
+        if self.immutable_data_section:
+            self.new_tokens.append(Token(data, self.immutable_data_section,
+                                         False))
+        else:
+            self.new_tokens.append(Token(data))
 
     def handle_charref(self, name):
         self.new_tokens.append(Token('&#' + name + ';', 'html', False))

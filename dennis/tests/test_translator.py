@@ -209,6 +209,30 @@ class HTMLExtractorTest(TestCase):
             ]
         )
 
+    def test_script_style(self):
+        trans = HTMLExtractorTransform()
+        output = trans.transform(self.vartok, [
+            Token('<style>TR {white-space: nowrap;}</style>')
+        ])
+        eq_(output,
+            [
+                Token(u'<style>', 'html', False),
+                Token(u'TR {white-space: nowrap;}', 'style', False),
+                Token(u'</style>', 'html', False)
+            ]
+        )
+
+        output = trans.transform(self.vartok, [
+            Token('<script>console.log("foo");</script>')
+        ])
+        eq_(output,
+            [
+                Token(u'<script>', 'html', False),
+                Token(u'console.log("foo");', 'script', False),
+                Token(u'</script>', 'html', False)
+            ]
+        )
+
 
 class XXXTransformTest(TransformTestCase):
     def test_basic(self):
