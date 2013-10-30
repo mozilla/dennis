@@ -134,7 +134,7 @@ class DubstepTransformTest(TransformTestCase):
 class ZombieTransformTest(TransformTestCase):
     def test_basic(self):
         data = [
-            (u'', u'CZCPT!'),
+            (u'', u''),
             (u'Hello', u'HHAMNMNHR RARRR!!!'),
             (u'Hi\nHello', u'HAR\nHHAMNMNHR BR-R-R-RAINS!'),
             (u'Hi   \nHello!\nmultiline',

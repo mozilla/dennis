@@ -289,6 +289,9 @@ class ZombieTransform(Transform):
         return u''
 
     def zombie_transform(self, text):
+        if not text.strip():
+            return text
+
         new_string = u''.join([self.zombish.get(c, c) for c in text])
         new_string = new_string.replace(u'.', u'\u2757')
         new_string = new_string.replace(u'!', u'\u2757')
@@ -304,14 +307,14 @@ class ZombieTransform(Transform):
             new_string = []
 
             for i, part in enumerate(vartok.tokenize(token.s)):
-                if i % 2 == 0:
-                    new_string.append(self.zombie_transform(part))
-                else:
-                    new_string.append(part)
+                if i % 2 == 0 and token.s.strip():
+                    part = self.zombie_transform(part)
+                new_string.append(part)
 
             new_string = u''.join(new_string)
-            new_string = new_string + u' ' + self.last_bit(new_string)
-            new_string = new_string.strip()
+            if new_string.strip():
+                new_string = new_string + u' ' + self.last_bit(new_string)
+                new_string = new_string.strip()
             new_tokens.append(Token(new_string))
 
         return new_tokens
