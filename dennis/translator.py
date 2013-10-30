@@ -584,7 +584,7 @@ class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
             s += name
             s += '="'
 
-            if name in ['alt', 'title']:
+            if name in ['alt', 'title', 'placeholder']:
                 self.new_tokens.append(Token(s, 'html', False))
                 if val:
                     self.new_tokens.append(Token(val))

@@ -177,7 +177,7 @@ class HTMLExtractorTest(TestCase):
             ]
         )
 
-    def test_alt_title(self):
+    def test_alt_title_placeholder(self):
         trans = HTMLExtractorTransform()
         output = trans.transform(self.vartok, [
                 Token('<img alt="foo">')])
@@ -194,6 +194,16 @@ class HTMLExtractorTest(TestCase):
         eq_(output,
             [
                 Token(u'<img title="', 'html', False),
+                Token(u'foo', 'text', True),
+                Token(u'">', 'html', False),
+            ]
+        )
+
+        output = trans.transform(self.vartok, [
+                Token('<input placeholder="foo">')])
+        eq_(output,
+            [
+                Token(u'<input placeholder="', 'html', False),
                 Token(u'foo', 'text', True),
                 Token(u'">', 'html', False),
             ]
