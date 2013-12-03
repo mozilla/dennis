@@ -11,6 +11,7 @@ from dennis.translator import (
     HahaTransform,
     PirateTransform,
     RedactedTransform,
+    ReverseTransform,
     ShoutyTransform,
     Token,
     Translator,
@@ -278,6 +279,22 @@ class ShoutyTransformTest(TransformTestCase):
 
         for text, expected in data:
             trans = ShoutyTransform()
+            output = trans.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class ReverseTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello', u'olleH'),
+            (u'OMG!', u'!GMO'),
+            (u'Hello. This is a test.', u'.tset a si sihT .olleH'),
+        ]
+
+        for text, expected in data:
+            trans = ReverseTransform()
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 

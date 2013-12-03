@@ -180,6 +180,22 @@ class ShoutyTransform(Transform):
         return new_tokens
 
 
+class ReverseTransform(Transform):
+    name = 'reverse'
+    desc = 'Reverses strings for RTL.'
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            new_tokens.append(Token(token.s[::-1]))
+
+        return new_tokens
+
+
 class DubstepTransform(Transform):
     name = 'dubstep'
     desc = 'Translates into written form of dubstep.'

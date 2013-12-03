@@ -86,6 +86,7 @@ empty       Returns empty strings.
 haha        Adds haha! before sentences in a string.
 pirate      Translates text into Pirate!
 redacted    Redacts everything.
+reverse     Reverses strings.
 shouty      Translates into all caps.
 xxx         Adds xxx before and after lines in a string.
 zombie      Zombie.
@@ -151,6 +152,12 @@ redacted
 --------
 
 Xxx xxxxxxxx xxxxxxxxx xxxxxxx xxxxxxxxxx.
+
+
+reverse
+-------
+
+.LTR rof lufpleh semitemos si hcihw sgnirts sesreveR
 
 
 shouty
