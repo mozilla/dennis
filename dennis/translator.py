@@ -341,17 +341,16 @@ class RedactedTransform(Transform):
     desc = 'Redacts everything'
 
     def transform(self, vartok, token_stream):
+        redact_map = dict((c, 'X') for c in string.ascii_uppercase)
+        redact_map.update(dict((c, 'x') for c in string.ascii_lowercase))
+
         new_tokens = []
         for token in token_stream:
             if not token.mutable:
                 new_tokens.append(token)
                 continue
 
-            new_s = [
-                ('X' if c in string.ascii_uppercase else
-                 ('x' if c in string.ascii_lowercase else c))
-                for c in token.s
-            ]
+            new_s = [redact_map.get(c, c) for c in token.s]
             new_tokens.append(Token(u''.join(new_s)))
 
         return new_tokens
@@ -654,10 +653,12 @@ def get_available_pipeline_parts():
 
 
 class InvalidPipeline(Exception):
+    """Raised when the pipeline spec contains invalid parts"""
     pass
 
 
 def convert_pipeline(pipeline_spec):
+    """Converts a pipeline spec into an instantiated pipeline"""
     pipeline_parts = get_available_pipeline_parts()
 
     try:
@@ -669,12 +670,14 @@ def convert_pipeline(pipeline_spec):
 
 
 class Translator(object):
+    """Translates a string using the specified pipeline"""
     def __init__(self, variable_formats, pipeline_spec):
         self.vartok = VariableTokenizer(variable_formats)
         self.pipeline_spec = pipeline_spec
-        self.pipeline = convert_pipeline(self.pipeline_spec)
+        self._pipeline = convert_pipeline(self.pipeline_spec)
 
     def translate_string(self, s):
+        """Translates string s and returns the new string"""
         if isinstance(s, str):
             s = s.decode('utf-8')
 
@@ -682,7 +685,7 @@ class Translator(object):
         tokens = [Token(s)]
 
         # Pass the token list through the pipeline
-        for part_class in self.pipeline:
+        for part_class in self._pipeline:
             part = part_class()
             tokens = part.transform(self.vartok, tokens)
 
@@ -690,6 +693,12 @@ class Translator(object):
         return u''.join([token.s for token in tokens])
 
     def translate_file(self, fname):
+        """Translates the po file at fname
+
+        Note: The translation is done in-place and saved to the
+        given pofile.
+
+        """
         po = polib.pofile(fname)
 
         # FIXME - This might be a bit goofy

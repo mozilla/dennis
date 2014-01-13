@@ -28,7 +28,7 @@ def build_parser(usage, **kwargs):
 
 def err(s):
     """Prints a single-line string to stderr."""
-    sys.stderr.write('Error: ' + s + '\n')
+    sys.stderr.write('Error: {0}\n'.format(s))
 
 
 def format_vars():
@@ -216,7 +216,8 @@ def lint_cmd(scriptname, command, argv):
 
         file_counts = [
             (counts[0], counts[1], fn.split(os.sep)[-3], fn.split(os.sep)[-1])
-            for (fn, counts) in files_to_errors.items()]
+            for (fn, counts) in files_to_errors.items()
+        ]
 
         # If we're showing errors only, then don't talk about warnings.
         if options.errorsonly:
