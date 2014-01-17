@@ -11,6 +11,11 @@ except ImportError:
 
 import optparse
 import re
+import sys
+
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 
 
 class Var(object):
@@ -115,7 +120,7 @@ class VariableTokenizer(object):
         try:
             return set(token for token in self.vars_re.findall(text))
         except TypeError:
-            print 'TYPEERROR', repr(text)
+            print('TYPEERROR: {0}'.format(repr(text)))
 
     def is_token(self, text):
         return self.vars_re.match(text) is not None

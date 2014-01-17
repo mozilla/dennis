@@ -1,9 +1,15 @@
-import HTMLParser
+try:
+    # Python 2
+    from HTMLParser import HTMLParser
+except ImportError:
+    # Python 3
+    from html.parser import HTMLParser
+
 import polib
 import re
 import string
 
-from dennis.tools import VariableTokenizer
+from dennis.tools import PY2, PY3, VariableTokenizer
 
 
 DEBUG = False
@@ -11,7 +17,7 @@ DEBUG = False
 
 def debug(*args):
     if DEBUG:
-        print ' '.join([str(arg) for arg in args])
+        print(' '.join([str(arg) for arg in args]))
 
 
 class Token(object):
@@ -215,9 +221,9 @@ class DubstepTransform(Transform):
 
         return (
             u'B' +
-            (u'W' * (tl / 4)) +
-            (u'A' * (tl / 3)) +
-            (u'a' * (tl / 4)))
+            (u'W' * int(tl / 4)) +
+            (u'A' * int(tl / 3)) +
+            (u'a' * int(tl / 4)))
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -411,7 +417,7 @@ class PirateTransform(Transform):
         ]
 
     def wc(self, c):
-        return c == '\'' or c in string.letters
+        return c == '\'' or c in string.ascii_letters
 
     def nwc(self, c):
         return not self.wc(c)
@@ -564,12 +570,12 @@ class PirateTransform(Transform):
         return u''.join(out)
 
 
-class HTMLExtractorTransform(HTMLParser.HTMLParser, Transform):
+class HTMLExtractorTransform(HTMLParser, Transform):
     name = 'html'
     desc = 'Tokenizes HTML bits so only text is translated.'
 
     def __init__(self):
-        HTMLParser.HTMLParser.__init__(self)
+        HTMLParser.__init__(self)
         self.new_tokens = []
         self.immutable_data_section = None
 
@@ -678,7 +684,7 @@ class Translator(object):
 
     def translate_string(self, s):
         """Translates string s and returns the new string"""
-        if isinstance(s, str):
+        if PY2 and isinstance(s, str):
             s = s.decode('utf-8')
 
         # Create the initial token
@@ -718,5 +724,5 @@ class Translator(object):
             if 'fuzzy' in entry.flags:
                 entry.flags.remove('fuzzy')  # clear the fuzzy flag
             count += 1
-        print 'Munged %d messages in %s' % (count, fname)
+        print('Munged {0} messages in {1}'.format(count, fname))
         po.save()

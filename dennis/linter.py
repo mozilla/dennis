@@ -111,13 +111,13 @@ class MismatchedVarsLintRule(LintRule):
                 linted_entry.add_warning(
                     self.name,
                     trstr,
-                    u'missing variables: {0}'.format(u', '.join(missing)))
+                    u'missing variables: {0}'.format(u', '.join(sorted(missing))))
 
             if invalid:
                 linted_entry.add_error(
                     self.name,
                     trstr,
-                    u'invalid variables: {0}'.format(u', '.join(invalid)))
+                    u'invalid variables: {0}'.format(u', '.join(sorted(invalid))))
 
 
 def get_available_lint_rules():
