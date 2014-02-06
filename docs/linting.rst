@@ -96,12 +96,15 @@ Warnings
 
 **What's a warning?**
 
-It's an issue that probably indicates the translated string is
-problematic, but it won't cause production code to die. For example,
-when the original string has a Python variable the translated string
-doesn't have. That's not great and probably means the translated
-string needs to be updated, but it won't throw an error in production.
+Warnings indicate the translated string is either outdated or a poor
+translation, but the string is fine in the sense that it won't kick
+up an error in production.
 
+For example, say the original string has a variable, but the
+translated string doesn't use that variable.
+
+That's not great and probably means the translated string needs to be
+updated, but it won't throw an error in production.
 
 **List of warnings**
 
@@ -111,9 +114,9 @@ string needs to be updated, but it won't throw an error in production.
 
         Example::
 
-            Warning: mismatched: missing variables: {0}
-            msgid: "{foo} bar"
-            msgstr: "bar"
+            Warning: mismatched: missing variables: {url}
+            msgid: "You can find help at {url}"
+            msgstr: "Get help!"
 
 
 
@@ -122,13 +125,15 @@ Errors
 
 **What's an error?**
 
-It's an issue that will throw an error in production and must be fixed
-pronto. For example, when the translated string has a Python variable
-that's not in the original string. When this string is interpolated,
-it will kick up a Python error. That causes the software to die, users
-to be unhappy, tires to go flat, people to work on weekends, mass
-hysteria, etc. No one likes that. I don't like that. You probably
-don't like that, either.
+Errors indicate problems with the translated string that will cause
+an error to be thrown. These should get fixed pronto.
+
+For example, when the translated string has a Python variable that's
+not in the original string. When this string is interpolated, it will
+kick up a Python error. That causes the software to die, users to be
+unhappy, tires to go flat, people to work on weekends, mass hysteria,
+etc. No one likes that. I don't like that. You probably don't like
+that, either.
 
 
 **List of errors**
@@ -139,9 +144,20 @@ don't like that, either.
 
         Example::
 
-            Error: mismatched: invalid variables: {foo}
-            msgid: "bar"
-            msgstr: "{foo} bar"
+            Error: mismatched: invalid variables: {helpurl}
+            msgid: "You can find help at {url}"
+            msgstr: "You can find help at {helpurl}"
+
+        In this example, "helpurl" won't be in the list of variables to
+        interpolate and this will throw a KeyError. That's equivalent
+        to this:
+
+        >>> "You can find help at {helpurl}".format(url="http://example.com")
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        KeyError: 'helpurl'
+        >>> 
+
 
     **malformed**
         The variable in the translated string is malformed or there are
@@ -154,8 +170,21 @@ don't like that, either.
             msgid: "{foo} bar baz"
             msgstr: "{foo bar baz"
 
+        >>> "{foo bar baz".format(foo="some thing")
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        ValueError: unmatched '{' in format
+        >>> 
+
+
         Example (Python)::
 
             Error: malformed variables: %(count)
             msgid: "%(count)s view"
             msgstr: "%(count) view"
+
+        >>> "%(count) view" % {"count": 5}
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        ValueError: unsupported format character 'v' (0x76) at index 9
+        >>> 
