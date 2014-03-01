@@ -5,7 +5,7 @@ import polib
 
 from dennis import __version__
 from dennis.linter import Linter, get_available_lint_rules
-from dennis.tools import BetterArgumentParser, Terminal, PY2, PY3, get_available_vars
+from dennis.tools import BetterArgumentParser, Terminal, PY2, get_available_vars
 from dennis.translator import Translator, get_available_pipeline_parts
 
 
@@ -14,11 +14,7 @@ VERSION = 'dennis ' + __version__
 
 # blessings.Terminal and our mock Terminal don't maintain any state
 # so we can just make it global
-TERMINAL = Terminal()
-
-
-def print_utf8(s):
-    print(s.encode('utf-8'))
+TERM = Terminal()
 
 
 def build_parser(usage, **kwargs):
@@ -133,9 +129,9 @@ def lint_cmd(scriptname, command, argv):
 
         except IOError as ioe:
             # This is not a valid .po file. So mark it as an error.
-            print(TERMINAL.bold_red('>>> Error opening file: {fn}'.format(
+            print(TERM.bold_red('>>> Error opening file: {fn}'.format(
                 fn=fn)))
-            print(TERMINAL.bold_red(ioe.message))
+            print(TERM.bold_red(ioe.message))
             print('')
 
             # FIXME - should we track this separately as an invalid
@@ -156,9 +152,8 @@ def lint_cmd(scriptname, command, argv):
             continue
 
         if not options.quiet:
-            print(TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn)))
+            print(TERM.bold_green('>>> Working on: {fn}'.format(fn=fn)))
 
-        output = []
         error_count = 0
         warning_count = 0
 
@@ -169,11 +164,11 @@ def lint_cmd(scriptname, command, argv):
             if not options.quiet:
                 # TODO: This is totally shite code.
                 for code, trstr, msg in entry.errors:
-                    output.append(TERMINAL.bold_red(u'Error: {0}: {1}'.format(
+                    print(TERM.bold_red('Error: {0}: {1}'.format(
                         code, msg)))
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        output.append(u'{0} "{1}"'.format(field, s))
-                    output.append(u'{0} "{1}"\n'.format(
+                        print(u'{0} "{1}"'.format(field, s))
+                    print(u'{0} "{1}"\n'.format(
                             trstr.msgstr_field, trstr.msgstr_string))
 
             total_warning_count +=  len(entry.warnings)
@@ -181,11 +176,11 @@ def lint_cmd(scriptname, command, argv):
 
             if not options.quiet and not options.errorsonly:
                 for code, trstr, msg in entry.warnings:
-                    output.append(TERMINAL.bold_yellow(u'Warning: {0}: {1}'.format(
-                                code, msg)))
+                    print(TERM.bold_yellow('Warning: {0}: {1}'.format(
+                        code, msg)))
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        output.append(u'{0} "{1}"'.format(field, s))
-                    output.append(u'{0} "{1}"\n'.format(
+                        print(u'{0} "{1}"'.format(field, s))
+                    print(u'{0} "{1}"\n'.format(
                         trstr.msgstr_field, trstr.msgstr_string))
 
         files_to_errors[fn] = (error_count, warning_count)
@@ -194,12 +189,10 @@ def lint_cmd(scriptname, command, argv):
             total_files_with_errors += 1
 
         if not options.quiet:
-            output.append(u'Totals')
+            print('Totals')
             if not options.errorsonly:
-                output.append(u'  Warnings: {warnings:5}'.format(warnings=warning_count))
-            output.append(u'  Errors:   {errors:5}\n'.format(errors=error_count))
-
-        print_utf8(u'\n'.join(output))
+                print('  Warnings: {warnings:5}'.format(warnings=warning_count))
+            print('  Errors:   {errors:5}\n'.format(errors=error_count))
 
     if len(po_files) > 1 and not options.quiet:
         print('Final totals')
@@ -227,11 +220,14 @@ def lint_cmd(scriptname, command, argv):
             header = 'Warnings  Errors  Filename'
             line = ' {warnings:5}     {errors:5}  {locale} ({fn})'
 
-        print(header)
-        file_counts = reversed(sorted(file_counts))
+        file_counts = list(reversed(sorted(file_counts)))
+        printed_header = False
         for error_count, warning_count, locale, fn in file_counts:
             if not error_count and not warning_count:
                 continue
+            if not printed_header:
+                print(header)
+                printed_header = True
 
             print(line.format(
                 warnings=warning_count, errors=error_count, fn=fn,
@@ -275,19 +271,19 @@ def status_cmd(scriptname, command, argv):
 
             pofile = polib.pofile(fn)
         except IOError as ioe:
-            print(TERMINAL.bold_red('>>> Error opening file: {fn}'.format(
+            print(TERM.bold_red('>>> Error opening file: {fn}'.format(
                 fn=fn)))
-            print(TERMINAL.bold_red(ioe.message))
+            print(TERM.bold_red(ioe.message))
             continue
 
         print('')
-        print(TERMINAL.bold_green('>>> Working on: {fn}'.format(fn=fn)))
+        print(TERM.bold_green('>>> Working on: {fn}'.format(fn=fn)))
 
         print('Metadata:')
         for key in ('Language', 'Report-Msgid-Bugs-To', 'PO-Revision-Date',
                     'Last-Translator', 'Language-Team', 'Plural-Forms'):
             if key in pofile.metadata and pofile.metadata[key]:
-                print_utf8(u'  {0}: {1}'.format(key, pofile.metadata[key]))
+                print('  {0}: {1}'.format(key, pofile.metadata[key]))
         print('')
 
         if options.showuntranslated:
@@ -366,11 +362,17 @@ def translate_cmd(scriptname, command, argv):
     if options.strings:
         # Args are strings to be translated
         for arg in args:
-            print_utf8(translator.translate_string(arg))
+            data = translator.translate_string(arg)
+            if PY2:
+                data = data.encode('utf-8')
+            print(data)
 
     elif len(args) == 1 and args[0] == '-':
         # Read everything from stdin, then translate it
-        print_utf8(translator.translate_string(sys.stdin.read()))
+        data = translator.translate_string(sys.stdin.read())
+        if PY2:
+            data = data.encode('utf-8')
+        print(data)
 
     else:
         # Args are filenames
