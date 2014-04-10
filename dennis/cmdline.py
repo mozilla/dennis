@@ -5,26 +5,52 @@ import polib
 
 from dennis import __version__
 from dennis.linter import Linter, get_available_lint_rules
-from dennis.tools import BetterArgumentParser, Terminal, PY2, get_available_vars
+from dennis.tools import (
+    BetterArgumentParser,
+    FauxTerminal,
+    PY2,
+    Terminal,
+    get_available_vars
+)
 from dennis.translator import Translator, get_available_pipeline_parts
 
 
 USAGE = '%prog [options] [command] [command-options]'
 VERSION = 'dennis ' + __version__
 
-# blessings.Terminal and our mock Terminal don't maintain any state
-# so we can just make it global
-TERM = Terminal()
+# blessings.Terminal and our FauxTerminal don't maintain any state so
+# we can make it global
+if sys.stdout.isatty():
+    TERM = Terminal()
+else:
+    TERM = FauxTerminal()
+
+
+if PY2 and not sys.stdout.isatty():
+    def out(*s):
+        for part in s:
+            sys.stdout.write(part.encode('utf-8'))
+        sys.stdout.write('\n')
+else:
+    def out(*s):
+        for part in s:
+            sys.stdout.write(part)
+        sys.stdout.write('\n')
+
+
+def err(*s):
+    """Prints a single-line string to stderr."""
+    sys.stderr.write(TERM.bold_red)
+    sys.stderr.write('Error: ')
+    for part in s:
+        sys.stderr.write(part)
+    sys.stderr.write(TERM.normal)
+    sys.stderr.write('\n')
 
 
 def build_parser(usage, **kwargs):
     """Builds an OptionParser with the specified kwargs."""
     return BetterArgumentParser(usage=usage, version=VERSION, **kwargs)
-
-
-def err(s):
-    """Prints a single-line string to stderr."""
-    sys.stderr.write('Error: {0}\n'.format(s))
 
 
 def format_vars():
@@ -129,10 +155,9 @@ def lint_cmd(scriptname, command, argv):
 
         except IOError as ioe:
             # This is not a valid .po file. So mark it as an error.
-            print(TERM.bold_red('>>> Error opening file: {fn}'.format(
-                fn=fn)))
-            print(TERM.bold_red(ioe.message))
-            print('')
+            err('>>> Problem opening file: {fn}'.format(fn=fn))
+            err(repr(ioe))
+            out('')
 
             # FIXME - should we track this separately as an invalid
             # file?
@@ -152,7 +177,9 @@ def lint_cmd(scriptname, command, argv):
             continue
 
         if not options.quiet:
-            print(TERM.bold_green('>>> Working on: {fn}'.format(fn=fn)))
+            out(TERM.bold_green,
+                '>>> Working on: {fn}'.format(fn=fn),
+                TERM.normal)
 
         error_count = 0
         warning_count = 0
@@ -164,24 +191,26 @@ def lint_cmd(scriptname, command, argv):
             if not options.quiet:
                 # TODO: This is totally shite code.
                 for code, trstr, msg in entry.errors:
-                    print(TERM.bold_red('Error: {0}: {1}'.format(
-                        code, msg)))
+                    out(TERM.bold_red,
+                        'Error: {0}: {1}'.format(code, msg),
+                        TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        print(u'{0} "{1}"'.format(field, s))
-                    print(u'{0} "{1}"\n'.format(
-                            trstr.msgstr_field, trstr.msgstr_string))
+                        out(field, ' "', s, '"')
+                    out(trstr.msgstr_field, ' "', trstr.msgstr_string, '"')
+                    out('')
 
             total_warning_count +=  len(entry.warnings)
             warning_count +=  len(entry.warnings)
 
             if not options.quiet and not options.errorsonly:
                 for code, trstr, msg in entry.warnings:
-                    print(TERM.bold_yellow('Warning: {0}: {1}'.format(
-                        code, msg)))
+                    out(TERM.bold_yellow,
+                        'Warning: {0}: {1}'.format(code, msg),
+                        TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        print(u'{0} "{1}"'.format(field, s))
-                    print(u'{0} "{1}"\n'.format(
-                        trstr.msgstr_field, trstr.msgstr_string))
+                        out(field, ' "', s, '"')
+                    out(trstr.msgstr_field, ' "', trstr.msgstr_string)
+                    out('')
 
         files_to_errors[fn] = (error_count, warning_count)
 
@@ -189,23 +218,23 @@ def lint_cmd(scriptname, command, argv):
             total_files_with_errors += 1
 
         if not options.quiet:
-            print('Totals')
+            out('Totals')
             if not options.errorsonly:
-                print('  Warnings: {warnings:5}'.format(warnings=warning_count))
-            print('  Errors:   {errors:5}\n'.format(errors=error_count))
+                out('  Warnings: {warnings:5}'.format(warnings=warning_count))
+            out('  Errors:   {errors:5}\n'.format(errors=error_count))
 
     if len(po_files) > 1 and not options.quiet:
-        print('Final totals')
-        print('  Number of files examined:          {count:5}'.format(
+        out('Final totals')
+        out('  Number of files examined:          {count:5}'.format(
             count=len(po_files)))
-        print('  Total number of files with errors: {count:5}'.format(
+        out('  Total number of files with errors: {count:5}'.format(
             count=total_files_with_errors))
         if not options.errorsonly:
-            print('  Total number of warnings:          {count:5}'.format(
+            out('  Total number of warnings:          {count:5}'.format(
                 count=total_warning_count))
-        print('  Total number of errors:            {count:5}'.format(
+        out('  Total number of errors:            {count:5}'.format(
             count=total_error_count))
-        print('')
+        out('')
 
         file_counts = [
             (counts[0], counts[1], fn.split(os.sep)[-3], fn.split(os.sep)[-1])
@@ -226,10 +255,10 @@ def lint_cmd(scriptname, command, argv):
             if not error_count and not warning_count:
                 continue
             if not printed_header:
-                print(header)
+                out(header)
                 printed_header = True
 
-            print(line.format(
+            out(line.format(
                 warnings=warning_count, errors=error_count, fn=fn,
                 locale=locale))
 
@@ -271,47 +300,46 @@ def status_cmd(scriptname, command, argv):
 
             pofile = polib.pofile(fn)
         except IOError as ioe:
-            print(TERM.bold_red('>>> Error opening file: {fn}'.format(
-                fn=fn)))
-            print(TERM.bold_red(ioe.message))
+            err('>>> Problem opening file: {fn}'.format(fn=fn))
+            err(repr(ioe))
             continue
 
-        print('')
-        print(TERM.bold_green('>>> Working on: {fn}'.format(fn=fn)))
+        out('')
+        out(TERM.bold_green, '>>> Working on: {fn}'.format(fn=fn), TERM.normal)
 
-        print('Metadata:')
+        out('Metadata:')
         for key in ('Language', 'Report-Msgid-Bugs-To', 'PO-Revision-Date',
                     'Last-Translator', 'Language-Team', 'Plural-Forms'):
             if key in pofile.metadata and pofile.metadata[key]:
-                print('  {0}: {1}'.format(key, pofile.metadata[key]))
-        print('')
+                out('  ', key, ': ', pofile.metadata[key])
+        out('')
 
         if options.showuntranslated:
-            print('Untranslated strings:')
-            print('')
+            out('Untranslated strings:')
+            out('')
             for poentry in pofile.untranslated_entries():
                 if poentry.comment:
-                    print('#. {0}'.format(poentry.comment))
+                    out('#. {0}'.format(poentry.comment))
                 if poentry.tcomment:
-                    print('# {0}'.format(poentry.tcomment))
+                    out('# {0}'.format(poentry.tcomment))
                 if poentry.occurrences:
                     for occ in poentry.occurrences:
-                        print('#: {0}:{1}'.format(occ[0], occ[1]))
+                        out('#: {0}:{1}'.format(occ[0], occ[1]))
                 if poentry.flags:
-                    print('Flags: {0}'.format(poentry.flags))
-                print('msgid "{0}"'.format(poentry.msgid))
+                    out('Flags: {0}'.format(poentry.flags))
+                out('msgid "{0}"'.format(poentry.msgid))
                 if poentry.msgid_plural:
-                    print('msgid_plural "{0}"'.format(poentry.msgid_plural))
-                print('')
+                    out('msgid_plural "{0}"'.format(poentry.msgid_plural))
+                out('')
 
-        print('Statistics:')
-        print('  # Translated:   {0}'.format(len(pofile.translated_entries())))
-        print('  # Fuzzy:        {0}'.format(len(pofile.fuzzy_entries())))
-        print('  # Untranslated: {0}'.format(len(pofile.untranslated_entries())))
+        out('Statistics:')
+        out('  # Translated:   {0}'.format(len(pofile.translated_entries())))
+        out('  # Fuzzy:        {0}'.format(len(pofile.fuzzy_entries())))
+        out('  # Untranslated: {0}'.format(len(pofile.untranslated_entries())))
         if pofile.percent_translated() == 100:
-            print('  Percentage:     100% COMPLETE!')
+            out('  Percentage:     100% COMPLETE!')
         else:
-            print('  Percentage:     {0}%'.format(pofile.percent_translated()))
+            out('  Percentage:     {0}%'.format(pofile.percent_translated()))
     return 0
 
 
@@ -319,7 +347,7 @@ def translate_cmd(scriptname, command, argv):
     """Translate a single string or .po file of strings."""
     if '-' not in argv:
         # Don't print version stuff if we're reading from stdin.
-        print('{0} version {1}'.format(scriptname, __version__))
+        out('{0} version {1}'.format(scriptname, __version__))
 
     parser = build_parser(
         'usage: %prog tramslate '
@@ -390,16 +418,16 @@ def get_handlers():
 
 
 def print_help(scriptname):
-    print('{0} version {1}'.format(scriptname, __version__))
+    out('{0} version {1}'.format(scriptname, __version__))
 
     handlers = get_handlers()
 
     parser = build_parser("%prog [command]")
     parser.print_help()
-    print('')
-    print('Commands:')
+    out('')
+    out('Commands:')
     for command_str, _, command_help in handlers:
-        print('  {cmd:10}  {hlp}'.format(cmd=command_str, hlp=command_help))
+        out('  {cmd:10}  {hlp}'.format(cmd=command_str, hlp=command_help))
 
 
 def cmdline_handler(scriptname, argv):

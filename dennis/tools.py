@@ -1,14 +1,3 @@
-try:
-    from blessings import Terminal
-except ImportError:
-    class MockBlessedThing(object):
-        def __call__(self, s):
-            return s
-
-    class Terminal(object):
-        def __getattr__(self, attr, default=None):
-            return MockBlessedThing()
-
 import optparse
 import re
 import sys
@@ -16,6 +5,26 @@ import sys
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
+
+if PY2:
+    textclass = unicode
+else:
+    textclass = str
+
+
+class _MockBlessedThing(textclass):
+    def __call__(self, s):
+        return s
+
+
+class FauxTerminal(object):
+    def __getattr__(self, attr, default=None):
+        return _MockBlessedThing()
+
+try:
+    from blessings import Terminal
+except ImportError:
+    Terminal = FauxTerminal
 
 
 class Var(object):
