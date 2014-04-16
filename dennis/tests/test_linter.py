@@ -289,3 +289,28 @@ class MalformedVarsLintRuleTests(LintRuleTestCase):
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
             'malformed variables: {0]" excede el tamano de {')
+
+    def test_python_var_missing_left_curly_brace(self):
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "{product} Support Forum"\n'
+            'msgstr "product}-Hilfeforum"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: product}')
+
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "{q} | {product} Support Forum"\n'
+            'msgstr "{q} | product}-Hilfeforum"\n')
+
+        self.mavlr.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 1)
+        eq_(linted_entry.errors[0][2],
+            'malformed variables: } | product}')

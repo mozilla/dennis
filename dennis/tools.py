@@ -53,8 +53,11 @@ class PythonVar(Var):
         # %(count) with no type at end
         r'(?:%[\(][^\)\s]+[\)](?:\s|$))'
         r'|'
-        # %{foo with missing }
+        # {foo with missing }
         r'(?:\{[^\}]+(?:\{|$))'
+        r'|'
+        # foo} with missing {
+        r'(?:(?:^|\})[^\{]+\})'
     )
 
 
