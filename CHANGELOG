@@ -6,10 +6,14 @@ What's new in dennis
    :local:
 
 
-Version 0.3.11: In development
-==============================
+Version 0.3.11: April 16th, 2014
+================================
 
 **Changes**
+
+* 0c2e5a9 Fix foo} with missing right curly brace
+* Python 3 support
+* 6f60b00 Add reverse transform
 
 
 Version 0.3.10: October 25th, 2013
@@ -19,6 +23,7 @@ Version 0.3.10: October 25th, 2013
 
 * f874578 Add status command
 * 8b99cfe Add zombie transform
+* fb319e3 Fix lint command to handle multiple files
 
 
 Version 0.3.9: October 17th, 2013

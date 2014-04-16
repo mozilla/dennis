@@ -1,7 +1,7 @@
 #######################################################################
 # This file is part of dennis.
 #
-# Copyright (C) 2013 Will Kahn-Greene
+# Copyright (C) 2013-2014 Will Kahn-Greene
 # Licensed under the Simplified BSD License. See LICENSE for full
 # license.
 #######################################################################
