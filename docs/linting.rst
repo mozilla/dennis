@@ -156,7 +156,7 @@ that, either.
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
         KeyError: 'helpurl'
-        >>> 
+        >>>
 
 
     **malformed**
@@ -174,7 +174,20 @@ that, either.
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
         ValueError: unmatched '{' in format
-        >>> 
+        >>>
+
+
+        Example (Python)::
+
+            Error: malformed variables: foo}
+            msgid: "{foo} bar baz"
+            msgstr: "foo} bar baz"
+
+        >>> "foo}".format(foo="some thing")
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        ValueError: Single '}' encountered in format string
+        >>>
 
 
         Example (Python)::
@@ -187,4 +200,4 @@ that, either.
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
         ValueError: unsupported format character 'v' (0x76) at index 9
-        >>> 
+        >>>
