@@ -4,7 +4,7 @@ from nose.tools import eq_
 
 
 def test_python_tokenizing():
-    vartok = VariableTokenizer(['python'])
+    vartok = VariableTokenizer(['pysprintf', 'pyformat'])
     for string, expected in [
         ('Hello %s', ['Hello ', '%s', '']),
         ('Hello %(username)s', ['Hello ', '%(username)s', '']),

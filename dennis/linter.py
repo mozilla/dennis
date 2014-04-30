@@ -1,3 +1,4 @@
+import re
 from collections import namedtuple
 
 import polib
@@ -54,6 +55,7 @@ class LintedEntry(object):
 
 
 class LintRule(object):
+    num = ''
     name = ''
     desc = ''
 
@@ -68,33 +70,94 @@ class LintRule(object):
         raise NotImplemented
 
 
-class MalformedVarsLintRule(LintRule):
-    name = 'malformed'
-    desc = 'Checks for malformed variables that cause errors'
+class MalformedNoTypeLintRule(LintRule):
+    num = 'E101'
+    name = 'notype'
+    desc = '%(count) with no type at the end'
 
     def lint(self, vartok, linted_entry):
-        malformed_re = vartok.malformed_vars_re
+        # This only applies if one of the variable tokenizers
+        # is PythonPercentVar.
+        if not vartok.contains('pysprintf'):
+            return
+
+        malformed_re = re.compile(r'(?:%[\(][^\)\s]+[\)](?:\s|$))')
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
-            # For each Var class, we ask it to find malformed
-            for var in vartok.vars_:
-                malformed = malformed_re.findall(trstr.msgstr_string)
-                if not malformed:
-                    continue
+            malformed = malformed_re.findall(trstr.msgstr_string)
+            if not malformed:
+                continue
 
-                malformed = [item.strip() for item in malformed]
-                linted_entry.add_error(
-                    self.name,
-                    trstr,
-                    u'malformed variables: {0}'.format(u', '.join(malformed)))
+            malformed = [item.strip() for item in malformed]
+            linted_entry.add_error(
+                self.name,
+                trstr,
+                u'malformed variables: {0}'.format(u', '.join(malformed)))
 
 
-class MismatchedVarsLintRule(LintRule):
-    name = 'mismatched'
-    desc = 'Checks for variables in one string not in the other'
+class MalformedMissingRightBraceLintRule(LintRule):
+    num = 'E102'
+    name = 'missingrightbrace'
+    desc = '{foo with missing }'
+
+    def lint(self, vartok, linted_entry):
+        # This only applies if one of the variable tokenizers
+        # is PythonFormatVar.
+        if not vartok.contains('pyformat'):
+            return
+
+        malformed_re = re.compile(r'(?:\{[^\}]+(?:\{|$))')
+
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            malformed = malformed_re.findall(trstr.msgstr_string)
+            if not malformed:
+                continue
+
+            malformed = [item.strip() for item in malformed]
+            linted_entry.add_error(
+                self.name,
+                trstr,
+                u'malformed variables: {0}'.format(u', '.join(malformed)))
+
+
+class MalformedMissingLeftBraceLintRule(LintRule):
+    num = 'E103'
+    name = 'missingleftbrace'
+    desc = 'foo} with missing {'
+
+    def lint(self, vartok, linted_entry):
+        # This only applies if one of the variable tokenizers
+        # is PythonFormatVar.
+        if not vartok.contains('pyformat'):
+            return
+
+        malformed_re = re.compile(r'(?:(?:^|\})[^\{]+\})')
+
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            malformed = malformed_re.findall(trstr.msgstr_string)
+            if not malformed:
+                continue
+
+            malformed = [item.strip() for item in malformed]
+            linted_entry.add_error(
+                self.name,
+                trstr,
+                u'malformed variables: {0}'.format(u', '.join(malformed)))
+
+
+class MissingVarsLintRule(LintRule):
+    num = 'W202'
+    name = 'missingvars'
+    desc = 'Checks for variables in msgid, but missing in msgstr'
 
     def lint(self, vartok, linted_entry):
         for trstr in linted_entry.strs:
@@ -105,13 +168,28 @@ class MismatchedVarsLintRule(LintRule):
             msgstr_tokens = vartok.extract_tokens(trstr.msgstr_string)
 
             missing = msgid_tokens.difference(msgstr_tokens)
-            invalid = msgstr_tokens.difference(msgid_tokens)
 
             if missing:
                 linted_entry.add_warning(
                     self.name,
                     trstr,
                     u'missing variables: {0}'.format(u', '.join(sorted(missing))))
+
+
+class InvalidVarsLintRule(LintRule):
+    num = 'E201'
+    name = 'invalidvars'
+    desc = 'Checks for variables not in msgid, but in msgstr'
+
+    def lint(self, vartok, linted_entry):
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            msgid_tokens = vartok.extract_tokens(' '.join(trstr.msgid_strings))
+            msgstr_tokens = vartok.extract_tokens(trstr.msgstr_string)
+
+            invalid = msgstr_tokens.difference(msgid_tokens)
 
             if invalid:
                 linted_entry.add_error(
@@ -120,14 +198,17 @@ class MismatchedVarsLintRule(LintRule):
                     u'invalid variables: {0}'.format(u', '.join(sorted(invalid))))
 
 
-def get_available_lint_rules():
+def get_available_lint_rules(name_and_num=False):
     lint_rules = {}
 
     for name, thing in globals().items():
-        if (name.endswith('LintRule')
-            and issubclass(thing, LintRule)
-            and thing.name):
-            lint_rules[thing.name] = thing
+        try:
+            if issubclass(thing, LintRule) and thing.num:
+                lint_rules[thing.num] = thing
+                if name_and_num:
+                    lint_rules[thing.name] = thing
+        except TypeError:
+            pass
 
     return lint_rules
 
@@ -137,15 +218,15 @@ class InvalidRulesSpec(Exception):
 
 
 def convert_rules(rules_spec):
-    lint_rules = get_available_lint_rules()
-
     # This removes empty strings from the rules_spec.
     rules_spec = [rule for rule in rules_spec if rule]
 
     if not rules_spec:
-        return [rule() for name, rule in lint_rules.items()]
+        lint_rules = get_available_lint_rules()
+        return [rule() for num, rule in lint_rules.items()]
 
     try:
+        lint_rules = get_available_lint_rules(name_and_num=True)
         rules = [lint_rules[rule]() for rule in rules_spec]
     except KeyError:
         raise InvalidRulesSpec(rules_spec)
@@ -163,6 +244,7 @@ class Linter(object):
         linted_entry = LintedEntry(poentry)
 
         for lint_rule in self.rules:
+            # FIXME - check for skipped rules here
             lint_rule.lint(self.vartok, linted_entry)
 
         return linted_entry

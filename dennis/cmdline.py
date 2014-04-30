@@ -76,10 +76,11 @@ def format_pipeline_parts():
 def format_lint_rules():
     rules = sorted(get_available_lint_rules().items())
     return (
-        '\nAvailable Lint Rules:\n' +
+        '\nAvailable Lint Rules (E for Error, W for Warning):\n' +
         '\n'.join(
-            ['  {name:13}  {desc}'.format(name=name, desc=cls.desc)
-             for name, cls in rules])
+            ['  {num:6} {name}: {desc}'.format(num=num, name=cls.name,
+                                                desc=cls.desc)
+             for num, cls in rules])
     )
 
 
@@ -102,7 +103,7 @@ def lint_cmd(scriptname, command, argv):
         help=('Comma-separated list of variable types. See Available Variable '
               'Formats.'),
         metavar='VARS',
-        default='python')
+        default='pysprintf,pyformat')
     parser.add_option(
         '--rules',
         dest='rules',
@@ -365,7 +366,7 @@ def translate_cmd(scriptname, command, argv):
         help=('Comma-separated list of variable types. See Available Variable '
               'Formats.'),
         metavar='VARS',
-        default='python')
+        default='pysprintf,pyformat')
     parser.add_option(
         '-p', '--pipeline',
         dest='pipeline',
