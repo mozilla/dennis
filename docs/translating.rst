@@ -9,6 +9,8 @@ Help
 
     $ dennis-cmd translate --help
 
+This lists available transforms, variable formats and other options.
+
 
 Summary
 =======
@@ -47,7 +49,7 @@ Dennis can translate around variable tokens in strings. By default, it
 translates around Python variable forms. You can specify other
 variable formats to translate around::
 
-    $ denis-cmd translate --vars=python
+    $ denis-cmd translate --vars=pysprintf,pyformat
 
 
 .. Note::

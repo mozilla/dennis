@@ -9,6 +9,9 @@ Help
 
     $ dennis-cmd lint --help
 
+This will list the availabe linters and codes, the variable formats and
+any additional options available.
+
 
 Summary
 =======
