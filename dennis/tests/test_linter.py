@@ -107,7 +107,7 @@ class MalformedNoTypeLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: %(count)')
+            'type missing: %(count)')
 
     def test_python_var_end_of_line(self):
         linted_entry = build_linted_entry(
@@ -121,7 +121,7 @@ class MalformedNoTypeLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: %(count)')
+            'type missing: %(count)')
 
     def test_python_var_not_malformed(self):
         """This used to be a false positive"""
@@ -153,7 +153,7 @@ class MalformedMissingRightBraceLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: {foo) bar is the best thing ever')
+            'missing right curly-brace: {foo) bar is the best thing ever')
 
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
@@ -165,7 +165,7 @@ class MalformedMissingRightBraceLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: {foo')
+            'missing right curly-brace: {foo')
 
     def test_python_var_missing_right_curly_brace_two_vars(self):
         # Test right-most one
@@ -178,7 +178,7 @@ class MalformedMissingRightBraceLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: {1]')
+            'missing right curly-brace: {1]')
 
         # Test left-most one
         linted_entry = build_linted_entry(
@@ -190,7 +190,7 @@ class MalformedMissingRightBraceLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: {0]" excede el tamano de {')
+            'missing right curly-brace: {0]" excede el tamano de {')
 
 
 class MalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
@@ -207,7 +207,7 @@ class MalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: product}')
+            'missing left curly-brace: product}')
 
         linted_entry = build_linted_entry(
             '#: kitsune/questions/templates/questions/answers.html:56\n'
@@ -219,7 +219,7 @@ class MalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 1)
         eq_(linted_entry.errors[0][2],
-            'malformed variables: } | product}')
+            'missing left curly-brace: } | product}')
 
 
 class MissingVarsLintRuleTest(LintRuleTestCase):

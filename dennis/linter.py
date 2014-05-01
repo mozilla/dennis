@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import polib
 
-from dennis.tools import VariableTokenizer
+from dennis.tools import VariableTokenizer, parse_dennis_note
 
 
 TranslatedString = namedtuple(
@@ -93,9 +93,9 @@ class MalformedNoTypeLintRule(LintRule):
 
             malformed = [item.strip() for item in malformed]
             linted_entry.add_error(
-                self.name,
+                self.num,
                 trstr,
-                u'malformed variables: {0}'.format(u', '.join(malformed)))
+                u'type missing: {0}'.format(u', '.join(malformed)))
 
 
 class MalformedMissingRightBraceLintRule(LintRule):
@@ -121,9 +121,10 @@ class MalformedMissingRightBraceLintRule(LintRule):
 
             malformed = [item.strip() for item in malformed]
             linted_entry.add_error(
-                self.name,
+                self.num,
                 trstr,
-                u'malformed variables: {0}'.format(u', '.join(malformed)))
+                u'missing right curly-brace: {0}'.format(
+                    u', '.join(malformed)))
 
 
 class MalformedMissingLeftBraceLintRule(LintRule):
@@ -149,9 +150,10 @@ class MalformedMissingLeftBraceLintRule(LintRule):
 
             malformed = [item.strip() for item in malformed]
             linted_entry.add_error(
-                self.name,
+                self.num,
                 trstr,
-                u'malformed variables: {0}'.format(u', '.join(malformed)))
+                u'missing left curly-brace: {0}'.format(
+                    u', '.join(malformed)))
 
 
 class MissingVarsLintRule(LintRule):
@@ -171,9 +173,10 @@ class MissingVarsLintRule(LintRule):
 
             if missing:
                 linted_entry.add_warning(
-                    self.name,
+                    self.num,
                     trstr,
-                    u'missing variables: {0}'.format(u', '.join(sorted(missing))))
+                    u'missing variables: {0}'.format(
+                        u', '.join(sorted(missing))))
 
 
 class InvalidVarsLintRule(LintRule):
@@ -193,9 +196,10 @@ class InvalidVarsLintRule(LintRule):
 
             if invalid:
                 linted_entry.add_error(
-                    self.name,
+                    self.num,
                     trstr,
-                    u'invalid variables: {0}'.format(u', '.join(sorted(invalid))))
+                    u'invalid variables: {0}'.format(
+                        u', '.join(sorted(invalid))))
 
 
 def get_available_lint_rules(name_and_num=False):
@@ -243,8 +247,13 @@ class Linter(object):
     def lint_poentry(self, poentry):
         linted_entry = LintedEntry(poentry)
 
+        skip = parse_dennis_note(poentry.comment)
+
+        # Check the comment to see if what we should ignore.
         for lint_rule in self.rules:
-            # FIXME - check for skipped rules here
+            if skip == '*' or lint_rule.num in skip:
+                continue
+
             lint_rule.lint(self.vartok, linted_entry)
 
         return linted_entry

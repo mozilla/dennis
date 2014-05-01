@@ -93,6 +93,9 @@ def lint_cmd(scriptname, command, argv):
         'usage: %prog lint [ DIR | FILENAME <FILENAME> ... ]',
         description='Lints a .po file for mismatched Python string '
         'formatting tokens.',
+        epilog='Note: You can ignore rules on a string-by-string basis by '
+        'adding an extracted comment "dennis-ignore: <comma-separated-rules>". '
+        'See documentation for details.',
         sections=[
             (format_vars(), True),
             (format_lint_rules(), True),
@@ -193,7 +196,7 @@ def lint_cmd(scriptname, command, argv):
                 # TODO: This is totally shite code.
                 for code, trstr, msg in entry.errors:
                     out(TERM.bold_red,
-                        'Error: {0}: {1}'.format(code, msg),
+                        '{0}: {1}'.format(code, msg),
                         TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
                         out(field, ' "', s, '"')
@@ -206,7 +209,7 @@ def lint_cmd(scriptname, command, argv):
             if not options.quiet and not options.errorsonly:
                 for code, trstr, msg in entry.warnings:
                     out(TERM.bold_yellow,
-                        'Warning: {0}: {1}'.format(code, msg),
+                        '{0}: {1}'.format(code, msg),
                         TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
                         out(field, ' "', s, '"')

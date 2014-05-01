@@ -94,6 +94,32 @@ Wait, but that's ugly and hard to read! If you install ``blessings``, it
 comes colorized and really easy to parse. All hail blessings!
 
 
+Skipping rules string-by-string
+===============================
+
+In the extracted comment, you can tell dennis to ignore lint rules (or
+all lint rules).
+
+Ignore everything::
+
+    #. dennis-ignore: *
+    msgid "German makes up 10% of our visitor base"
+    msgstr "A német a látogatóbázisunk 10%-át teszi ki"
+
+Ignore specific rules (comma-separated)::
+
+    #. dennis-ignore: E101,E102,E103
+    msgid "German makes up 10% of our visitor base"
+    msgstr "A német a látogatóbázisunk 10%-át teszi ki"
+
+Ignore everything, but note the beginning of the line is ignored by
+dennis so you can tell localizers to ignore the ignore thing::
+
+    #. localizers--ignore this comment. dennis-ignore: *
+    msgid "German makes up 10% of our visitor base"
+    msgstr "A német a látogatóbázisunk 10%-át teszi ki"
+
+
 Warnings and Errors
 ===================
 

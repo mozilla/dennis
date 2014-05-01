@@ -171,3 +171,24 @@ class BetterArgumentParser(optparse.OptionParser):
             help_text += '\n'
 
         return help_text
+
+
+# Matches:
+# "dennis-ignore: *" to skip all the rules
+# "dennis-ignore: E201,..." to ignore specific rules
+DENNIS_NOTE_RE = re.compile(r'dennis-ignore:\s+(\*|[EW0-9,]+)')
+
+def parse_dennis_note(text):
+    """Parses a dennis note and returns list of rules to skip"""
+    if not text:
+        return []
+
+    match = DENNIS_NOTE_RE.search(text)
+    if not match:
+        return []
+
+    match = match.group(1).strip()
+    if match == '*':
+        return '*'
+
+    return [item for item in match.split(',') if item]
