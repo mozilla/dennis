@@ -26,16 +26,16 @@ else:
     TERM = FauxTerminal()
 
 
-if PY2 and not sys.stdout.isatty():
-    def out(*s):
-        for part in s:
-            sys.stdout.write(part.encode('utf-8'))
-        sys.stdout.write('\n')
-else:
-    def out(*s):
-        for part in s:
-            sys.stdout.write(part)
-        sys.stdout.write('\n')
+def utf8_args(fun):
+    def _utf8_args(*args):
+        args = [part.encode('utf-8') for part in args]
+        return fun(*args)
+    return utf8_args
+
+def out(*s):
+    for part in s:
+        sys.stdout.write(part)
+    sys.stdout.write('\n')
 
 
 def err(*s):
@@ -46,6 +46,14 @@ def err(*s):
         sys.stderr.write(part)
     sys.stderr.write(TERM.normal)
     sys.stderr.write('\n')
+
+
+if PY2 and not sys.stdout.isatty():
+    # If it's Python2 and not a tty, then we need to encode the text
+    # type things as utf8 before spitting them out to stdout and
+    # stderr.
+    out = utf8_args(out)
+    err = utf8_args(err)
 
 
 def build_parser(usage, **kwargs):
