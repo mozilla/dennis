@@ -76,10 +76,11 @@ def format_pipeline_parts():
 def format_lint_rules():
     rules = sorted(get_available_lint_rules().items())
     return (
-        '\nAvailable Lint Rules:\n' +
+        '\nAvailable Lint Rules (E for Error, W for Warning):\n' +
         '\n'.join(
-            ['  {name:13}  {desc}'.format(name=name, desc=cls.desc)
-             for name, cls in rules])
+            ['  {num:6} {name}: {desc}'.format(num=num, name=cls.name,
+                                                desc=cls.desc)
+             for num, cls in rules])
     )
 
 
@@ -92,6 +93,9 @@ def lint_cmd(scriptname, command, argv):
         'usage: %prog lint [ DIR | FILENAME <FILENAME> ... ]',
         description='Lints a .po file for mismatched Python string '
         'formatting tokens.',
+        epilog='Note: You can ignore rules on a string-by-string basis by '
+        'adding an extracted comment "dennis-ignore: <comma-separated-rules>". '
+        'See documentation for details.',
         sections=[
             (format_vars(), True),
             (format_lint_rules(), True),
@@ -102,7 +106,7 @@ def lint_cmd(scriptname, command, argv):
         help=('Comma-separated list of variable types. See Available Variable '
               'Formats.'),
         metavar='VARS',
-        default='python')
+        default='pysprintf,pyformat')
     parser.add_option(
         '--rules',
         dest='rules',
@@ -192,7 +196,7 @@ def lint_cmd(scriptname, command, argv):
                 # TODO: This is totally shite code.
                 for code, trstr, msg in entry.errors:
                     out(TERM.bold_red,
-                        'Error: {0}: {1}'.format(code, msg),
+                        '{0}: {1}'.format(code, msg),
                         TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
                         out(field, ' "', s, '"')
@@ -205,7 +209,7 @@ def lint_cmd(scriptname, command, argv):
             if not options.quiet and not options.errorsonly:
                 for code, trstr, msg in entry.warnings:
                     out(TERM.bold_yellow,
-                        'Warning: {0}: {1}'.format(code, msg),
+                        '{0}: {1}'.format(code, msg),
                         TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
                         out(field, ' "', s, '"')
@@ -365,7 +369,7 @@ def translate_cmd(scriptname, command, argv):
         help=('Comma-separated list of variable types. See Available Variable '
               'Formats.'),
         metavar='VARS',
-        default='python')
+        default='pysprintf,pyformat')
     parser.add_option(
         '-p', '--pipeline',
         dest='pipeline',

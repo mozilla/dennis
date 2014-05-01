@@ -9,6 +9,9 @@ Help
 
     $ dennis-cmd lint --help
 
+This will list the availabe linters and codes, the variable formats and
+any additional options available.
+
 
 Summary
 =======
@@ -91,10 +94,37 @@ Wait, but that's ugly and hard to read! If you install ``blessings``, it
 comes colorized and really easy to parse. All hail blessings!
 
 
-Warnings
-========
+Skipping rules string-by-string
+===============================
 
-**What's a warning?**
+In the extracted comment, you can tell dennis to ignore lint rules (or
+all lint rules).
+
+Ignore everything::
+
+    #. dennis-ignore: *
+    msgid "German makes up 10% of our visitor base"
+    msgstr "A német a látogatóbázisunk 10%-át teszi ki"
+
+Ignore specific rules (comma-separated)::
+
+    #. dennis-ignore: E101,E102,E103
+    msgid "German makes up 10% of our visitor base"
+    msgstr "A német a látogatóbázisunk 10%-át teszi ki"
+
+Ignore everything, but note the beginning of the line is ignored by
+dennis so you can tell localizers to ignore the ignore thing::
+
+    #. localizers--ignore this comment. dennis-ignore: *
+    msgid "German makes up 10% of our visitor base"
+    msgstr "A német a látogatóbázisunk 10%-át teszi ki"
+
+
+Warnings and Errors
+===================
+
+What's a warning?
+-----------------
 
 Warnings indicate the translated string is either outdated or a poor
 translation, but the string is fine in the sense that it won't kick
@@ -106,24 +136,9 @@ translated string doesn't use that variable.
 That's not great and probably means the translated string needs to be
 updated, but it won't throw an error in production.
 
-**List of warnings**
 
-    **mismatched variable tokens**
-        There are formatting variable tokens in the *original* string
-        that aren't in the *translated* string.
-
-        Example::
-
-            Warning: mismatched: missing variables: {url}
-            msgid: "You can find help at {url}"
-            msgstr: "Get help!"
-
-
-
-Errors
-======
-
-**What's an error?**
+What's an error?
+----------------
 
 Errors indicate problems with the translated string that will cause
 an error to be thrown. These should get fixed pronto.
@@ -136,68 +151,98 @@ etc. No one likes that. I don't like that. You probably don't like
 that, either.
 
 
-**List of errors**
+Table of Warnings and errors
+----------------------------
 
-    **mismatched variable tokens**
-        There are formatting variable tokens in the *translated* string
-        that aren't in the original string.
-
-        Example::
-
-            Error: mismatched: invalid variables: {helpurl}
-            msgid: "You can find help at {url}"
-            msgstr: "You can find help at {helpurl}"
-
-        In this example, "helpurl" won't be in the list of variables to
-        interpolate and this will throw a KeyError. That's equivalent
-        to this:
-
-        >>> "You can find help at {helpurl}".format(url="http://example.com")
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in <module>
-        KeyError: 'helpurl'
-        >>>
-
-
-    **malformed**
-        The variable in the translated string is malformed or there are
-        characters in the translated string that will cause it to be
-        parsed as if it had variables.
-
-        Example (Python)::
-
-            Error: malformed variables: {foo bar baz
-            msgid: "{foo} bar baz"
-            msgstr: "{foo bar baz"
-
-        >>> "{foo bar baz".format(foo="some thing")
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in <module>
-        ValueError: unmatched '{' in format
-        >>>
-
-
-        Example (Python)::
-
-            Error: malformed variables: foo}
-            msgid: "{foo} bar baz"
-            msgstr: "foo} bar baz"
-
-        >>> "foo}".format(foo="some thing")
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in <module>
-        ValueError: Single '}' encountered in format string
-        >>>
-
-
-        Example (Python)::
-
-            Error: malformed variables: %(count)
-            msgid: "%(count)s view"
-            msgstr: "%(count) view"
-
-        >>> "%(count) view" % {"count": 5}
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in <module>
-        ValueError: unsupported format character 'v' (0x76) at index 9
-        >>>
++------+-----------------------------------------------------------------------+
+| Code | Description                                                           |
++======+=======================================================================+
+| E101 | Malformed variable missing type                                       |
+|      |                                                                       |
+|      | Only checks pythonpercent variables.                                  |
+|      |                                                                       |
+|      | Example (Python)::                                                    |
+|      |                                                                       |
+|      |     Error: malformed variables: %(count)                              |
+|      |     msgid: "%(count)s view"                                           |
+|      |     msgstr: "%(count) view"                                           |
+|      |                                                                       |
+|      | >>> "%(count) view" % {"count": 5}                                    |
+|      | Traceback (most recent call last):                                    |
+|      |   File "<stdin>", line 1, in <module>                                 |
+|      | ValueError: unsupported format character 'v' (0x76) at index 9        |
+|      | >>>                                                                   |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| E102 | Malformed variable missing right curly-brace                          |
+|      |                                                                       |
+|      | For example ``{foo`` with missing ``}``.                              |
+|      |                                                                       |
+|      | Only checks pythonformat variables.                                   |
+|      |                                                                       |
+|      | Example (Python)::                                                    |
+|      |                                                                       |
+|      |     Error: malformed variables: {foo bar baz                          |
+|      |     msgid: "{foo} bar baz"                                            |
+|      |     msgstr: "{foo bar baz"                                            |
+|      |                                                                       |
+|      | >>> "{foo bar baz".format(foo="some thing")                           |
+|      | Traceback (most recent call last):                                    |
+|      |   File "<stdin>", line 1, in <module>                                 |
+|      | ValueError: unmatched '{' in format                                   |
+|      | >>>                                                                   |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| E103 | Malformed variable missing left curly-brace                           |
+|      |                                                                       |
+|      | For example ``foo}`` with missing ``{``.                              |
+|      |                                                                       |
+|      | Only checks pythonformat variables.                                   |
+|      |                                                                       |
+|      | Example (Python)::                                                    |
+|      |                                                                       |
+|      |     Error: malformed variables: foo}                                  |
+|      |     msgid: "{foo} bar baz"                                            |
+|      |     msgstr: "foo} bar baz"                                            |
+|      |                                                                       |
+|      | >>> "foo}".format(foo="some thing")                                   |
+|      | Traceback (most recent call last):                                    |
+|      |   File "<stdin>", line 1, in <module>                                 |
+|      | ValueError: Single '}' encountered in format string                   |
+|      | >>>                                                                   |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| E201 | Invalid variables in translated string                                |
+|      |                                                                       |
+|      | There are formatting variable tokens in the *translated* string       |
+|      | that aren't in the original string.                                   |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |     Error: mismatched: invalid variables: {helpurl}                   |
+|      |     msgid: "You can find help at {url}"                               |
+|      |     msgstr: "You can find help at {helpurl}"                          |
+|      |                                                                       |
+|      | In this example, "helpurl" won't be in the list of variables to       |
+|      | interpolate and this will throw a KeyError. That's equivalent         |
+|      | to this:                                                              |
+|      |                                                                       |
+|      | >>> "You can find help at {helpurl}".format(url="http://example.com") |
+|      | Traceback (most recent call last):                                    |
+|      |   File "<stdin>", line 1, in <module>                                 |
+|      | KeyError: 'helpurl'                                                   |
+|      | >>>                                                                   |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| W202 | Missing variables in translated string                                |
+|      |                                                                       |
+|      | There are formatting variable tokens in the *original* string         |
+|      | that aren't in the *translated* string.                               |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |     Warning: mismatched: missing variables: {url}                     |
+|      |     msgid: "You can find help at {url}"                               |
+|      |     msgstr: "Get help!"                                               |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+

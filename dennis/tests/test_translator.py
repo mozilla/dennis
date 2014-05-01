@@ -21,7 +21,7 @@ from dennis.translator import (
 
 
 class TransformTestCase(TestCase):
-    vartok = VariableTokenizer(['python'])
+    vartok = VariableTokenizer(['pysprintf', 'pyformat'])
 
 
 class EmptyTransformTest(TransformTestCase):
@@ -162,7 +162,7 @@ class ZombieTransformTest(TransformTestCase):
 
 
 class HTMLExtractorTest(TestCase):
-    vartok = VariableTokenizer(['python'])
+    vartok = VariableTokenizer(['pysprintf', 'pyformat'])
 
     def test_basic(self):
         trans = HTMLExtractorTransform()
@@ -318,7 +318,7 @@ class RedactedTransformTest(TransformTestCase):
 
 class TranslatorTest(TestCase):
     def test_pirate_translate(self):
-        trans = Translator(['python'], ['pirate'])
+        trans = Translator(['pysprintf', 'pyformat'], ['pirate'])
         eq_(trans.translate_string(u'hello'),
             u'\'ello ahoy\u2757')
 
@@ -328,11 +328,12 @@ class TranslatorTest(TestCase):
             u'<b>\'ello</b> prepare to be boarded\u2757')
 
     def test_html_pirate_translate(self):
-        trans = Translator(['python'], ['html', 'pirate'])
+        trans = Translator(['pysprintf', 'pyformat'], ['html', 'pirate'])
         eq_(trans.translate_string(u'<b>hello</b>'),
             u'<b>\'ello ahoy\u2757</b>')
 
     def test_shouty_html_pirate_translate(self):
-        trans = Translator(['python'], ['shouty', 'html', 'pirate'])
+        trans = Translator(['pysprintf', 'pyformat'],
+                           ['shouty', 'html', 'pirate'])
         eq_(trans.translate_string(u'<b>hello.</b>\n'),
             u'<b>HELLO aye\u2757.</b>\n')

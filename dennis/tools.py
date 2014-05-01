@@ -32,32 +32,29 @@ class Var(object):
     name = ''
     desc = ''
     regexp = ''
-    malformed_regexp = ''
 
 
-# http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
-class PythonVar(Var):
-    name = 'python'
-    desc = 'Python %(foo)s and {foo} syntax'
+# https://docs.python.org/2/library/string.html#format-string-syntax
+class PythonFormatVar(Var):
+    name = 'pyformat'
+    desc = 'Python format string syntax (e.g. "{foo}")'
+
     regexp = (
         # %s and %(foo)s
         # Note: This doesn't support %E or %F because of problems
         # with false positives and urlencoding. Theoretically those
         # aren't getting used in gettext contexts anyhow.
         r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs])'
-        r'|'
+    )
+
+# http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
+class PythonPercentVar(Var):
+    name = 'pysprintf'
+    desc = 'Python sprintf syntax (e.g. "%(foo)s")'
+
+    regexp = (
         # {foo}
         r'(?:\{\S+?\})'
-    )
-    malformed_regexp = (
-        # %(count) with no type at end
-        r'(?:%[\(][^\)\s]+[\)](?:\s|$))'
-        r'|'
-        # {foo with missing }
-        r'(?:\{[^\}]+(?:\{|$))'
-        r'|'
-        # foo} with missing {
-        r'(?:(?:^|\})[^\{]+\})'
     )
 
 
@@ -107,12 +104,9 @@ class VariableTokenizer(object):
             r')'
         )
 
-        # Generate malformed variable regexp
-        self.malformed_vars_re = re.compile(
-            r'(' +
-            '|'.join([vt.malformed_regexp for vt in self.vars_]) +
-            r')'
-        )
+    def contains(self, var_):
+        """Does this tokenizer contain specified variable type?"""
+        return var_ in [tok.name for tok in self.vars_]
 
     def tokenize(self, text):
         """Breaks s into strings and Python formatting tokens
@@ -177,3 +171,24 @@ class BetterArgumentParser(optparse.OptionParser):
             help_text += '\n'
 
         return help_text
+
+
+# Matches:
+# "dennis-ignore: *" to skip all the rules
+# "dennis-ignore: E201,..." to ignore specific rules
+DENNIS_NOTE_RE = re.compile(r'dennis-ignore:\s+(\*|[EW0-9,]+)')
+
+def parse_dennis_note(text):
+    """Parses a dennis note and returns list of rules to skip"""
+    if not text:
+        return []
+
+    match = DENNIS_NOTE_RE.search(text)
+    if not match:
+        return []
+
+    match = match.group(1).strip()
+    if match == '*':
+        return '*'
+
+    return [item for item in match.split(',') if item]
