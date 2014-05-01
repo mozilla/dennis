@@ -6,10 +6,15 @@ What's new in dennis
    :local:
 
 
-Version 0.4: In development
-===========================
+Version 0.4: May 1st, 2014
+==========================
 
 **Changes**
+
+* Tweak Python 3 support
+* c42b7e8 Overhaul linter for finer-grained linting
+* 3e1cc1d Add extracted-comment-based lint rule ignoring so you can
+  easily ignore false positives on a string-by-string basis (#34)
 
 
 Version 0.3.11: April 16th, 2014
@@ -17,8 +22,8 @@ Version 0.3.11: April 16th, 2014
 
 **Changes**
 
-* 0c2e5a9 Fix foo} with missing right curly brace
-* Python 3 support
+* 0c2e5a9 Fix foo} with missing right curly brace (#33)
+* Python 3 support (#30)
 * 6f60b00 Add reverse transform
 
 
