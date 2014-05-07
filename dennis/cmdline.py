@@ -204,7 +204,9 @@ def lint_cmd(scriptname, command, argv):
                 # TODO: This is totally shite code.
                 for code, trstr, msg in entry.errors:
                     out(TERM.bold_red,
-                        '{0}: {1}'.format(code, msg),
+                        code,
+                        ': ',
+                        msg,
                         TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
                         out(field, ' "', s, '"')
@@ -217,7 +219,9 @@ def lint_cmd(scriptname, command, argv):
             if not options.quiet and not options.errorsonly:
                 for code, trstr, msg in entry.warnings:
                     out(TERM.bold_yellow,
-                        '{0}: {1}'.format(code, msg),
+                        code,
+                        ': ',
+                        msg,
                         TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
                         out(field, ' "', s, '"')
