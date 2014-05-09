@@ -6,8 +6,8 @@ What's new in dennis
    :local:
 
 
-Version 0.4.1: In development
-=============================
+Version 0.4.1: May 9th, 2014
+============================
 
 * 831af1a Fix lint output regarding UnicodeEncodeErrors (#37)
  
