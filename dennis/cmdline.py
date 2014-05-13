@@ -1,5 +1,6 @@
 import os
 import sys
+from functools import wraps
 
 import polib
 
@@ -27,10 +28,12 @@ else:
 
 
 def utf8_args(fun):
+    @wraps(fun)
     def _utf8_args(*args):
         args = [part.encode('utf-8') for part in args]
         return fun(*args)
-    return utf8_args
+    return _utf8_args
+
 
 def out(*s):
     for part in s:
@@ -95,7 +98,7 @@ def format_lint_rules():
 def lint_cmd(scriptname, command, argv):
     """Lints a .po file or directory of files."""
     if not '--quiet' in argv and not '-q' in argv:
-        print('dennis version {version}'.format(version=__version__))
+        out('dennis version {version}'.format(version=__version__))
 
     parser = build_parser(
         'usage: %prog lint [ DIR | FILENAME <FILENAME> ... ]',
@@ -284,7 +287,7 @@ def lint_cmd(scriptname, command, argv):
 
 def status_cmd(scriptname, command, argv):
     """Shows status of a .po file."""
-    print('{0} version {1}'.format(scriptname, __version__))
+    out('{0} version {1}'.format(scriptname, __version__))
     parser = build_parser(
         'usage: %prog status [ DIR | FILENAME <FILENAME> ... ]',
         description='Shows status of a .po file.')
