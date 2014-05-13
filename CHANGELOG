@@ -6,10 +6,10 @@ What's new in dennis
    :local:
 
 
-Version 0.4.2: In development
+Version 0.4.2: May 13th, 2014
 =============================
 
-*
+* 06e4b6d Fix utf8_args decoratorr
 
 
 Version 0.4.1: May 9th, 2014
