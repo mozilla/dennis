@@ -203,6 +203,23 @@ class BlankLintRule(LintRule):
                     u'translated string is solely whitespace')
 
 
+class UnchangedLintRule(LintRule):
+    num = 'W302'
+    name = 'unchanged'
+    desc = 'Makes sure string is actually translated'
+
+    def lint(self, vartok, linted_entry):
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            if trstr.msgstr_string in trstr.msgid_strings:
+                linted_entry.add_warning(
+                    self.num,
+                    trstr,
+                    u'translated string is same as source string')
+
+
 class InvalidVarsLintRule(LintRule):
     num = 'E201'
     name = 'invalidvars'

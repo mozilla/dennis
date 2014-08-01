@@ -10,6 +10,7 @@ from dennis.linter import (
     MalformedMissingLeftBraceLintRule,
     MissingVarsLintRule,
     InvalidVarsLintRule,
+    UnchangedLintRule,
     LintedEntry,
     Linter
 )
@@ -480,3 +481,18 @@ class BlankLintRuleTestCase(LintRuleTestCase):
 
             eq_(len(linted_entry.errors), 0)
             eq_(len(linted_entry.warnings), 1)
+
+
+class UnchangedLintRuleTestCase(LintRuleTestCase):
+    lintrule = UnchangedLintRule()
+
+    def test_unchanged(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo"\n'
+            'msgstr "Foo"\n')
+
+        self.lintrule.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 1)
