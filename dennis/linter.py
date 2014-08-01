@@ -166,6 +166,13 @@ class MissingVarsLintRule(LintRule):
             if not trstr.msgstr_string:
                 continue
 
+            if len(trstr.msgid_strings) > 1:
+                # If the msgstr uses a variable that isn't in any of
+                # the msgid strings, then that's an error (and handled
+                # by a different LintRule). Anything else we should
+                # ignore.
+                continue
+
             msgid_tokens = vartok.extract_tokens(' '.join(trstr.msgid_strings))
             msgstr_tokens = vartok.extract_tokens(trstr.msgstr_string)
 

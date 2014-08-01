@@ -300,6 +300,21 @@ class MissingVarsLintRuleTest(LintRuleTestCase):
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 0)
 
+    def test_plurals_not_missing(self):
+        # If the msgstr doesn't have variables that are in msgid or
+        # msgid_plural, that's ok since we don't know which plurality
+        # it is.
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "1 post"\n'
+            'msgid_plural "{0} posts"\n'
+            'msgstr[0] "1 moo"\n')
+
+        self.lintrule.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.warnings), 0)
+        eq_(len(linted_entry.errors), 0)
+
     def test_double_percent(self):
         # Double-percent shouldn't be picked up as a variable.
         # Issue #28.
