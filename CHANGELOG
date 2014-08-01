@@ -6,10 +6,12 @@ What's new in dennis
    :local:
 
 
-Version 0.4.3: In development
-=============================
+Version 0.4.3: August 1st, 2014
+===============================
 
-* 
+* ead33d3 Add UnchangedLintRule (#36)
+* fde6d9a Add BlankLintRule (#36)
+* 73b1f35 Fix W202 regarding missing variables in pluralistic strings (#38)
 
 
 Version 0.4.2: May 13th, 2014
