@@ -246,3 +246,14 @@ Table of Warnings and errors
 |      |     msgstr: "Get help!"                                               |
 |      |                                                                       |
 +------+-----------------------------------------------------------------------+
+| W301 | String is all whitespace                                              |
+|      |                                                                       |
+|      | The translated string is all whitespace.                              |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |    Error: blank: translated string is solely whitespace               |
+|      |    msgid: "Foo"                                                       |
+|      |    msgstr: "  "                                                       |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+

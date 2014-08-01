@@ -186,6 +186,23 @@ class MissingVarsLintRule(LintRule):
                         u', '.join(sorted(missing))))
 
 
+class BlankLintRule(LintRule):
+    num = 'W301'
+    name = 'blank'
+    desc = 'Translated string is only whitespace'
+
+    def lint(self, vartok, linted_entry):
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            if trstr.msgstr_string.isspace():
+                linted_entry.add_warning(
+                    self.num,
+                    trstr,
+                    u'translated string is solely whitespace')
+
+
 class InvalidVarsLintRule(LintRule):
     num = 'E201'
     name = 'invalidvars'

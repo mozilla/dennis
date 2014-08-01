@@ -4,6 +4,7 @@ from nose.tools import eq_
 import polib
 
 from dennis.linter import (
+    BlankLintRule,
     MalformedNoTypeLintRule,
     MalformedMissingRightBraceLintRule,
     MalformedMissingLeftBraceLintRule,
@@ -447,3 +448,35 @@ class InvalidVarsLintRuleTest(LintRuleTestCase):
 
         eq_(len(linted_entry.warnings), 0)
         eq_(len(linted_entry.errors), 0)
+
+
+class BlankLintRuleTestCase(LintRuleTestCase):
+    lintrule = BlankLintRule()
+
+    def test_fine(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo"\n'
+            'msgstr ""\n')
+
+        self.lintrule.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 0)
+
+    def test_whitespace(self):
+        testdata = [
+            ' ',
+            '  ',
+            '\t'
+        ]
+        for data in testdata:
+            linted_entry = build_linted_entry(
+                '#: foo/foo.py:5\n'
+                'msgid "Foo"\n'
+                'msgstr "%s"\n' % data)
+
+            self.lintrule.lint(self.vartok, linted_entry)
+
+            eq_(len(linted_entry.errors), 0)
+            eq_(len(linted_entry.warnings), 1)
