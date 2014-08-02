@@ -228,7 +228,7 @@ def lint_cmd(scriptname, command, argv):
                         TERM.normal)
                     for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
                         out(field, ' "', s, '"')
-                    out(trstr.msgstr_field, ' "', trstr.msgstr_string)
+                    out(trstr.msgstr_field, ' "', trstr.msgstr_string, '"')
                     out('')
 
         files_to_errors[fn] = (error_count, warning_count)

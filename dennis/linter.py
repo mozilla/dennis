@@ -1,5 +1,6 @@
 import re
 from collections import namedtuple
+from itertools import izip_longest
 
 import polib
 
@@ -218,6 +219,51 @@ class UnchangedLintRule(LintRule):
                     self.num,
                     trstr,
                     u'translated string is same as source string')
+
+
+class MismatchedHTMLLintRule(LintRule):
+    num = 'W303'
+    name = 'html'
+    desc = 'Checks for matching html between source and translated strings'
+
+    def lint(self, vartok, linted_entry):
+        from dennis.translator import HTMLExtractorTransform, Token
+        html = HTMLExtractorTransform()
+
+        def equiv(left, right):
+            return left == right
+
+        def tokenize(text):
+            tokens = [token for token in html.transform(vartok, [Token(text)])
+                      if token.type == 'html' and not token.s.startswith('&')]
+            return sorted(tokens, key=lambda token: token.s)
+
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            msgid_parts = tokenize(trstr.msgid_strings[0])
+
+            if len(trstr.msgid_strings) > 1:
+                # If this is a plural, then we check to see if the two
+                # msgid strings match each other. If not, then we move
+                # on because I have no idea what to do in this case.
+                msgid_plural_parts = tokenize(trstr.msgid_strings[1])
+
+                for left, right in izip_longest(msgid_parts, msgid_plural_parts, fillvalue=None):
+                    if not left or not right or not equiv(left, right):
+                        return
+
+            msgstr_parts = tokenize(trstr.msgstr_string)
+            for left, right in izip_longest(msgid_parts, msgstr_parts,
+                                            fillvalue=None):
+                if not left or not right or not equiv(left, right):
+                    linted_entry.add_warning(
+                        self.num,
+                        trstr,
+                        u'different html: "{0}" vs. "{1}"'.format(
+                            left or '', right or ''))
+                    break
 
 
 class InvalidVarsLintRule(LintRule):

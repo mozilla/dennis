@@ -41,6 +41,9 @@ class Token(object):
             and self.mutable == token.mutable
             and self.type == token.type)
 
+    def __ne__(self, token):
+        return not self.__eq__(token)
+
 
 class Transform(object):
     name = ''

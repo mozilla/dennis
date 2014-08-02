@@ -8,6 +8,7 @@ from dennis.linter import (
     MalformedNoTypeLintRule,
     MalformedMissingRightBraceLintRule,
     MalformedMissingLeftBraceLintRule,
+    MismatchedHTMLLintRule,
     MissingVarsLintRule,
     InvalidVarsLintRule,
     UnchangedLintRule,
@@ -491,6 +492,53 @@ class UnchangedLintRuleTestCase(LintRuleTestCase):
             '#: foo/foo.py:5\n'
             'msgid "Foo"\n'
             'msgstr "Foo"\n')
+
+        self.lintrule.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 1)
+
+
+class MismatchedHTMLLintRule(LintRuleTestCase):
+    lintrule = MismatchedHTMLLintRule()
+
+    def test_fine(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "<b>Foo</b>"\n'
+            'msgstr "<b>ARGH</b>"\n')
+
+        self.lintrule.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 0)
+
+    def test_fail(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "<b>Foo</b>"\n'
+            'msgstr "<em>ARGH</em>"\n')
+
+        self.lintrule.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 1)
+
+    def test_different_numbers(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "<b>Foo"\n'
+            'msgstr "<b>ARGH</b>"\n')
+
+        self.lintrule.lint(self.vartok, linted_entry)
+
+        eq_(len(linted_entry.errors), 0)
+        eq_(len(linted_entry.warnings), 1)
+
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "<b>Foo</b>"\n'
+            'msgstr "<b>ARGH"\n')
 
         self.lintrule.lint(self.vartok, linted_entry)
 
