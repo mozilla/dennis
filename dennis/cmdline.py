@@ -5,11 +5,12 @@ from functools import wraps
 import polib
 
 from dennis import __version__
-from dennis.linter import Linter, get_available_lint_rules
+from dennis.linter import Linter
+from dennis.minisix import PY2
+from dennis.templatelinter import TemplateLinter
 from dennis.tools import (
     BetterArgumentParser,
     FauxTerminal,
-    PY2,
     Terminal,
     get_available_vars
 )
@@ -85,9 +86,22 @@ def format_pipeline_parts():
 
 
 def format_lint_rules():
+    from dennis.linter import get_available_lint_rules
     rules = sorted(get_available_lint_rules().items())
     return (
         '\nAvailable Lint Rules (E for Error, W for Warning):\n' +
+        '\n'.join(
+            ['  {num:6} {name}: {desc}'.format(num=num, name=cls.name,
+                                                desc=cls.desc)
+             for num, cls in rules])
+    )
+
+
+def format_lint_template_rules():
+    from dennis.templatelinter import get_available_lint_rules
+    rules = sorted(get_available_lint_rules().items())
+    return (
+        '\nAvailable Template Lint Rules (E for Error, W for Warning):\n' +
         '\n'.join(
             ['  {num:6} {name}: {desc}'.format(num=num, name=cls.name,
                                                 desc=cls.desc)
@@ -102,8 +116,7 @@ def lint_cmd(scriptname, command, argv):
 
     parser = build_parser(
         'usage: %prog lint [ DIR | FILENAME <FILENAME> ... ]',
-        description='Lints a .po file for mismatched Python string '
-        'formatting tokens.',
+        description='Lints .po files for issues.',
         epilog='Note: You can ignore rules on a string-by-string basis by '
         'adding an extracted comment "dennis-ignore: <comma-separated-rules>". '
         'See documentation for details.',
@@ -155,6 +168,10 @@ def lint_cmd(scriptname, command, argv):
         po_files = args
 
     po_files = [os.path.abspath(fn) for fn in po_files if fn.endswith('.po')]
+
+    if not po_files:
+        err('No files to work on.')
+        return 1
 
     files_to_errors = {}
     total_error_count = 0
@@ -266,7 +283,7 @@ def lint_cmd(scriptname, command, argv):
             line = ' {errors:5}  {locale} ({fn})'
         else:
             header = 'Warnings  Errors  Filename'
-            line = ' {warnings:5}     {errors:5}  {locale} ({fn})'
+            line = '   {warnings:5}   {errors:5}  {locale} ({fn})'
 
         file_counts = list(reversed(sorted(file_counts)))
         printed_header = False
@@ -283,6 +300,146 @@ def lint_cmd(scriptname, command, argv):
 
     # Return 0 if everything was fine or 1 if there were errors.
     return 1 if total_error_count else 0
+
+
+def linttemplate_cmd(scriptname, command, argv):
+    """Lints a .pot file."""
+    out('dennis version {version}'.format(version=__version__))
+
+    parser = build_parser(
+        'usage: %prog linttemplate [ DIR | FILENAME <FILENAME> ... ]',
+        description='Lints .pot files for issues.',
+        epilog='Note: You can ignore rules on a string-by-string basis by '
+        'adding an extracted comment "dennis-ignore: <comma-separated-rules>". '
+        'See documentation for details.',
+        sections=[
+            (format_vars(), True),
+            (format_lint_template_rules(), True),
+        ])
+    parser.add_option(
+        '--vars',
+        dest='vars',
+        help=('Comma-separated list of variable types. See Available Variable '
+              'Formats.'),
+        metavar='VARS',
+        default='pysprintf,pyformat')
+    parser.add_option(
+        '--rules',
+        dest='rules',
+        help=('Comma-separated list of template lint rules to use. Defaults '
+              'to all rules. See Available Template Lint Rules.'),
+        metavar='RULES',
+        default='')
+
+    (options, args) = parser.parse_args(argv)
+
+    if not args:
+        parser.print_help()
+        return 1
+
+    linter = TemplateLinter(options.vars.split(','), options.rules.split(','))
+
+    if os.path.isdir(args[0]):
+        po_files = []
+        for root, dirs, files in os.walk(args[0]):
+            po_files.extend(
+                [os.path.join(root, fn) for fn in files
+                 if fn.endswith('.pot')])
+
+    else:
+        po_files = args
+
+    po_files = [os.path.abspath(fn) for fn in po_files if fn.endswith('.pot')]
+
+    if not po_files:
+        err('No files to work on.')
+        return 1
+
+    files_to_warnings = {}
+    total_warning_count = 0
+    total_error_count = 0
+
+    for fn in po_files:
+        try:
+            if not os.path.exists(fn):
+                raise IOError('File "{fn}" does not exist.'.format(fn=fn))
+
+            results = linter.verify_file(fn)
+
+        except IOError as ioe:
+            # This is not a valid .po file. So mark it as an error.
+            err('>>> Problem opening file: {fn}'.format(fn=fn))
+            err(repr(ioe))
+            out('')
+            total_error_count += 1
+            continue
+
+        # Extract all the problematic LintItems--they have non-empty
+        # missing or invalid lists.
+        problem_results = [r for r in results if r.has_problems()]
+
+        # We don't want to print output for files that are fine, so we
+        # update the bookkeeping and move on.
+        if not problem_results:
+            files_to_warnings[fn] = 0
+            continue
+
+        out(TERM.bold_green,
+            '>>> Working on: {fn}'.format(fn=fn),
+            TERM.normal)
+
+        warning_count = 0
+
+        for entry in problem_results:
+            total_warning_count +=  len(entry.warnings)
+            warning_count +=  len(entry.warnings)
+
+            for code, idstr, msg in entry.warnings:
+                out(TERM.bold_yellow,
+                    code,
+                    ': ',
+                    msg,
+                    TERM.normal)
+                for field, s in zip(idstr.msgid_fields, idstr.msgid_strings):
+                    out(field, ' "', s, '"')
+                    out('')
+
+        files_to_warnings[fn] = warning_count
+
+        out('Totals')
+        out('  Warnings: {warnings:5}'.format(warnings=warning_count))
+        out('')
+
+    if len(po_files) > 1:
+        out('Final totals')
+        out('  Number of files examined:          {count:5}'.format(
+            count=len(po_files)))
+        out('  Total number of warnings:          {count:5}'.format(
+            count=total_warning_count))
+        out('')
+
+        file_counts = [
+            (counts, fn.split(os.sep)[-1])
+            for (fn, counts) in files_to_warnings.items()
+        ]
+
+        header = 'Warnings  Filename'
+        line = '   {warnings:5}  {fn}'
+
+        file_counts = list(reversed(sorted(file_counts)))
+        printed_header = False
+        for warning_count, fn in file_counts:
+            if not warning_count:
+                continue
+            if not printed_header:
+                out(header)
+                printed_header = True
+
+            out(line.format(warnings=warning_count, fn=fn))
+
+    # linttemplate never lints for errors, so we always return 0
+    # unless there was a non-existent file.
+    return total_error_count
 
 
 def status_cmd(scriptname, command, argv):

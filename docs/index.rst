@@ -11,23 +11,28 @@ It includes the following subcommands:
 
   The system allows for defining other variable formats.
 
+* **linttemplate**: Lints ``.pot`` files for problems in strings that
+  lead to poor localizations.
+
 * **status**: Get a high-level status of a ``.po`` file including
   a list of unstranslated strings.
 
 * **translate**: Translates strings in ``.po`` files into something
   else! Comes with an HTML extractor (tokenizes strings so that only
   the text is translated) and a bunch of translations like
-  Pirate!. This is helpful for l10n testing, development, finding
-  unicode/layout problems, amazing your friends, hilarious April 1st
-  shenanigans, etc.
+  Pirate!.
 
-  The system allows for other translators and extractors using a
-  loosely coupled pipeline.
+  This is helpful for l10n testing, development, finding unicode/layout
+  problems, amazing your friends, hilarious April 1st shenanigans, etc.
+
+  Specify the tokenizer/transform pipeline you want to use that combines
+  things. Zombie? Sure! Shouty Zombie? Ok! Manic shouty Dubstep? Bring
+  it on!
 
   This also works on strings passed in as command line arguments and
   as stdin---it doesn't have to be a ``.po`` file or in a ``.po``
-  format. Dennis uses dennis to translate all dennis commit messages
-  into Pirate!. That's how cool dennis is!
+  format. For example, Dennis uses dennis to translate all dennis
+  commit messages into Pirate!. That's how cool dennis is!
 
 
 Quick start
@@ -46,6 +51,10 @@ Lint all your ``.po`` files for errors::
 
     $ dennis-cmd lint --errorsonly locale/
 
+Lint a ``.pot`` file for problems::
+
+    $ dennis-cmd linttemplate locale/templates/LC_MESSAGES/messages.pot
+
 Translate a ``.po`` file in place into Pirate!::
 
     $ dennis-cmd translate --pipeline=html,pirate \
@@ -63,6 +72,7 @@ Project details
 :Documentation: http://dennis.rtfd.org/
 :Issue tracker: https://github.com/willkg/dennis/issues
 :License:       BSD 3-clause; see LICENSE file
+:Donate:        `gittip <https://www.gittip.com/on/github/willkg/>`_
 
 
 User guide
@@ -74,6 +84,7 @@ User guide
    changelog
    translating
    linting
+   templatelinting
    statusing
    django
    api

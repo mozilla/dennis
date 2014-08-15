@@ -28,7 +28,7 @@ setup(
     long_description=open(READMEFILE).read(),
     license='Simplified BSD License',
     author='Will Kahn-Greene',
-    author_email='willg@bluesock.org',
+    author_email='willkg@bluesock.org',
     keywords='l10n localization po',
     url='http://github.com/willkg/dennis',
     zip_safe=True,

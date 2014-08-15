@@ -1,15 +1,7 @@
 import optparse
 import re
-import sys
 
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
-
-if PY2:
-    textclass = unicode
-else:
-    textclass = str
+from dennis.minisix import textclass
 
 
 class _MockBlessedThing(textclass):
@@ -33,11 +25,36 @@ class Var(object):
     desc = ''
     regexp = ''
 
+    identifier = None
+
+    @classmethod
+    def extract_variable_name(cls, text):
+        raise NotImplemented
+
 
 # https://docs.python.org/2/library/string.html#format-string-syntax
 class PythonFormatVar(Var):
     name = 'pyformat'
     desc = 'Python format string syntax (e.g. "{0}", "{foo}")'
+
+    regexp = (
+        # {foo}
+        r'(?:\{\S*?\})'
+    )
+
+    identifier = re.compile(r'\{([^!:\}]*)')
+
+    @classmethod
+    def extract_variable_name(cls, text):
+        identifier = cls.identifier.match(text)
+        if identifier:
+            return identifier.group(1)
+
+
+# http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
+class PythonPercentVar(Var):
+    name = 'pysprintf'
+    desc = 'Python sprintf syntax (e.g. "%s", "%(foo)s")'
 
     regexp = (
         # %s and %(foo)s
@@ -47,15 +64,17 @@ class PythonFormatVar(Var):
         r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs])'
     )
 
-# http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
-class PythonPercentVar(Var):
-    name = 'pysprintf'
-    desc = 'Python sprintf syntax (e.g. "%s", "%(foo)s")'
-
-    regexp = (
-        # {foo}
-        r'(?:\{\S+?\})'
+    identifier = re.compile(
+        r'%'
+        r'(?:' + r'\((\S+?)\)' + r')?'
+        r'[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs]'
     )
+
+    @classmethod
+    def extract_variable_name(cls, text):
+        identifier = cls.identifier.match(text)
+        if identifier:
+            return identifier.group(1) or ''
 
 
 def get_available_vars():
@@ -121,15 +140,24 @@ class VariableTokenizer(object):
         """
         return self.vars_re.split(text)
 
-    def extract_tokens(self, text):
-        """Returns sorted tuple of tokens in the text"""
+    def extract_tokens(self, text, unique=True):
+        """Returns the set of variable tokens in the text"""
         try:
-            return set(token for token in self.vars_re.findall(text))
+            tokens = self.vars_re.findall(text)
+            if unique:
+                tokens = set(tokens)
+            return tokens
         except TypeError:
             print('TYPEERROR: {0}'.format(repr(text)))
 
     def is_token(self, text):
+        """Is this text a variable token?"""
         return self.vars_re.match(text) is not None
+
+    def extract_variable_name(self, text):
+        for vt in self.vars_:
+            if re.compile(vt.regexp).match(text):
+                return vt.extract_variable_name(text)
 
 
 class BetterArgumentParser(optparse.OptionParser):

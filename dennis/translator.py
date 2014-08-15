@@ -1,15 +1,10 @@
-try:
-    # Python 2
-    from HTMLParser import HTMLParser
-except ImportError:
-    # Python 3
-    from html.parser import HTMLParser
-
-import polib
 import re
 import string
 
-from dennis.tools import PY2, VariableTokenizer, all_subclasses
+import polib
+
+from dennis.minisix import PY2, HTMLParser
+from dennis.tools import VariableTokenizer, all_subclasses
 
 
 DEBUG = False

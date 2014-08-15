@@ -1,8 +1,10 @@
+import os
 from unittest import TestCase
 
 from nose.tools import eq_
 import polib
 
+from dennis.cmdline import lint_cmd
 from dennis.linter import (
     BlankLintRule,
     MalformedNoTypeLintRule,
@@ -15,8 +17,58 @@ from dennis.linter import (
     LintedEntry,
     Linter
 )
+from dennis.minisix import StringIO
 from dennis.tools import VariableTokenizer
-from dennis.tests import build_po_string
+from dennis.tests import build_po_string, redirect, tempdir
+
+
+class LintCmdTest(TestCase):
+    def test_empty(self):
+        stdout = StringIO()
+        with redirect(stdout=stdout):
+            lint_cmd('test', 'lint', [])
+
+    def test_basic(self):
+        with tempdir() as dir_:
+            pofile = build_po_string(
+                '#: foo/foo.py:5\n'
+                'msgid "Foo: %(l)s"\n'
+                'msgstr "Gmorp!"\n')
+
+            fn = os.path.join(dir_, 'messages.po')
+            with open(fn, 'w') as fp:
+                fp.write(pofile)
+
+            stdout = StringIO()
+            stderr = StringIO()
+            with redirect(stdout=stdout, stderr=stderr):
+                lint_cmd('test', 'lint', [fn])
+
+            assert '>>> Working on:' in stdout.getvalue()
+
+    def test_no_files_to_work_on(self):
+        stdout = StringIO()
+        stderr = StringIO()
+        with redirect(stdout=stdout, stderr=stderr):
+            ret = lint_cmd('test', 'lint', ['foo'])
+
+        eq_(ret, 1)
+        assert 'No files to work on.' in stderr.getvalue()
+
+    def test_file_not_exists(self):
+        with tempdir() as dir_:
+            fn = os.path.join(dir_, 'messages.po')
+            stdout = StringIO()
+            stderr = StringIO()
+            with redirect(stdout=stdout, stderr=stderr):
+                ret = lint_cmd('test', 'lint', [fn])
+
+            eq_(ret, 1)
+            assert (
+                'IOError' in stderr.getvalue()
+                or 'OSError' in stderr.getvalue()
+            )
+            assert 'does not exist' in stderr.getvalue()
 
 
 class LinterTest(TestCase):

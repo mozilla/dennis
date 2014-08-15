@@ -1,3 +1,9 @@
+import contextlib
+import shutil
+import sys
+import tempfile
+
+
 def build_po_string(data):
     return (
         '#, fuzzy\n'
@@ -14,3 +20,51 @@ def build_po_string(data):
         '"Content-Transfer-Encoding: 8bit\\n"\n'
         '"X-Generator: Translate Toolkit 1.6.0\\n"\n\n'
         + data)
+
+
+@contextlib.contextmanager
+def tempdir():
+    """Builds a tempdir and cleans up afterwards
+
+    Usage::
+
+        with tempdir() as dir_:
+            # blah blah blah
+
+    """
+    dir_ = tempfile.mkdtemp()
+    yield dir_
+    shutil.rmtree(dir_)
+
+
+@contextlib.contextmanager
+def redirect(stdin=None, stdout=None, stderr=None):
+    """Redirects stdin, stdout and stderr
+
+    Usage::
+
+        stdout = StringIO()
+        stderr = StringIO()
+
+        with redirect(stdout=stdout, stderr=stderr):
+            print 'blah blah'
+
+
+        # do soething with stdout.getvalue()
+
+    """
+    old_stdin = sys.stdin
+    if stdin:
+        sys.stdin = stdin
+    old_stdout = sys.stdout
+    if stdout:
+        sys.stdout = stdout
+    old_stderr = sys.stderr
+    if stderr:
+        sys.stderr = stderr
+
+    yield
+
+    sys.stdin = old_stdin
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr

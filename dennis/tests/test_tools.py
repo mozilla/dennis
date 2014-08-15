@@ -1,4 +1,9 @@
-from dennis.tools import VariableTokenizer, parse_dennis_note
+from dennis.tools import (
+    VariableTokenizer,
+    PythonFormatVar,
+    PythonPercentVar,
+    parse_dennis_note
+)
 
 from nose.tools import eq_
 
@@ -16,6 +21,28 @@ def test_python_tokenizing():
 
     for text, expected in data:
         eq_(vartok.tokenize(text), expected)
+
+
+def test_pythonformatvar():
+    v = PythonFormatVar()
+
+    eq_(v.extract_variable_name('{}'), '')
+    eq_(v.extract_variable_name('{0}'), '0')
+    eq_(v.extract_variable_name('{abc}'), 'abc')
+    eq_(v.extract_variable_name('{abc.def}'), 'abc.def')
+    eq_(v.extract_variable_name('{abc[0]}'), 'abc[0]')
+    eq_(v.extract_variable_name('{abc!s}'), 'abc')  # conversion
+    eq_(v.extract_variable_name('{abc: >16}'), 'abc')  # format_spec
+
+
+def test_pythonpercentvar():
+    v = PythonPercentVar()
+
+    eq_(v.extract_variable_name('%s'), '')
+    eq_(v.extract_variable_name('%d'), '')
+    eq_(v.extract_variable_name('%.2f'), '')
+
+    eq_(v.extract_variable_name('%(foo)s'), 'foo')
 
 
 def test_parse_dennis_note():

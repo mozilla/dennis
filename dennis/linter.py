@@ -1,15 +1,10 @@
 import re
 from collections import namedtuple
 
-
 import polib
 
-from dennis.tools import PY2, VariableTokenizer, parse_dennis_note, all_subclasses
-
-if PY2:
-    from itertools import izip_longest
-else:
-    from itertools import zip_longest as izip_longest
+from dennis.minisix import izip_longest
+from dennis.tools import VariableTokenizer, parse_dennis_note, all_subclasses
 
 
 TranslatedString = namedtuple(
@@ -67,8 +62,7 @@ class LintRule(object):
     def lint(self, vartok, linted_entry):
         """Takes a linted entry and adds errors and warnings
 
-        :arg vartok: the variable tokenizer to use for tokenizing
-            on variable tokens
+        :arg vartok: the variable tokenizer for extracting variables
         :arg linted_entry: the LintedEntry to work on
 
         """
@@ -266,7 +260,7 @@ class MismatchedHTMLLintRule(LintRule):
                         self.num,
                         trstr,
                         u'different html: "{0}" vs. "{1}"'.format(
-                            left.s or u'', right.s or u''))
+                            left.s if left else u'', right.s if right else u''))
                     break
 
 
