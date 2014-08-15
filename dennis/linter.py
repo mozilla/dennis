@@ -1,10 +1,15 @@
 import re
 from collections import namedtuple
-from itertools import izip_longest
+
 
 import polib
 
-from dennis.tools import VariableTokenizer, parse_dennis_note, all_subclasses
+from dennis.tools import PY2, VariableTokenizer, parse_dennis_note, all_subclasses
+
+if PY2:
+    from itertools import izip_longest
+else:
+    from itertools import zip_longest as izip_longest
 
 
 TranslatedString = namedtuple(
@@ -261,7 +266,7 @@ class MismatchedHTMLLintRule(LintRule):
                         self.num,
                         trstr,
                         u'different html: "{0}" vs. "{1}"'.format(
-                            left or '', right or ''))
+                            left.s or u'', right.s or u''))
                     break
 
 
