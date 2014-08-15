@@ -4,7 +4,7 @@ from itertools import izip_longest
 
 import polib
 
-from dennis.tools import VariableTokenizer, parse_dennis_note
+from dennis.tools import VariableTokenizer, parse_dennis_note, all_subclasses
 
 
 TranslatedString = namedtuple(
@@ -36,8 +36,7 @@ class LintedEntry(object):
                         'msgstr[{0}]'.format(key),
                         poentry.msgstr_plural[key]))
 
-        # List of (msgid fields, msgid strings, msgstr field, msgstr
-        # string) namedtuples
+        # List of TranslatedStrings
         self.strs = strs
 
         self.warnings = []
@@ -292,14 +291,11 @@ class InvalidVarsLintRule(LintRule):
 def get_available_lint_rules(name_and_num=False):
     lint_rules = {}
 
-    for name, thing in globals().items():
-        try:
-            if issubclass(thing, LintRule) and thing.num:
-                lint_rules[thing.num] = thing
-                if name_and_num:
-                    lint_rules[thing.name] = thing
-        except TypeError:
-            pass
+    for cls in all_subclasses(LintRule):
+        if cls.num:
+            lint_rules[cls.num] = cls
+            if name_and_num and cls.name:
+                lint_rules[cls.name] = cls
 
     return lint_rules
 

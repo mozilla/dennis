@@ -9,7 +9,7 @@ import polib
 import re
 import string
 
-from dennis.tools import PY2, PY3, VariableTokenizer
+from dennis.tools import PY2, VariableTokenizer, all_subclasses
 
 
 DEBUG = False
@@ -652,11 +652,9 @@ class HTMLExtractorTransform(HTMLParser, Transform):
 def get_available_pipeline_parts():
     pipeline_parts = {}
 
-    for name, thing in globals().items():
-        if (name.endswith('Transform')
-            and issubclass(thing, Transform)
-            and thing.name):
-            pipeline_parts[thing.name] = thing
+    for cls in all_subclasses(Transform):
+        if cls.name:
+            pipeline_parts[cls.name] = cls
 
     return pipeline_parts
 

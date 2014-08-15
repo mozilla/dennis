@@ -37,7 +37,7 @@ class Var(object):
 # https://docs.python.org/2/library/string.html#format-string-syntax
 class PythonFormatVar(Var):
     name = 'pyformat'
-    desc = 'Python format string syntax (e.g. "{foo}")'
+    desc = 'Python format string syntax (e.g. "{0}", "{foo}")'
 
     regexp = (
         # %s and %(foo)s
@@ -50,7 +50,7 @@ class PythonFormatVar(Var):
 # http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
 class PythonPercentVar(Var):
     name = 'pysprintf'
-    desc = 'Python sprintf syntax (e.g. "%(foo)s")'
+    desc = 'Python sprintf syntax (e.g. "%s", "%(foo)s")'
 
     regexp = (
         # {foo}
@@ -171,6 +171,13 @@ class BetterArgumentParser(optparse.OptionParser):
             help_text += '\n'
 
         return help_text
+
+
+def all_subclasses(cls):
+    subc = cls.__subclasses__()
+    for d in list(subc):
+        subc.extend(all_subclasses(d))
+    return subc
 
 
 # Matches:
