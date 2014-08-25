@@ -6,6 +6,15 @@ What's new in dennis
    :local:
 
 
+Version 0.5: August 24th, 2014
+==============================
+
+8dddfb7 Add MismatchedHTMLLintRule (#36)
+b31c094 Minorr code cleanup
+9353f5b Fix bugs when runnin' wit' Python 3
+4883e52 Add template linterr (#39)
+
+
 Version 0.4.3: August 1st, 2014
 ===============================
 
