@@ -6,7 +6,7 @@ import polib
 
 from dennis import __version__
 from dennis.linter import Linter
-from dennis.minisix import PY2
+from dennis.minisix import PY2, textclass
 from dennis.templatelinter import TemplateLinter
 from dennis.tools import (
     BetterArgumentParser,
@@ -400,9 +400,8 @@ def linttemplate_cmd(scriptname, command, argv):
                     ': ',
                     msg,
                     TERM.normal)
-                for field, s in zip(idstr.msgid_fields, idstr.msgid_strings):
-                    out(field, ' "', s, '"')
-                    out('')
+
+                out(textclass(entry.poentry))
 
         files_to_warnings[fn] = warning_count
 
