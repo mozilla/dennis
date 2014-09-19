@@ -40,6 +40,7 @@ class LinTemplateCmdTest(TestCase):
                 linttemplate_cmd('test', 'linttemplate', [fn])
 
             assert '>>> Working on:' in stdout.getvalue()
+            # FIXME: flesh out this test case
 
     def test_no_files_to_work_on(self):
         stdout = StringIO()
@@ -74,13 +75,12 @@ class TemplateLinterTest(TestCase):
             'msgstr ""\n')
 
         linter = TemplateLinter(['pysprintf', 'pyformat'], ['W500'])
-        results = linter.verify_file(pofile)
+        msgs = linter.verify_file(pofile)
 
         # This should give us one linted entry with no errors
         # and no warnings in it.
-        eq_(len(results), 1)
-        eq_(len(results[0].warnings), 0)
-
+        eq_(len(msgs), 0)
+        # FIXME: flesh out this test
 
 def build_linted_entry(po_data):
     po = polib.pofile(build_po_string(po_data))
@@ -102,18 +102,17 @@ class HardToReadNamesTLRTestCase(TLRTestCase):
                 'msgid "Foo: %(' + c + ')s"\n'
                 'msgstr ""\n')
 
-            self.lintrule.lint(self.vartok, linted_entry)
-
-            eq_(len(linted_entry.warnings), 1)
+            msgs = self.lintrule.lint(self.vartok, linted_entry)
+            eq_(len(msgs), 1)
 
             linted_entry = build_linted_entry(
                 '#: foo/foo.py:5\n'
                 'msgid "Foo: {' + c + '}"\n'
                 'msgstr ""\n')
 
-            self.lintrule.lint(self.vartok, linted_entry)
-
-            eq_(len(linted_entry.warnings), 1)
+            msgs = self.lintrule.lint(self.vartok, linted_entry)
+            eq_(len(msgs), 1)
+        # FIXME: flesh out this test
 
 
 class MultipleUnnamedVarsTLRTestCase(TLRTestCase):
@@ -125,18 +124,17 @@ class MultipleUnnamedVarsTLRTestCase(TLRTestCase):
             'msgid "Foo: %s %s"\n'
             'msgstr ""\n')
 
-        self.lintrule.lint(self.vartok, linted_entry)
-
-        eq_(len(linted_entry.warnings), 1)
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
 
         linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo: {} {}"\n'
             'msgstr ""\n')
 
-        self.lintrule.lint(self.vartok, linted_entry)
-
-        eq_(len(linted_entry.warnings), 1)
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
+        # FIXME: flesh out this test
 
 
 class OneCharNamesTLRTestCase(TLRTestCase):
@@ -148,15 +146,14 @@ class OneCharNamesTLRTestCase(TLRTestCase):
             'msgid "Foo: %(c)s"\n'
             'msgstr ""\n')
 
-        self.lintrule.lint(self.vartok, linted_entry)
-
-        eq_(len(linted_entry.warnings), 1)
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
 
         linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
             'msgid "Foo: {c}"\n'
             'msgstr ""\n')
 
-        self.lintrule.lint(self.vartok, linted_entry)
-
-        eq_(len(linted_entry.warnings), 1)
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
+        # FIXME: flesh out this test

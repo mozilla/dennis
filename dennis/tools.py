@@ -13,6 +13,7 @@ class FauxTerminal(object):
     def __getattr__(self, attr, default=None):
         return _MockBlessedThing()
 
+
 try:
     from blessings import Terminal
 except ImportError:
@@ -213,6 +214,7 @@ def all_subclasses(cls):
 # "dennis-ignore: E201,..." to ignore specific rules
 DENNIS_NOTE_RE = re.compile(r'dennis-ignore:\s+(\*|[EW0-9,]+)')
 
+
 def parse_dennis_note(text):
     """Parses a dennis note and returns list of rules to skip"""
     if not text:
@@ -227,3 +229,70 @@ def parse_dennis_note(text):
         return '*'
 
     return [item for item in match.split(',') if item]
+
+
+def parse_pofile(fn_or_string):
+    """Parses a po file and attaches original poentry blocks
+
+    When polib parses a pofile, it captures the line number of the
+    start of the block, but doesn't capture the original string for
+    the block. When you call str()/unicode() on the poentry, it
+    "reassembles" the block with textwrapped lines, so it returns
+    something substantially different than the original block. This is
+    problematic if we want to print out the block with the line
+    numbers--one for each line.
+
+    So this wrapper captures the line numbers and original text for
+    each block and attaches that to the parsed poentries in an
+    attribute named "original" thus allowing us to print the original
+    text with line numbers.
+
+    """
+    from polib import _is_file, detect_encoding, io, pofile
+
+    # This parses the pofile
+    parsed_pofile = pofile(fn_or_string)
+
+    # Now we need to build a linenumber -> block hash so that we can
+    # accurately print out what was in the pofile because polib will
+    # reassembled what it parsed, but it's not the same.
+    if _is_file(fn_or_string):
+        enc = detect_encoding(fn_or_string, 'pofile')
+        fp = io.open(fn_or_string, 'rt', encoding=enc)
+    else:
+        fp = fn_or_string.splitlines(True)
+
+    linenum_to_block = {}
+    block = []
+    starti = None
+    for i, line in enumerate(fp):
+        if not line.strip() and block:
+            # Empty line so we emit a block and reset starti
+            linenum_to_block[starti+1] = textclass('').join(block)
+            block = []
+            starti = None
+            continue
+
+        if starti is None:
+            starti = i
+        block.append(line)
+
+    if block:
+        linenum_to_block[starti+1] = textclass('').join(block)
+
+    # Go through the parsed_pofile list and "fix" all the POEntry
+    # instances.
+    for poentry in parsed_pofile:
+        poentry.original = linenum_to_block[poentry.linenum]
+
+    return parsed_pofile
+
+def withlines(linenum, poentry_text):
+    """Returns text with line numbers"""
+    start = linenum
+    new_text = []
+
+    for line_no, line in zip(range(start, start+100), poentry_text.splitlines()):
+        new_text.append(textclass(line_no) + textclass(':') + textclass(line))
+
+    return textclass('\n').join(new_text)

@@ -36,7 +36,7 @@ setup(
     include_package_data=True,
     scripts=['bin/dennis-cmd'],
     install_requires=[
-        'polib',
+        'polib>=1.0.5',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

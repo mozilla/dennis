@@ -1,11 +1,28 @@
 from collections import namedtuple
 
-import polib
-
-from dennis.tools import VariableTokenizer, all_subclasses, parse_dennis_note
+from dennis.tools import (
+    VariableTokenizer,
+    all_subclasses,
+    parse_dennis_note,
+    parse_pofile
+)
 
 
 IdString = namedtuple('IdString', ('msgid_fields', 'msgid_strings'))
+
+
+WARNING = 'warn'
+ERROR = 'err'
+
+
+class LintMessage(object):
+    def __init__(self, kind, line, col, code, msg, poentry):
+        self.kind = kind
+        self.line = line
+        self.col = col
+        self.code = code
+        self.msg = msg
+        self.poentry = poentry
 
 
 class LintedEntry(object):
@@ -21,14 +38,6 @@ class LintedEntry(object):
             msgid_strings = (poentry.msgid,)
 
         self.str = IdString(msgid_fields, msgid_strings)
-
-        self.warnings = []
-
-    def add_warning(self, code, idstr, msg):
-        self.warnings.append((code, idstr, msg))
-
-    def has_problems(self):
-        return bool(self.warnings)
 
 
 class TemplateLintRule(object):
@@ -55,6 +64,8 @@ class HardToReadNamesTLR(TemplateLintRule):
     hard_to_read = ('o', 'O', '0', 'l', '1')
 
     def lint(self, vartok, linted_entry):
+        msgs = []
+
         idstr = linted_entry.str
 
         for s in idstr.msgid_strings:
@@ -67,11 +78,14 @@ class HardToReadNamesTLR(TemplateLintRule):
 
             for token in msgid_tokens:
                 if token in self.hard_to_read:
-                    linted_entry.add_warning(
-                        self.num,
-                        idstr,
-                        u'hard to read variable name "{0}"'.format(
-                            token))
+                    msgs.append(
+                        LintMessage(
+                            WARNING, linted_entry.poentry.linenum, 0, self.num,
+                            u'hard to read variable name "{0}"'.format(
+                                token),
+                            linted_entry.poentry)
+                    )
+        return msgs
 
 
 class OneCharNamesTLR(TemplateLintRule):
@@ -80,6 +94,7 @@ class OneCharNamesTLR(TemplateLintRule):
     desc = 'Looks for one character variable names'
 
     def lint(self, vartok, linted_entry):
+        msgs = []
         idstr = linted_entry.str
 
         for s in idstr.msgid_strings:
@@ -92,11 +107,14 @@ class OneCharNamesTLR(TemplateLintRule):
 
             for token in msgid_tokens:
                 if len(token) == 1 and token.isalpha():
-                    linted_entry.add_warning(
-                        self.num,
-                        idstr,
-                        u'one character variable name "{0}"'.format(
-                            token))
+                    msgs.append(
+                        LintMessage(
+                            WARNING, linted_entry.poentry.linenum, 0, self.num,
+                            u'one character variable name "{0}"'.format(
+                                token),
+                            linted_entry.poentry)
+                    )
+        return msgs
 
 
 class MultipleUnnamedVarsTLR(TemplateLintRule):
@@ -105,6 +123,7 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
     desc = 'Looks for multiple unnamed variables'
 
     def lint(self, vartok, linted_entry):
+        msgs = []
         idstr = linted_entry.str
 
         for s in idstr.msgid_strings:
@@ -116,10 +135,13 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
                             for token in msgid_tokens]
 
             if msgid_tokens.count('') > 1:
-                linted_entry.add_warning(
-                    self.num,
-                    idstr,
-                    u'multiple variables with no name.')
+                msgs.append(
+                    LintMessage(
+                        WARNING, linted_entry.poentry.linenum, 0, self.num,
+                        u'multiple variables with no name.',
+                        linted_entry.poentry)
+                )
+        return msgs
 
 
 def get_available_lint_rules(name_and_num=False):
@@ -166,14 +188,16 @@ class TemplateLinter(object):
 
         skip = parse_dennis_note(poentry.comment)
 
+        msgs = []
+
         # Check the comment to see if what we should ignore.
         for lint_rule in self.rules:
             if skip == '*' or lint_rule.num in skip:
                 continue
 
-            lint_rule.lint(self.vartok, linted_entry)
+            msgs.extend(lint_rule.lint(self.vartok, linted_entry))
 
-        return linted_entry
+        return msgs
 
     def verify_file(self, filename_or_string):
         """Verifies strings in file.
@@ -181,13 +205,13 @@ class TemplateLinter(object):
         :arg filename_or_string: filename to verify or the contents of
             a pofile as a string
 
-        :returns: list of LintedEntry objects each with errors and
-            warnings
+        :returns: list of LintMessage objects
 
         :raises IOError: if the file is not a valid .po file or
             doesn't exist
         """
-        po = polib.pofile(filename_or_string)
-        return [
-            self.lint_poentry(entry) for entry in po
-        ]
+        po = parse_pofile(filename_or_string)
+        msgs = []
+        for entry in po:
+            msgs.extend(self.lint_poentry(entry))
+        return msgs

@@ -12,7 +12,9 @@ from dennis.tools import (
     BetterArgumentParser,
     FauxTerminal,
     Terminal,
-    get_available_vars
+    get_available_vars,
+    parse_pofile,
+    withlines
 )
 from dennis.translator import Translator, get_available_pipeline_parts
 
@@ -111,6 +113,8 @@ def format_lint_template_rules():
 
 def lint_cmd(scriptname, command, argv):
     """Lints a .po file or directory of files."""
+    global TERM
+
     if not '--quiet' in argv and not '-q' in argv:
         out('dennis version {version}'.format(version=__version__))
 
@@ -125,6 +129,17 @@ def lint_cmd(scriptname, command, argv):
             (format_lint_rules(), True),
         ])
     parser.add_option(
+        '--color',
+        action='store_true',
+        dest='color',
+        help='Use color.',
+        default=True)
+    parser.add_option(
+        '--no-color',
+        action='store_false',
+        dest='color',
+        help='Do not use color.')
+    parser.add_option(
         '--vars',
         dest='vars',
         help=('Comma-separated list of variable types. See Available Variable '
@@ -137,6 +152,12 @@ def lint_cmd(scriptname, command, argv):
         help=('Comma-separated list of lint rules to use. Defaults to all '
               'rules. See Available Lint Rules.'),
         metavar='RULES',
+        default='')
+    parser.add_option(
+        '--reporter',
+        dest='reporter',
+        help=('Use a different reporter.'),
+        metavar='REPORTER',
         default='')
     parser.add_option(
         '-q', '--quiet',
@@ -154,6 +175,9 @@ def lint_cmd(scriptname, command, argv):
     if not args:
         parser.print_help()
         return 1
+
+    if not options.color:
+        TERM = FauxTerminal()
 
     linter = Linter(options.vars.split(','), options.rules.split(','))
 
@@ -197,55 +221,70 @@ def lint_cmd(scriptname, command, argv):
             total_error_count += 1
             continue
 
-        # Extract all the problematic LintItems--they have non-empty
-        # missing or invalid lists.
-        problem_results = [
-            r for r in results if r.has_problems(options.errorsonly)]
+        if options.errorsonly:
+            # Go through and nix all the non-error LintMessages
+            results = [res for res in results if res.kind == 'err']
 
         # We don't want to print output for files that are fine, so we
         # update the bookkeeping and move on.
-        if not problem_results:
+        if not results:
             files_to_errors[fn] = (0, 0)
             continue
 
-        if not options.quiet:
+        if not options.quiet and not options.reporter:
             out(TERM.bold_green,
                 '>>> Working on: {fn}'.format(fn=fn),
                 TERM.normal)
 
-        error_count = 0
-        warning_count = 0
+        error_results = [res for res in results if res.kind == 'err']
+        warning_results = [res for res in results if res.kind == 'warn']
 
-        for entry in problem_results:
-            total_error_count += len(entry.errors)
-            error_count += len(entry.errors)
+        error_count = len(error_results)
+        total_error_count += error_count
 
-            if not options.quiet:
-                # TODO: This is totally shite code.
-                for code, trstr, msg in entry.errors:
+        warning_count = len(warning_results)
+        total_warning_count += warning_count
+
+        if not options.quiet:
+            for msg in error_results:
+                if options.reporter == 'line':
+                    out(fn,
+                        ':',
+                        textclass(msg.poentry.linenum),
+                        ':',
+                        '0',
+                        ':',
+                        msg.code,
+                        ':',
+                        msg.msg)
+                else:
                     out(TERM.bold_red,
-                        code,
+                        msg.code,
                         ': ',
-                        msg,
+                        msg.msg,
                         TERM.normal)
-                    for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        out(field, ' "', s, '"')
-                    out(trstr.msgstr_field, ' "', trstr.msgstr_string, '"')
+                    out(withlines(msg.poentry.linenum, msg.poentry.original))
                     out('')
 
-            total_warning_count +=  len(entry.warnings)
-            warning_count +=  len(entry.warnings)
-
-            if not options.quiet and not options.errorsonly:
-                for code, trstr, msg in entry.warnings:
+        if not options.quiet and not options.errorsonly:
+            for msg in warning_results:
+                if options.reporter == 'line':
+                    out(fn,
+                        ':',
+                        textclass(msg.poentry.linenum),
+                        ':',
+                        '0',
+                        ':',
+                        msg.code,
+                        ':',
+                        msg.msg)
+                else:
                     out(TERM.bold_yellow,
-                        code,
+                        msg.code,
                         ': ',
-                        msg,
+                        msg.msg,
                         TERM.normal)
-                    for field, s in zip(trstr.msgid_fields, trstr.msgid_strings):
-                        out(field, ' "', s, '"')
-                    out(trstr.msgstr_field, ' "', trstr.msgstr_string, '"')
+                    out(withlines(msg.poentry.linenum, msg.poentry.original))
                     out('')
 
         files_to_errors[fn] = (error_count, warning_count)
@@ -253,13 +292,13 @@ def lint_cmd(scriptname, command, argv):
         if error_count > 0:
             total_files_with_errors += 1
 
-        if not options.quiet:
+        if not options.quiet and options.reporter != 'line':
             out('Totals')
             if not options.errorsonly:
                 out('  Warnings: {warnings:5}'.format(warnings=warning_count))
             out('  Errors:   {errors:5}\n'.format(errors=error_count))
 
-    if len(po_files) > 1 and not options.quiet:
+    if len(po_files) > 1 and not options.quiet and options.reporter != 'line':
         out('Final totals')
         out('  Number of files examined:          {count:5}'.format(
             count=len(po_files)))
@@ -324,6 +363,12 @@ def linttemplate_cmd(scriptname, command, argv):
         metavar='VARS',
         default='pysprintf,pyformat')
     parser.add_option(
+        '--reporter',
+        dest='reporter',
+        help=('Use a different reporter.'),
+        metavar='REPORTER',
+        default='')
+    parser.add_option(
         '--rules',
         dest='rules',
         help=('Comma-separated list of template lint rules to use. Defaults '
@@ -374,42 +419,48 @@ def linttemplate_cmd(scriptname, command, argv):
             total_error_count += 1
             continue
 
-        # Extract all the problematic LintItems--they have non-empty
-        # missing or invalid lists.
-        problem_results = [r for r in results if r.has_problems()]
-
         # We don't want to print output for files that are fine, so we
         # update the bookkeeping and move on.
-        if not problem_results:
+        if not results:
             files_to_warnings[fn] = 0
             continue
 
-        out(TERM.bold_green,
-            '>>> Working on: {fn}'.format(fn=fn),
-            TERM.normal)
+        if options.reporter != 'line':
+            out(TERM.bold_green,
+                '>>> Working on: {fn}'.format(fn=fn),
+                TERM.normal)
 
-        warning_count = 0
+        warning_count = len(results)
+        total_warning_count += warning_count
 
-        for entry in problem_results:
-            total_warning_count +=  len(entry.warnings)
-            warning_count +=  len(entry.warnings)
-
-            for code, idstr, msg in entry.warnings:
+        for msg in results:
+            if options.reporter == 'line':
+                out(fn,
+                    ':',
+                    textclass(msg.line),
+                    ':',
+                    textclass(msg.col),
+                    ':',
+                    msg.code,
+                    ':',
+                    msg.msg)
+            else:
                 out(TERM.bold_yellow,
-                    code,
+                    msg.code,
                     ': ',
-                    msg,
+                    msg.msg,
                     TERM.normal)
-
-                out(textclass(entry.poentry))
+                out(withlines(msg.poentry.linenum, msg.poentry.original))
+                out('')
 
         files_to_warnings[fn] = warning_count
 
-        out('Totals')
-        out('  Warnings: {warnings:5}'.format(warnings=warning_count))
-        out('')
+        if options.reporter != 'line':
+            out('Totals')
+            out('  Warnings: {warnings:5}'.format(warnings=warning_count))
+            out('')
 
-    if len(po_files) > 1:
+    if len(po_files) > 1 and options.reporter != 'line':
         out('Final totals')
         out('  Number of files examined:          {count:5}'.format(
             count=len(po_files)))
@@ -473,7 +524,7 @@ def status_cmd(scriptname, command, argv):
             if not os.path.exists(fn):
                 raise IOError('File "{fn}" does not exist.'.format(fn=fn))
 
-            pofile = polib.pofile(fn)
+            pofile = parse_pofile(fn)
         except IOError as ioe:
             err('>>> Problem opening file: {fn}'.format(fn=fn))
             err(repr(ioe))
@@ -493,18 +544,7 @@ def status_cmd(scriptname, command, argv):
             out('Untranslated strings:')
             out('')
             for poentry in pofile.untranslated_entries():
-                if poentry.comment:
-                    out('#. {0}'.format(poentry.comment))
-                if poentry.tcomment:
-                    out('# {0}'.format(poentry.tcomment))
-                if poentry.occurrences:
-                    for occ in poentry.occurrences:
-                        out('#: {0}:{1}'.format(occ[0], occ[1]))
-                if poentry.flags:
-                    out('Flags: {0}'.format(poentry.flags))
-                out('msgid "{0}"'.format(poentry.msgid))
-                if poentry.msgid_plural:
-                    out('msgid_plural "{0}"'.format(poentry.msgid_plural))
+                out(withlines(poentry.linenum, poentry.original))
                 out('')
 
         out('Statistics:')
