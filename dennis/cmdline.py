@@ -520,3 +520,7 @@ def cmdline_handler(scriptname, argv):
     print_help(scriptname)
 
     return 1
+
+
+def run():
+    sys.exit(cmdline_handler("dennis-cmd", sys.argv[1:]))

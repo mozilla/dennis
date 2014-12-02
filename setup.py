@@ -34,10 +34,14 @@ setup(
     zip_safe=True,
     packages=find_packages(),
     include_package_data=True,
-    scripts=['bin/dennis-cmd'],
+    # scripts=['bin/dennis-cmd'],
     install_requires=[
         'polib>=1.0.5',
     ],
+    entry_points="""
+        [console_scripts]
+        dennis-cmd=dennis.cmdline:run
+    """,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
