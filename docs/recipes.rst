@@ -20,6 +20,18 @@ sure they're ok:
 It'll give you a summary at the end.
 
 
+linting your .pot file
+======================
+
+Linting your .pot file can reduce the number of issues that translators
+will stumble over. It's good to lint it before you push new strings
+to translate:
+
+.. code-block:: bash
+
+   # dennis-cmd lint locale/templates/LC_MESSAGES/messages.pot
+
+
 translate .po file for l10n issue detection
 ===========================================
 

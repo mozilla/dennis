@@ -16,7 +16,7 @@ formats and any additional options available.
 Summary
 =======
 
-dennis can lint your translated ``.po`` files for Python formatting
+Dennis can lint your translated ``.po`` files for Python formatting
 token issues::
 
     $ dennis-cmd lint messages.po
@@ -28,7 +28,7 @@ generating a list of errors and a list of warnings.
 Wait, but that's ugly and hard to read! If you install ``blessings``, it
 comes colorized and really easy to parse. All hail blessings!
 
-dennis can also lint your ``.pot`` files and point out issues that can
+Dennis can also lint your ``.pot`` files and point out issues that can
 result in poor translations. You can lint ``.pot`` files like this::
 
     $ dennis-cmd lint messages.pot
@@ -37,7 +37,7 @@ result in poor translations. You can lint ``.pot`` files like this::
 Skipping rules string-by-string
 ===============================
 
-In the extracted comment, you can tell dennis to ignore lint rules (or
+In the extracted comment, you can tell Dennis to ignore lint rules (or
 all lint rules).
 
 Ignore everything::
@@ -53,7 +53,7 @@ Ignore specific rules (comma-separated)::
     msgstr "A német a látogatóbázisunk 10%-át teszi ki"
 
 Ignore everything, but note the beginning of the line is ignored by
-dennis so you can tell localizers to ignore the ignore thing::
+Dennis so you can tell localizers to ignore the ignore thing::
 
     #. localizers--ignore this comment. dennis-ignore: *
     msgid "German makes up 10% of our visitor base"

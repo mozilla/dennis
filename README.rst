@@ -2,7 +2,7 @@
 Read me
 =======
 
-dennis is a command line tool for translating and linting .po files.
+Dennis is a command line tool for translating and linting .po files.
 
 It includes the following subcommands:
 
@@ -31,8 +31,8 @@ It includes the following subcommands:
 
   This also works on strings passed in as command line arguments and
   as stdin---it doesn't have to be a ``.po`` file or in a ``.po``
-  format. For example, Dennis uses dennis to translate all dennis
-  commit messages into Pirate!. That's how cool dennis is!
+  format. For example, Dennis uses Dennis to translate all Dennis
+  commit messages into Pirate!. That's how cool Dennis is!
 
 
 Quick start
@@ -75,7 +75,7 @@ Project details
 :Donate:        `gittip <https://www.gittip.com/on/github/willkg/>`_
 
 
-Why is it called dennis?
+Why is it called Dennis?
 ========================
 
 This is how I name my software projects.
