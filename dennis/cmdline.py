@@ -2,8 +2,6 @@ import os
 import sys
 from functools import wraps
 
-import polib
-
 from dennis import __version__
 from dennis.linter import Linter
 from dennis.minisix import PY2, textclass
