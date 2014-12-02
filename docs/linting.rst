@@ -9,82 +9,17 @@ Help
 
     $ dennis-cmd lint --help
 
-This will list the available linters and codes, the variable formats
-and any additional options available.
+This will list the available lint rules and codes, the variable
+formats and any additional options available.
 
 
 Summary
 =======
 
-dennis can lint your translated .po files for Python formatting token
-issues::
+dennis can lint your translated ``.po`` files for Python formatting
+token issues::
 
     $ dennis-cmd lint messages.po
-
-
-Produces output like this::
-
-    (dennis) (M=3b9e7) saturn ~/mozilla/kitsune> dennis-cmd lint locale/it/
-    LC_MESSAGES/messages.po
-    dennis-cmd version 0.3.3
-    >>> Working on: /home/willkg/mozilla/kitsune/locale/it/LC_MESSAGES/mess
-    ages.po
-    Error: mismatched: invalid variables: %(domain)s
-    msgid: Did you know that %(answerer)s is a Firefox user just like you?
-    Get started helping other Firefox users by <a href="https://%(host)s/qu
-    estions?filter=unsolved"> browsing questions</a> -- you might just make
-    someone's day!
-    msgstr: Lo sai che %(answerer)s è un utente di Firefox proprio come te?
-    Puoi aiutare anche tu gli altri utenti: <a href="https://%(domain)s/que
-    stions?filter=unsolved">cerca tra le domande</a> e potrai fare felice u
-    no di loro!
-
-    Warning: mismatched: missing variables: %(host)s
-    msgid: Did you know that %(answerer)s is a Firefox user just like you?
-    Get started helping other Firefox users by <a href="https://%(host)s/qu
-    estions?filter=unsolved"> browsing questions</a> -- you might just make
-    someone's day!
-    msgstr: Lo sai che %(answerer)s è un utente di Firefox proprio come te?
-    Puoi aiutare anche tu gli altri utenti: <a href="https://%(domain)s/que
-    stions?filter=unsolved">cerca tra le domande</a> e potrai fare felice u
-    no di loro!
-
-    Warning: mismatched: missing variables: {0}
-    msgid: {0} question
-    msgstr[0]: domanda
-
-    Warning: mismatched: missing variables: {0}
-    msgid: {0} question
-    msgid_plural: {0} questions
-    msgstr[1]: domande
-
-    Warning: mismatched: missing variables: {0}
-    msgid: {0} answer
-    msgstr[0]: risposta
-
-    Warning: mismatched: missing variables: {0}
-    msgid: {0} answer
-    msgid_plural: {0} answers
-    msgstr[1]: risposte
-
-    Warning: mismatched: missing variables: {0}
-    msgid: {0} solution
-    msgstr[0]: soluzione
-
-    Warning: mismatched: missing variables: {0}
-    msgid: {0} solution
-    msgid_plural: {0} solutions
-    msgstr[1]: soluzioni
-
-    Error: mismatched: invalid variables: {group}
-    msgid: Are you sure you want to remove {user} from the document contrib
-    utors?
-    msgstr: Rimuovere l'utente {user} dai collaboratori per il documento {g
-    roup}?
-
-    Totals
-      Warnings:     7
-      Errors:       2
 
 
 This runs multiple lint rules on all the strings in the ``.po`` file
@@ -92,6 +27,11 @@ generating a list of errors and a list of warnings.
 
 Wait, but that's ugly and hard to read! If you install ``blessings``, it
 comes colorized and really easy to parse. All hail blessings!
+
+dennis can also lint your ``.pot`` files and point out issues that can
+result in poor translations. You can lint ``.pot`` files like this::
+
+    $ dennis-cmd lint messages.pot
 
 
 Skipping rules string-by-string
@@ -153,6 +93,8 @@ that, either.
 
 Table of Warnings and errors
 ----------------------------
+
+These are for ``.po`` files:
 
 +------+-----------------------------------------------------------------------+
 | Code | Description                                                           |
@@ -255,5 +197,53 @@ Table of Warnings and errors
 |      |    Error: blank: translated string is solely whitespace               |
 |      |    msgid: "Foo"                                                       |
 |      |    msgstr: "  "                                                       |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+
+
+These are for ``.pot`` files:
+
++------+-----------------------------------------------------------------------+
+| Code | Description                                                           |
++======+=======================================================================+
+| W500 | Hard to read variable name                                            |
+|      |                                                                       |
+|      | There are a series of letters and numbers which are hard to           |
+|      | distinguish from one another: o, O, 0, l, 1. It's not uncommon        |
+|      | for a hard-working translator to misread and use the wrong character. |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |     Warning: hardtoread: hard to read variable name "l"               |
+|      |     msgid: "Title: {l}"d help at {url}"                               |
+|      |     msgstr: ""                                                        |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| W501 | One character variable name                                           |
+|      |                                                                       |
+|      | Using a one character variable name doesn't give enough context to    |
+|      | the translator about what's being put in that variable.               |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |     Warning: onechar: one character variable name: "{t}"              |
+|      |     msgid: "{t} | {c}"                                                |
+|      |     msgstr: ""                                                        |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| W502 | Multiple unnamed variables                                            |
+|      |                                                                       |
+|      | Having one unnamed variable is ok since it's not order-dependent.     |
+|      | However, having more than one unnamed variable means those variabes   |
+|      | must occur in an order specified outside of the string. This creates  |
+|      | problems with RTL languages and any other language that might need to |
+|      | change the order of the variables to create a translation that makes  |
+|      | sense.                                                                |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |    Warning: multiple variables with no name                           |
+|      |    msgid: "%s replies to %s"                                          |
+|      |    msgstr: ""                                                         |
 |      |                                                                       |
 +------+-----------------------------------------------------------------------+

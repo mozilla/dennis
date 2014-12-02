@@ -9,6 +9,8 @@ from dennis.tools import (
     parse_pofile
 )
 
+
+IdString = namedtuple('IdString', ('msgid_fields', 'msgid_strings'))
 TranslatedString = namedtuple(
     'TranslatedString',
     ('msgid_fields', 'msgid_strings', 'msgstr_field', 'msgstr_string'))
@@ -33,6 +35,21 @@ class LintedEntry(object):
         self.poentry = poentry
         self.msgid = poentry.msgid
 
+    @property
+    def str(self):
+        poentry = self.poentry
+        if poentry.msgid_plural:
+            msgid_fields = ('msgid', 'msgid_plural')
+            msgid_strings = (poentry.msgid, poentry.msgid_plural)
+        else:
+            msgid_fields = ('msgid',)
+            msgid_strings = (poentry.msgid,)
+
+        return IdString(msgid_fields, msgid_strings)
+
+    @property
+    def strs(self):
+        poentry = self.poentry
         strs = []
 
         if not poentry.msgid_plural:
@@ -53,7 +70,7 @@ class LintedEntry(object):
                         poentry.msgstr_plural[key]))
 
         # List of TranslatedStrings
-        self.strs = strs
+        return strs
 
 
 class LintRule(object):

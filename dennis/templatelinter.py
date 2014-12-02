@@ -1,43 +1,17 @@
-from collections import namedtuple
-
 from dennis.tools import (
     VariableTokenizer,
     all_subclasses,
     parse_dennis_note,
     parse_pofile
 )
-
-
-IdString = namedtuple('IdString', ('msgid_fields', 'msgid_strings'))
+from dennis.linter import (
+    LintedEntry,
+    LintMessage
+)
 
 
 WARNING = 'warn'
 ERROR = 'err'
-
-
-class LintMessage(object):
-    def __init__(self, kind, line, col, code, msg, poentry):
-        self.kind = kind
-        self.line = line
-        self.col = col
-        self.code = code
-        self.msg = msg
-        self.poentry = poentry
-
-
-class LintedEntry(object):
-    def __init__(self, poentry):
-        self.poentry = poentry
-        self.msgid = poentry.msgid
-
-        if poentry.msgid_plural:
-            msgid_fields = ('msgid', 'msgid_plural')
-            msgid_strings = (poentry.msgid, poentry.msgid_plural)
-        else:
-            msgid_fields = ('msgid',)
-            msgid_strings = (poentry.msgid,)
-
-        self.str = IdString(msgid_fields, msgid_strings)
 
 
 class TemplateLintRule(object):

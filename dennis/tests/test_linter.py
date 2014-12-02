@@ -18,6 +18,11 @@ from dennis.linter import (
     LintedEntry,
     Linter
 )
+from dennis.templatelinter import (
+    HardToReadNamesTLR,
+    OneCharNamesTLR,
+    MultipleUnnamedVarsTLR,
+)
 from dennis.minisix import StringIO
 from dennis.tools import VariableTokenizer
 from dennis.tests import build_po_string, redirect, tempdir
@@ -93,6 +98,25 @@ class LintCmdTest(TestCase):
                 or 'OSError' in stderr.getvalue()
             )
             assert 'does not exist' in stderr.getvalue()
+
+    def test_basic_pot(self):
+        with tempdir() as dir_:
+            pofile = build_po_string(
+                '#: foo/foo.py:5\n'
+                'msgid "Foo: %(l)s"\n'
+                'msgstr ""\n')
+
+            fn = os.path.join(dir_, 'messages.pot')
+            with open(fn, 'w') as fp:
+                fp.write(pofile)
+
+            stdout = StringIO()
+            stderr = StringIO()
+            with redirect(stdout=stdout, stderr=stderr):
+                lint_cmd('test', 'lint', [fn])
+
+            assert '>>> Working on:' in stdout.getvalue()
+            # FIXME: flesh out this test case
 
 
 class LinterTest(TestCase):
@@ -593,3 +617,74 @@ class MismatchedHTMLLintRule(LintRuleTestCase):
         eq_(msgs[0].code, 'W303')
         eq_(msgs[0].msg,
             'different html: "</b>" vs. "<b>"')
+
+
+class TLRTestCase(TestCase):
+    vartok = VariableTokenizer(['pysprintf', 'pyformat'])
+
+
+class HardToReadNamesTLRTestCase(TLRTestCase):
+    lintrule = HardToReadNamesTLR()
+
+    def test_hard_to_read_names(self):
+        for c in ('o', 'O', '0', 'l', '1'):
+            linted_entry = build_linted_entry(
+                '#: foo/foo.py:5\n'
+                'msgid "Foo: %(' + c + ')s"\n'
+                'msgstr ""\n')
+
+            msgs = self.lintrule.lint(self.vartok, linted_entry)
+            eq_(len(msgs), 1)
+
+            linted_entry = build_linted_entry(
+                '#: foo/foo.py:5\n'
+                'msgid "Foo: {' + c + '}"\n'
+                'msgstr ""\n')
+
+            msgs = self.lintrule.lint(self.vartok, linted_entry)
+            eq_(len(msgs), 1)
+        # FIXME: flesh out this test
+
+
+class MultipleUnnamedVarsTLRTestCase(TLRTestCase):
+    lintrule = MultipleUnnamedVarsTLR()
+
+    def test_multi_vars_no_name(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo: %s %s"\n'
+            'msgstr ""\n')
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
+
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo: {} {}"\n'
+            'msgstr ""\n')
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
+        # FIXME: flesh out this test
+
+
+class OneCharNamesTLRTestCase(TLRTestCase):
+    lintrule = OneCharNamesTLR()
+
+    def test_one_character_names(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo: %(c)s"\n'
+            'msgstr ""\n')
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
+
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo: {c}"\n'
+            'msgstr ""\n')
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
+        # FIXME: flesh out this test
