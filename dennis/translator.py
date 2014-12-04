@@ -104,7 +104,6 @@ class HahaTransform(Transform):
     name = 'haha'
     desc = 'Adds haha! before sentences in a string.'
 
-
     def transform(self, vartok, token_stream):
         haha = u'Haha\u2757'
 
@@ -238,7 +237,8 @@ class DubstepTransform(Transform):
                 if c == ' ':
                     if i % 2:
                         current_string.append(u' ')
-                        current_string.append(self.bwaa(u''.join(current_string)))
+                        current_string.append(
+                            self.bwaa(u''.join(current_string)))
 
                 if c == '\n':
                     new_string.append(u''.join(current_string))
@@ -342,7 +342,7 @@ class ZombieTransform(Transform):
 
 class RedactedTransform(Transform):
     name = 'redacted'
-    desc = 'Redacts everything'
+    desc = 'Redacts everything.'
 
     def transform(self, vartok, token_stream):
         redact_map = dict((c, 'X') for c in string.ascii_uppercase)
@@ -532,7 +532,7 @@ class PirateTransform(Transform):
                 # Check the character after the match to see if it's a
                 # word character and whether this match covers that.
                 try:
-                     # WC: word character
+                    # WC: word character
                     if mem[3] and not self.wc(s[len(mem[2])]):
                         debug(mem, 'not wc')
                         continue

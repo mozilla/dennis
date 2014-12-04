@@ -304,7 +304,10 @@ class MismatchedHTMLLintRule(LintRule):
                 # on because I have no idea what to do in this case.
                 msgid_plural_parts = tokenize(trstr.msgid_strings[1])
 
-                for left, right in izip_longest(msgid_parts, msgid_plural_parts, fillvalue=None):
+                zipped_parts = izip_longest(
+                    msgid_parts, msgid_plural_parts, fillvalue=None)
+
+                for left, right in zipped_parts:
                     if not left or not right or not equiv(left, right):
                         return []
 
@@ -316,7 +319,8 @@ class MismatchedHTMLLintRule(LintRule):
                         LintMessage(
                             WARNING, linted_entry.poentry.linenum, 0, self.num,
                             u'different html: "{0}" vs. "{1}"'.format(
-                                left.s if left else u'', right.s if right else u''),
+                                left.s if left else u'',
+                                right.s if right else u''),
                             linted_entry.poentry)
                     )
                     break

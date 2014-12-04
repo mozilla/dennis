@@ -170,69 +170,57 @@ class HTMLExtractorTest(TestCase):
         eq_(output, [Token(u'', 'text', True)])
 
         output = trans.transform(self.vartok, [Token('<b>hi</b>')])
-        eq_(output,
-            [
-                Token(u'<b>', 'html', False),
-                Token(u'hi', 'text', True),
-                Token(u'</b>', 'html', False),
-            ]
-        )
+        eq_(output, [
+            Token(u'<b>', 'html', False),
+            Token(u'hi', 'text', True),
+            Token(u'</b>', 'html', False),
+        ])
 
     def test_alt_title_placeholder(self):
         trans = HTMLExtractorTransform()
         output = trans.transform(self.vartok, [
-                Token('<img alt="foo">')])
-        eq_(output,
-            [
-                Token(u'<img alt="', 'html', False),
-                Token(u'foo', 'text', True),
-                Token(u'">', 'html', False),
-            ]
-        )
+            Token('<img alt="foo">')])
+        eq_(output, [
+            Token(u'<img alt="', 'html', False),
+            Token(u'foo', 'text', True),
+            Token(u'">', 'html', False),
+        ])
 
         output = trans.transform(self.vartok, [
-                Token('<img title="foo">')])
-        eq_(output,
-            [
-                Token(u'<img title="', 'html', False),
-                Token(u'foo', 'text', True),
-                Token(u'">', 'html', False),
-            ]
-        )
+            Token('<img title="foo">')])
+        eq_(output, [
+            Token(u'<img title="', 'html', False),
+            Token(u'foo', 'text', True),
+            Token(u'">', 'html', False),
+        ])
 
         output = trans.transform(self.vartok, [
-                Token('<input placeholder="foo">')])
-        eq_(output,
-            [
-                Token(u'<input placeholder="', 'html', False),
-                Token(u'foo', 'text', True),
-                Token(u'">', 'html', False),
-            ]
-        )
+            Token('<input placeholder="foo">')])
+        eq_(output, [
+            Token(u'<input placeholder="', 'html', False),
+            Token(u'foo', 'text', True),
+            Token(u'">', 'html', False),
+        ])
 
     def test_script_style(self):
         trans = HTMLExtractorTransform()
         output = trans.transform(self.vartok, [
             Token('<style>TR {white-space: nowrap;}</style>')
         ])
-        eq_(output,
-            [
-                Token(u'<style>', 'html', False),
-                Token(u'TR {white-space: nowrap;}', 'style', False),
-                Token(u'</style>', 'html', False)
-            ]
-        )
+        eq_(output, [
+            Token(u'<style>', 'html', False),
+            Token(u'TR {white-space: nowrap;}', 'style', False),
+            Token(u'</style>', 'html', False)
+        ])
 
         output = trans.transform(self.vartok, [
             Token('<script>console.log("foo");</script>')
         ])
-        eq_(output,
-            [
-                Token(u'<script>', 'html', False),
-                Token(u'console.log("foo");', 'script', False),
-                Token(u'</script>', 'html', False)
-            ]
-        )
+        eq_(output, [
+            Token(u'<script>', 'html', False),
+            Token(u'console.log("foo");', 'script', False),
+            Token(u'</script>', 'html', False)
+        ])
 
 
 class XXXTransformTest(TransformTestCase):

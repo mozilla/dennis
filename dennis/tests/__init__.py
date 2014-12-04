@@ -1,6 +1,5 @@
 import contextlib
 import shutil
-import sys
 import tempfile
 
 
@@ -35,36 +34,3 @@ def tempdir():
     dir_ = tempfile.mkdtemp()
     yield dir_
     shutil.rmtree(dir_)
-
-
-@contextlib.contextmanager
-def redirect(stdin=None, stdout=None, stderr=None):
-    """Redirects stdin, stdout and stderr
-
-    Usage::
-
-        stdout = StringIO()
-        stderr = StringIO()
-
-        with redirect(stdout=stdout, stderr=stderr):
-            print 'blah blah'
-
-
-        # do soething with stdout.getvalue()
-
-    """
-    old_stdin = sys.stdin
-    if stdin:
-        sys.stdin = stdin
-    old_stdout = sys.stdout
-    if stdout:
-        sys.stdout = stdout
-    old_stderr = sys.stderr
-    if stderr:
-        sys.stderr = stderr
-
-    yield
-
-    sys.stdin = old_stdin
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr

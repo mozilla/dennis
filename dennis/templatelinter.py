@@ -33,7 +33,7 @@ class TemplateLintRule(object):
 class HardToReadNamesTLR(TemplateLintRule):
     num = 'W500'
     name = 'hardtoread'
-    desc = 'Looks for variables that are hard to read like o, O, 0, l, 1'
+    desc = 'Looks for vars that are hard to read like o, O, 0, l, 1'
 
     hard_to_read = ('o', 'O', '0', 'l', '1')
 

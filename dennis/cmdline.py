@@ -1,13 +1,15 @@
 import os
 import sys
 from functools import wraps
+from textwrap import dedent
+
+import click
 
 from dennis import __version__
 from dennis.linter import Linter
 from dennis.minisix import PY2, textclass
 from dennis.templatelinter import TemplateLinter
 from dennis.tools import (
-    BetterArgumentParser,
     FauxTerminal,
     Terminal,
     get_available_vars,
@@ -38,18 +40,21 @@ def utf8_args(fun):
 
 def out(*s):
     for part in s:
-        sys.stdout.write(part)
-    sys.stdout.write('\n')
+        click.echo(part, nl=False)
+    click.echo('')
 
 
 def err(*s):
     """Prints a single-line string to stderr."""
-    sys.stderr.write(TERM.bold_red)
-    sys.stderr.write('Error: ')
-    for part in s:
-        sys.stderr.write(part)
-    sys.stderr.write(TERM.normal)
-    sys.stderr.write('\n')
+    parts = [
+        TERM.bold_red,
+        'Error: '
+    ]
+    parts.extend(s)
+    parts.append(TERM.normal)
+    for part in parts:
+        click.echo(part, nl=False, err=True)
+    click.echo('')
 
 
 if PY2 and not sys.stdout.isatty():
@@ -60,144 +65,149 @@ if PY2 and not sys.stdout.isatty():
     err = utf8_args(err)
 
 
-def build_parser(usage, **kwargs):
-    """Builds an OptionParser with the specified kwargs."""
-    return BetterArgumentParser(usage=usage, version=VERSION, **kwargs)
-
-
 def format_vars():
     vars_ = sorted(get_available_vars().items())
-    return (
-        '\nAvailable Variable Formats:\n' +
-        '\n'.join(
-            ['  {name:13}  {desc}'.format(name=name, desc=cls.desc)
-             for name, cls in vars_])
+    lines = [
+        'Available Variable Formats:',
+        '',
+        '\b',
+    ]
+    lines.extend(
+        ['{name:13}  {desc}'.format(name=name, desc=cls.desc)
+         for name, cls in vars_]
     )
+
+    text = '\n'.join(lines) + '\n'
+    return text
 
 
 def format_pipeline_parts():
     parts = sorted(get_available_pipeline_parts().items())
-    return (
-        '\nAvailable Pipeline Parts:\n' +
-        '\n'.join(
-            ['  {name:13}  {desc}'.format(name=name, desc=cls.desc)
-             for name, cls in parts])
+    lines = [
+        'Available Pipeline Parts:',
+        '',
+        '\b',
+    ]
+    lines.extend(
+        ['{name:13}  {desc}'.format(name=name, desc=cls.desc)
+         for name, cls in parts]
     )
+    text = '\n'.join(lines) + '\n'
+    return text
 
 
 def format_lint_rules():
     from dennis.linter import get_available_lint_rules
     rules = sorted(get_available_lint_rules().items())
-    return (
-        '\nAvailable Lint Rules (E for Error, W for Warning):\n' +
-        '\n'.join(
-            ['  {num:6} {name}: {desc}'.format(num=num, name=cls.name,
-                                                desc=cls.desc)
-             for num, cls in rules])
+    lines = [
+        'Available Lint Rules:',
+        '',
+        '\b',
+    ]
+    lines.extend(
+        ['{num:6} {name}: {desc}'.format(num=num, name=cls.name,
+                                         desc=cls.desc)
+         for num, cls in rules]
     )
+    text = '\n'.join(lines) + '\n'
+    return text
 
 
 def format_lint_template_rules():
     from dennis.templatelinter import get_available_lint_rules
     rules = sorted(get_available_lint_rules().items())
-    return (
-        '\nAvailable Template Lint Rules (E for Error, W for Warning):\n' +
-        '\n'.join(
-            ['  {num:6} {name}: {desc}'.format(num=num, name=cls.name,
-                                                desc=cls.desc)
-             for num, cls in rules])
+    lines = [
+        'Available Template Lint Rules:',
+        '',
+        '\b',
+    ]
+    lines.extend(
+        ['{num:6} {name}: {desc}'.format(num=num, name=cls.name,
+                                         desc=cls.desc)
+         for num, cls in rules]
     )
+    text = '\n'.join(lines) + '\n'
+    return text
 
 
-def lint_cmd(scriptname, command, argv):
-    """Lint .po and .pot files."""
+def epilog(docstring):
+    """Fixes the docstring so it displays properly
+
+    I have problems with docstrings and indentation showing up right
+    in click. This fixes that. Plus it allows me to add dynamically
+    generated bits to the docstring.
+
+    """
+    def _epilog(fun):
+        fun.__doc__ = dedent(fun.__doc__) + docstring
+        return fun
+    return _epilog
+
+
+def click_run():
+    cli(obj={})
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.option('--quiet/--no-quiet', default=False)
+@click.option('--color/--no-color', default=True)
+@click.option('--varformat', default='pysprintf,pyformat',
+              help=('Comma-separated list of variable types. '
+                    'See Available Variable Formats.'))
+@click.option('--rules', default='',
+              help=('Comma-separated list of lint rules to use. '
+                    'Defaults to all rules. See Available Lint Rules.'))
+@click.option('--reporter', default='',
+              help='Reporter to use for output.')
+@click.option('--errorsonly/--no-errorsonly', default=False,
+              help='Only print errors.')
+@click.argument('path', nargs=-1)
+@click.pass_context
+@epilog(format_vars() + '\n' +
+        format_lint_rules() + '\n' +
+        format_lint_template_rules())
+def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
+    """
+    Lints .po/.pot files for issues
+
+    You can ignore rules on a string-by-string basis by adding an
+    extracted comment "dennis-ignore: <comma-separated-rules>".  See
+    documentation for details.
+
+    """
     global TERM
 
-    if not '--quiet' in argv and not '-q' in argv:
+    if not quiet:
         out('dennis version {version}'.format(version=__version__))
 
-    parser = build_parser(
-        'usage: %prog lint [ DIR | FILENAME <FILENAME> ... ]',
-        description='Lints .po files for issues.',
-        epilog='Note: You can ignore rules on a string-by-string basis by '
-        'adding an extracted comment "dennis-ignore: <comma-separated-rules>". '
-        'See documentation for details.',
-        sections=[
-            (format_vars(), True),
-            (format_lint_rules(), True),
-            (format_lint_template_rules(), True),
-        ])
-    parser.add_option(
-        '--color',
-        action='store_true',
-        dest='color',
-        help='Use color.',
-        default=True)
-    parser.add_option(
-        '--no-color',
-        action='store_false',
-        dest='color',
-        help='Do not use color.')
-    parser.add_option(
-        '--vars',
-        dest='vars',
-        help=('Comma-separated list of variable types. See Available Variable '
-              'Formats.'),
-        metavar='VARS',
-        default='pysprintf,pyformat')
-    parser.add_option(
-        '--rules',
-        dest='rules',
-        help=('Comma-separated list of lint rules to use. Defaults to all '
-              'rules. See Available Lint Rules.'),
-        metavar='RULES',
-        default='')
-    parser.add_option(
-        '--reporter',
-        dest='reporter',
-        help=('Use a different reporter.'),
-        metavar='REPORTER',
-        default='')
-    parser.add_option(
-        '-q', '--quiet',
-        action='store_true',
-        dest='quiet',
-        help='quiet all output')
-    parser.add_option(
-        '--errorsonly',
-        action='store_true',
-        dest='errorsonly',
-        help='only print errors')
-
-    (options, args) = parser.parse_args(argv)
-
-    if not args:
-        parser.print_help()
-        return 1
-
-    if not options.color:
+    if not color:
         TERM = FauxTerminal()
 
-    linter = Linter(options.vars.split(','), options.rules.split(','))
-    templatelinter = TemplateLinter(options.vars.split(','),
-                                    options.rules.split(','))
+    linter = Linter(varformat.split(','), rules.split(','))
+    templatelinter = TemplateLinter(varformat.split(','),
+                                    rules.split(','))
 
-    if os.path.isdir(args[0]):
-        po_files = []
-        for root, dirs, files in os.walk(args[0]):
-            po_files.extend(
-                [os.path.join(root, fn) for fn in files
-                 if fn.endswith(('.po', '.pot'))])
-
-    else:
-        po_files = args
+    po_files = []
+    for item in path:
+        if os.path.isdir(item):
+            for root, dirs, files in os.walk(item):
+                po_files.extend(
+                    [os.path.join(root, fn) for fn in files
+                     if fn.endswith(('.po', '.pot'))])
+        else:
+            po_files.append(item)
 
     po_files = [os.path.abspath(fn) for fn in po_files
                 if fn.endswith(('.po', '.pot'))]
 
     if not po_files:
-        err('No files to work on.')
-        return 1
+        err('Nothing to work on.')
+        ctx.exit(1)
 
     files_to_errors = {}
     total_error_count = 0
@@ -225,7 +235,7 @@ def lint_cmd(scriptname, command, argv):
             total_error_count += 1
             continue
 
-        if options.errorsonly:
+        if errorsonly:
             # Go through and nix all the non-error LintMessages
             results = [res for res in results if res.kind == 'err']
 
@@ -235,7 +245,7 @@ def lint_cmd(scriptname, command, argv):
             files_to_errors[fn] = (0, 0)
             continue
 
-        if not options.quiet and not options.reporter:
+        if not quiet and not reporter:
             out(TERM.bold_green,
                 '>>> Working on: {fn}'.format(fn=fn),
                 TERM.normal)
@@ -249,9 +259,9 @@ def lint_cmd(scriptname, command, argv):
         warning_count = len(warning_results)
         total_warning_count += warning_count
 
-        if not options.quiet:
+        if not quiet:
             for msg in error_results:
-                if options.reporter == 'line':
+                if reporter == 'line':
                     out(fn,
                         ':',
                         textclass(msg.poentry.linenum),
@@ -270,9 +280,9 @@ def lint_cmd(scriptname, command, argv):
                     out(withlines(msg.poentry.linenum, msg.poentry.original))
                     out('')
 
-        if not options.quiet and not options.errorsonly:
+        if not quiet and not errorsonly:
             for msg in warning_results:
-                if options.reporter == 'line':
+                if reporter == 'line':
                     out(fn,
                         ':',
                         textclass(msg.poentry.linenum),
@@ -296,19 +306,19 @@ def lint_cmd(scriptname, command, argv):
         if error_count > 0:
             total_files_with_errors += 1
 
-        if not options.quiet and options.reporter != 'line':
+        if not quiet and reporter != 'line':
             out('Totals')
-            if not options.errorsonly:
+            if not errorsonly:
                 out('  Warnings: {warnings:5}'.format(warnings=warning_count))
             out('  Errors:   {errors:5}\n'.format(errors=error_count))
 
-    if len(po_files) > 1 and not options.quiet and options.reporter != 'line':
+    if len(po_files) > 1 and not quiet and reporter != 'line':
         out('Final totals')
         out('  Number of files examined:          {count:5}'.format(
             count=len(po_files)))
         out('  Total number of files with errors: {count:5}'.format(
             count=total_files_with_errors))
-        if not options.errorsonly:
+        if not errorsonly:
             out('  Total number of warnings:          {count:5}'.format(
                 count=total_warning_count))
         out('  Total number of errors:            {count:5}'.format(
@@ -321,7 +331,7 @@ def lint_cmd(scriptname, command, argv):
         ]
 
         # If we're showing errors only, then don't talk about warnings.
-        if options.errorsonly:
+        if errorsonly:
             header = 'Errors  Filename'
             line = ' {errors:5}  {locale} ({fn})'
         else:
@@ -342,35 +352,30 @@ def lint_cmd(scriptname, command, argv):
                 locale=locale))
 
     # Return 0 if everything was fine or 1 if there were errors.
-    return 1 if total_error_count else 0
+    ctx.exit(code=1 if total_error_count else 0)
 
 
-def status_cmd(scriptname, command, argv):
+@cli.command()
+@click.option('--showuntranslated', is_flag=True, default=False,
+              help='Show untranslated strings')
+@click.argument('path', nargs=-1, type=click.Path(exists=True))
+@click.pass_context
+def status(ctx, showuntranslated, path):
     """Show status of a .po file."""
-    out('{0} version {1}'.format(scriptname, __version__))
-    parser = build_parser(
-        'usage: %prog status [ DIR | FILENAME <FILENAME> ... ]',
-        description='Shows status of a .po file.')
-    parser.add_option(
-        '--showuntranslated',
-        action='store_true',
-        dest='showuntranslated',
-        help='show untranslated strings')
+    out('dennis version {version}'.format(version=__version__))
 
-    (options, args) = parser.parse_args(argv)
+    po_files = []
+    for item in path:
+        if os.path.isdir(item):
+            for root, dirs, files in os.walk(item):
+                po_files.extend(
+                    [os.path.join(root, fn) for fn in files
+                     if fn.endswith('.po')])
+        else:
+            po_files.append(item)
 
-    if not args:
-        parser.print_help()
-        return 1
-
-    if os.path.isdir(args[0]):
-        po_files = []
-        for root, dirs, files in os.walk(args[0]):
-            po_files.extend(
-                [os.path.join(root, fn) for fn in files
-                 if fn.endswith('.po')])
-    else:
-        po_files = args
+    po_files = [os.path.abspath(fn) for fn in po_files
+                if fn.endswith('.po')]
 
     for fn in po_files:
         try:
@@ -393,7 +398,7 @@ def status_cmd(scriptname, command, argv):
                 out('  ', key, ': ', pofile.metadata[key])
         out('')
 
-        if options.showuntranslated:
+        if showuntranslated:
             out('Untranslated strings:')
             out('')
             for poentry in pofile.untranslated_entries():
@@ -408,117 +413,59 @@ def status_cmd(scriptname, command, argv):
             out('  Percentage:     100% COMPLETE!')
         else:
             out('  Percentage:     {0}%'.format(pofile.percent_translated()))
-    return 0
+    ctx.exit(0)
 
 
-def translate_cmd(scriptname, command, argv):
-    """Translate a single string or .po file of strings."""
-    if '-' not in argv:
-        # Don't print version stuff if we're reading from stdin.
-        out('{0} version {1}'.format(scriptname, __version__))
+@cli.command()
+@click.option('--varformat', default='pysprintf,pyformat',
+              help=('Comma-separated list of variable types. '
+                    'See Available Variable Formats.'))
+@click.option('--pipeline', '-p', default='html,pirate',
+              help=('Comma-separated translate pipeline. See Available '
+                    'Pipeline Parts.'))
+@click.option('--strings', '-s', default=False, is_flag=True,
+              help='Command line args are strings to be translated')
+@click.argument('path', nargs=-1)
+@click.pass_context
+@epilog(format_vars() + '\n' +
+        format_pipeline_parts())
+def translate(ctx, varformat, pipeline, strings, path):
+    """
+    Translate a single string or .po file of strings.
 
-    parser = build_parser(
-        'usage: %prog tramslate '
-        '[- | -s STRING <STRING> ... | FILENAME <FILENAME> ...]',
-        description='Translates a string or a .po file into Pirate.',
-        epilog='Note: Translating files is done in-place replacing '
-        'the original file.',
-        sections=[
-            (format_vars(), True),
-            (format_pipeline_parts(), True),
-        ])
-    parser.add_option(
-        '--vars',
-        dest='vars',
-        help=('Comma-separated list of variable types. See Available Variable '
-              'Formats.'),
-        metavar='VARS',
-        default='pysprintf,pyformat')
-    parser.add_option(
-        '-p', '--pipeline',
-        dest='pipeline',
-        help='Translate pipeline. See Available Pipeline Parts.',
-        metavar='PIPELINE',
-        default='html,pirate')
-    parser.add_option(
-        '-s', '--string',
-        action='store_true',
-        dest='strings',
-        help='translates specified string args')
+    If you want to pull the string from stdin, use "-".
 
-    (options, args) = parser.parse_args(argv)
+    Note: Translating files is done in-place replacing the original
+    file.
 
-    if not args:
-        parser.print_help()
-        return 1
+    """
+    if not (len(path) == 1 and path[0] == '-'):
+        out('dennis version {version}'.format(version=__version__))
+
+    if not path:
+        err('Nothing to work on.')
+        ctx.exit(1)
 
     translator = Translator(
-        options.vars.split(','), options.pipeline.split(','))
+        varformat.split(','), pipeline.split(','))
 
-    if options.strings:
+    if strings:
         # Args are strings to be translated
-        for arg in args:
+        for arg in path:
             data = translator.translate_string(arg)
             if PY2:
                 data = data.encode('utf-8')
-            print(data)
+            out(data)
 
-    elif len(args) == 1 and args[0] == '-':
+    elif len(path) == 1 and path[0] == '-':
         # Read everything from stdin, then translate it
-        data = translator.translate_string(sys.stdin.read())
-        if PY2:
-            data = data.encode('utf-8')
-        print(data)
+        data = click.get_binary_stream('stdin').read()
+        data = translator.translate_string(data)
+        out(data)
 
     else:
         # Args are filenames
-        for arg in args:
+        for arg in path:
             translator.translate_file(arg)
 
-    return 0
-
-
-def get_handlers():
-    handlers = [(name.replace('_cmd', ''), fun, fun.__doc__)
-                for name, fun in globals().items()
-                if name.endswith('_cmd')]
-    return handlers
-
-
-def print_help(scriptname):
-    out('{0} version {1}'.format(scriptname, __version__))
-
-    handlers = get_handlers()
-
-    parser = build_parser("%prog [command]")
-    parser.print_help()
-    out('')
-    out('Commands:')
-    for command_str, _, command_help in handlers:
-        out('  {cmd:10}  {hlp}'.format(cmd=command_str, hlp=command_help))
-
-
-def cmdline_handler(scriptname, argv):
-    handlers = get_handlers()
-
-    if not argv or argv[0] in ('-h', '--help'):
-        print_help(scriptname)
-        return 0
-
-    if '--version' in argv:
-        # We've already printed the version, so we can just exit.
-        return 0
-
-    command = argv.pop(0)
-    for (cmd, fun, hlp) in handlers:
-        if cmd == command:
-            return fun(scriptname, command, argv)
-
-    err('Command "{0}" does not exist.'.format(command))
-    print_help(scriptname)
-
-    return 1
-
-
-def run():
-    sys.exit(cmdline_handler("dennis-cmd", sys.argv[1:]))
+    ctx.exit(0)

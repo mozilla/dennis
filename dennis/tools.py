@@ -1,4 +1,3 @@
-import optparse
 import re
 
 from dennis.minisix import textclass
@@ -161,47 +160,6 @@ class VariableTokenizer(object):
                 return vt.extract_variable_name(text)
 
 
-class BetterArgumentParser(optparse.OptionParser):
-    """OptionParser that allows for additional help sections
-
-    OptionParser can take a description and an epilog, but it
-    textwraps them which destroys all formatting. This allows us to
-    have additional sections after the epilog which can maintain
-    formatting.
-
-    When creating the parser, pass in a ``sections`` kw argument with
-    a list of tuples of the form ``(text, boolean)``. The text is the
-    section text. The boolean indicates whether or not to textwrap the
-    text.
-
-    Example::
-
-        BetterArgumentParser(usage='usage: %prog blah blah', version='1.0',
-            sections=[
-                ('List\nof\nthings', False),  # Maintains format
-                ('List\nof\nthings', True),   # Textwrapped
-            ])
-
-    """
-    def __init__(self, *args, **kw):
-        if 'sections' in kw:
-            self.sections = kw.pop('sections')
-        else:
-            self.sections = []
-        optparse.OptionParser.__init__(self, *args, **kw)
-
-    def format_help(self, formatter=None):
-        help_text = optparse.OptionParser.format_help(self, formatter)
-        for (section, raw) in self.sections:
-            if raw:
-                help_text += section
-            else:
-                help_text += self._format_text(section)
-            help_text += '\n'
-
-        return help_text
-
-
 def all_subclasses(cls):
     subc = cls.__subclasses__()
     for d in list(subc):
@@ -287,12 +245,15 @@ def parse_pofile(fn_or_string):
 
     return parsed_pofile
 
+
 def withlines(linenum, poentry_text):
     """Returns text with line numbers"""
     start = linenum
     new_text = []
 
-    for line_no, line in zip(range(start, start+100), poentry_text.splitlines()):
+    lines_with_nums = zip(range(start, start+100), poentry_text.splitlines())
+
+    for line_no, line in lines_with_nums:
         new_text.append(textclass(line_no) + textclass(':') + textclass(line))
 
     return textclass('\n').join(new_text)

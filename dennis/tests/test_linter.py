@@ -3,9 +3,10 @@ import os
 import textwrap
 
 from nose.tools import eq_
+from click.testing import CliRunner
 import polib
 
-from dennis.cmdline import lint_cmd
+from dennis.cmdline import lint
 from dennis.linter import (
     BlankLintRule,
     MalformedNoTypeLintRule,
@@ -23,16 +24,15 @@ from dennis.templatelinter import (
     OneCharNamesTLR,
     MultipleUnnamedVarsTLR,
 )
-from dennis.minisix import StringIO
 from dennis.tools import VariableTokenizer
-from dennis.tests import build_po_string, redirect, tempdir
+from dennis.tests import build_po_string, tempdir
 
 
 class LintCmdTest(TestCase):
     def test_empty(self):
-        stdout = StringIO()
-        with redirect(stdout=stdout):
-            lint_cmd('test', 'lint', [])
+        res = CliRunner().invoke(lint, [])
+        eq_(res.exit_code, 1)
+        assert 'Nothing to work on' in res.output
 
     def test_basic(self):
         with tempdir() as dir_:
@@ -45,16 +45,12 @@ class LintCmdTest(TestCase):
             with open(fn, 'w') as fp:
                 fp.write(pofile)
 
-            stdout = StringIO()
-            stderr = StringIO()
-            with redirect(stdout=stdout, stderr=stderr):
-                lint_cmd('test', 'lint', ['--no-color', fn])
+            res = CliRunner().invoke(lint, ['--no-color', fn])
 
             # The dennis version will change and the temp directory
             # we're using will change, so we're lenient when checking
             # the first two lines.
-            output = stdout.getvalue()
-            line, output = output.split('\n', 1)
+            line, output = res.output.split('\n', 1)
             assert line.startswith('dennis version')
             line, output = output.split('\n', 1)
             assert line.startswith('>>> Working on')
@@ -76,28 +72,21 @@ class LintCmdTest(TestCase):
                 """))
 
     def test_no_files_to_work_on(self):
-        stdout = StringIO()
-        stderr = StringIO()
-        with redirect(stdout=stdout, stderr=stderr):
-            ret = lint_cmd('test', 'lint', ['foo'])
-
-        eq_(ret, 1)
-        assert 'No files to work on.' in stderr.getvalue()
+        res = CliRunner().invoke(lint, ['foo'])
+        eq_(res.exit_code, 1)
+        assert 'Nothing to work on.' in res.output
 
     def test_file_not_exists(self):
         with tempdir() as dir_:
             fn = os.path.join(dir_, 'messages.po')
-            stdout = StringIO()
-            stderr = StringIO()
-            with redirect(stdout=stdout, stderr=stderr):
-                ret = lint_cmd('test', 'lint', [fn])
+            res = CliRunner().invoke(lint, [fn])
 
-            eq_(ret, 1)
+            eq_(res.exit_code, 1)
             assert (
-                'IOError' in stderr.getvalue()
-                or 'OSError' in stderr.getvalue()
+                'IOError' in res.output
+                or 'OSError' in res.output
             )
-            assert 'does not exist' in stderr.getvalue()
+            assert 'does not exist' in res.output
 
     def test_basic_pot(self):
         with tempdir() as dir_:
@@ -110,12 +99,9 @@ class LintCmdTest(TestCase):
             with open(fn, 'w') as fp:
                 fp.write(pofile)
 
-            stdout = StringIO()
-            stderr = StringIO()
-            with redirect(stdout=stdout, stderr=stderr):
-                lint_cmd('test', 'lint', [fn])
+            res = CliRunner().invoke(lint, [fn])
 
-            assert '>>> Working on:' in stdout.getvalue()
+            assert '>>> Working on:' in res.output
             # FIXME: flesh out this test case
 
 
@@ -131,7 +117,6 @@ class LinterTest(TestCase):
 
         # No warnings or errors, so there are no messages.
         eq_(len(msgs), 0)
-
 
     def test_linter_fuzzy_strings(self):
         pofile = build_po_string(
@@ -564,7 +549,7 @@ class UnchangedLintRuleTestCase(LintRuleTestCase):
         eq_(len(msgs), 1)
         eq_(msgs[0].kind, 'warn')
         eq_(msgs[0].code, 'W302')
-        eq_(msgs[0].msg, 
+        eq_(msgs[0].msg,
             u'translated string is same as source string')
 
 

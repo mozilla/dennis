@@ -37,10 +37,11 @@ setup(
     # scripts=['bin/dennis-cmd'],
     install_requires=[
         'polib>=1.0.5',
+        'Click'
     ],
     entry_points="""
         [console_scripts]
-        dennis-cmd=dennis.cmdline:run
+        dennis-cmd=dennis.cmdline:click_run
     """,
     classifiers=[
         'Development Status :: 4 - Beta',
