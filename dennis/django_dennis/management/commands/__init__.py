@@ -34,6 +34,6 @@ class DennisBaseCommand(BaseCommand):
         if self.dennis_subcommand in args:
             args = args[args.index(self.dennis_subcommand)+1:]
 
-        args = [self.dennis_subcommand] + list(args)
+        args = ['dennis', self.dennis_subcommand] + list(args)
         sys.argv = args
         click_run()
