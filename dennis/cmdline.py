@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from functools import wraps
 from textwrap import dedent
 
@@ -145,6 +146,7 @@ def epilog(docstring):
 
 
 def click_run():
+    sys.excepthook = exception_handler
     cli(obj={})
 
 
@@ -469,3 +471,22 @@ def translate(ctx, varformat, pipeline, strings, path):
             translator.translate_file(arg)
 
     ctx.exit(0)
+
+
+def exception_handler(exc_type, exc_value, exc_tb):
+    click.echo('Oh no! Dennis has thrown an error while trying to do stuff.')
+    click.echo('Please write up a bug report with the specifics so that ')
+    click.echo('we can fix it.')
+    click.echo('')
+    click.echo('https://github.com/willkg/dennis/issues')
+    click.echo('')
+    click.echo('Here is some information you can copy and paste into the ')
+    click.echo('bug report:')
+    click.echo('')
+    click.echo('---')
+    out('Dennis: ', repr(__version__))
+    out('Python: ', repr(sys.version))
+    out('Command line: ', repr(sys.argv))
+    click.echo(
+        ''.join(traceback.format_exception(exc_type, exc_value, exc_tb)))
+    click.echo('---')
