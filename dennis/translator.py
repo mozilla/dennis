@@ -66,6 +66,25 @@ class EmptyTransform(Transform):
         return [Token('')]
 
 
+class DoubleTransform(Transform):
+    name = 'double'
+    desc = 'Doubles all vowels in a string.'
+
+    def transform(self, vartok, token_stream):
+        new_tokens = []
+        for token in token_stream:
+            if not token.mutable:
+                new_tokens.append(token)
+                continue
+
+            s = token.s
+            for char in 'aeiouyAEIOUY':
+                s = s.replace(char, char + char)
+
+            new_tokens.append(Token(''.join(s)))
+
+        return new_tokens
+
 class XXXTransform(Transform):
     name = 'xxx'
     desc = 'Adds xxx before and after lines in a string.'

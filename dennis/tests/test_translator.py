@@ -15,6 +15,7 @@ from dennis.translator import (
     ShoutyTransform,
     Token,
     Translator,
+    DoubleTransform,
     XXXTransform,
     ZombieTransform
 )
@@ -234,6 +235,22 @@ class XXXTransformTest(TransformTestCase):
 
         for text, expected in data:
             trans = XXXTransform()
+            output = trans.transform(self.vartok, [Token(text)])
+            output = u''.join([token.s for token in output])
+
+            eq_(output, expected)
+
+
+class DoubleTransformTest(TransformTestCase):
+    def test_basic(self):
+        data = [
+            (u'Hello', u'Heelloo'),
+            (u'OMG!', u'OOMG!'),
+            (u'Line\nWith\nCRs', u'Liinee\nWiith\nCRs'),
+        ]
+
+        for text, expected in data:
+            trans = DoubleTransform()
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
