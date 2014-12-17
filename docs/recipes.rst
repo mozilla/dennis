@@ -6,10 +6,10 @@ Recipes
    :local:
 
 
-linting all your .po files
-==========================
+linting all your PO files
+=========================
 
-Sometimes it's good to just get a look at all the .po files and make
+Sometimes it's good to just get a look at all the PO files and make
 sure they're ok:
 
 .. code-block:: bash
@@ -20,10 +20,10 @@ sure they're ok:
 It'll give you a summary at the end.
 
 
-linting your .pot file
-======================
+linting your POT file
+=====================
 
-Linting your .pot file can reduce the number of issues that translators
+Linting your POT file can reduce the number of issues that translators
 will stumble over. It's good to lint it before you push new strings
 to translate:
 
@@ -32,8 +32,8 @@ to translate:
    $ dennis-cmd lint locale/templates/LC_MESSAGES/messages.pot
 
 
-translate .po file for l10n issue detection
-===========================================
+translate PO file to find problems with localization
+====================================================
 
 Use the Dennis translator to find l10n issues in your application
 without having to bother your translators.
@@ -56,13 +56,16 @@ written in Python:
 Now view your application with the ``xx`` locale and behold it's
 Piratey wonderfulness!
 
+There are a variety of transforms which have different properties and
+suss out different kinds of localization problems.
 
-selective .mo compiling
-=======================
+
+selective MO compiling
+======================
 
 The Dennis linter returns an exit code of 1 if the file(s) it's
 linting have errors. You can trivially use this to selectively compile
-.po files into .mo files iff they are error free:
+PO files into MO files iff they are error free:
 
 .. code-block:: bash
 

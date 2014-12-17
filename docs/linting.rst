@@ -16,20 +16,20 @@ formats and any additional options available.
 Summary
 =======
 
-Dennis can lint your translated ``.po`` files for Python formatting
+Dennis can lint your translated PO files for Python formatting
 token issues::
 
     $ dennis-cmd lint messages.po
 
 
-This runs multiple lint rules on all the strings in the ``.po`` file
+This runs multiple lint rules on all the strings in the PO file
 generating a list of errors and a list of warnings.
 
 Wait, but that's ugly and hard to read! If you install ``blessings``, it
 comes colorized and really easy to parse. All hail blessings!
 
-Dennis can also lint your ``.pot`` files and point out issues that can
-result in poor translations. You can lint ``.pot`` files like this::
+Dennis can also lint your POT files and point out issues that can
+result in poor translations. You can lint POT files like this::
 
     $ dennis-cmd lint messages.pot
 
@@ -92,9 +92,10 @@ that, either.
 
 
 Table of Warnings and errors
-----------------------------
+============================
 
-These are for ``.po`` files:
+PO files
+--------
 
 +------+-----------------------------------------------------------------------+
 | Code | Description                                                           |
@@ -201,7 +202,8 @@ These are for ``.po`` files:
 +------+-----------------------------------------------------------------------+
 
 
-These are for ``.pot`` files:
+POT files
+---------
 
 +------+-----------------------------------------------------------------------+
 | Code | Description                                                           |

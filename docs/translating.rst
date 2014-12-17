@@ -15,7 +15,7 @@ This lists available transforms, variable formats and other options.
 Summary
 =======
 
-Dennis can translate the strings in your ``.po`` file. For example,
+Dennis can translate the strings in your PO file. For example,
 this does the default which extracts text from HTML strings and
 translates that text into Pirate::
 
