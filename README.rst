@@ -6,13 +6,11 @@ Dennis is a command line tool for translating and linting .po files.
 
 It includes the following subcommands:
 
-* **lint**: Lints ``.po`` files for problems including errors that
-  can cause your production system to crash.
+* **lint**: Lints ``.po`` and ``.pot`` files for problems including
+  errors that can cause your production system to crash and problems
+  in strings that can lead to poor translations.
 
   The system allows for defining other variable formats.
-
-* **linttemplate**: Lints ``.pot`` files for problems in strings that
-  lead to poor localizations.
 
 * **status**: Get a high-level status of a ``.po`` file including
   a list of unstranslated strings.
@@ -53,7 +51,7 @@ Lint all your ``.po`` files for errors::
 
 Lint a ``.pot`` file for problems::
 
-    $ dennis-cmd linttemplate locale/templates/LC_MESSAGES/messages.pot
+    $ dennis-cmd lint locale/templates/LC_MESSAGES/messages.pot
 
 Translate a ``.po`` file with HTML in the strings in place into Pirate!::
 

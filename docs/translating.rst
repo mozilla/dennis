@@ -25,7 +25,7 @@ translates that text into Pirate::
 .. Note::
 
    This translates the ``messages.po`` file in-place. If you don't
-   want that, then copy it and translate the copy.
+   want that, then copy the file and translate the copy.
 
 
 You can also translate strings on the command line::
@@ -83,6 +83,7 @@ Dennis currently supports the following transforms:
 name        description
 ==========  ==================================================
 anglequote  Encloses string in unicode angle quotes.
+double      Doubles all vowels in a string.
 dubstep     Translates text into dubstep. It's an experience.
 empty       Returns empty strings.
 haha        Adds haha! before sentences in a string.
@@ -111,6 +112,12 @@ The anglequote transform adds unicode angle quotes to the beginning
 and end of strings. This helps to make sure your code handles unicode
 strings and also some layout issues like when strings are cut off or
 overlapping.
+
+
+double
+------
+
+The double transform doubles all vowels in the string.
 
 
 dubstep

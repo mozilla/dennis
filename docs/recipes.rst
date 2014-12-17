@@ -29,7 +29,7 @@ to translate:
 
 .. code-block:: bash
 
-   # dennis-cmd lint locale/templates/LC_MESSAGES/messages.pot
+   $ dennis-cmd lint locale/templates/LC_MESSAGES/messages.pot
 
 
 translate .po file for l10n issue detection

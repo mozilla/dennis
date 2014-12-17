@@ -6,17 +6,46 @@ What's new in Dennis
    :local:
 
 
+Version 0.6: December 16th, 2014
+================================
+
+**Notes**
+
+* Adds click as a dependency.
+* Adds a line reporter for the linter so Dennis can be used as a linting
+  plugin.
+* Adds line numbers to lint output so you can more easily find the
+  problematic strings.
+
+**Changes**
+
+* 9f9f42b Add exception handlin' text (#41)
+* fd15fe8 Add double transform (#44)
+* dcd3e7f Fix th' Django command shims
+* 1606887 Rewrite command line code wit' click (#51)
+* c34d77e Fix pyflakes issues
+* 905ce05 Change "dennis" to "Dennis"
+* a6d49a8 Nix bin/dennis-cmd for setuptools console entrypoint
+* be9c867 Merge lint and linttemplate commands (#50)
+* 92f2037 Add line numbers to output and line reporter (#47)
+* 37cad18 Showw entire poentry in linttemplate (#46)
+
+
 Version 0.5: August 24th, 2014
 ==============================
 
-8dddfb7 Add MismatchedHTMLLintRule (#36)
-b31c094 Minorr code cleanup
-9353f5b Fix bugs when runnin' wit' Python 3
-4883e52 Add template linterr (#39)
+**Changes**
+
+* 8dddfb7 Add MismatchedHTMLLintRule (#36)
+* b31c094 Minorr code cleanup
+* 9353f5b Fix bugs when runnin' wit' Python 3
+* 4883e52 Add template linterr (#39)
 
 
 Version 0.4.3: August 1st, 2014
 ===============================
+
+**Changes**
 
 * ead33d3 Add UnchangedLintRule (#36)
 * fde6d9a Add BlankLintRule (#36)
@@ -26,11 +55,15 @@ Version 0.4.3: August 1st, 2014
 Version 0.4.2: May 13th, 2014
 =============================
 
+**Changes**
+
 * 06e4b6d Fix utf8_args decoratorr
 
 
 Version 0.4.1: May 9th, 2014
 ============================
+
+**Changes**
 
 * 831af1a Fix lint output regarding UnicodeEncodeErrors (#37)
  
