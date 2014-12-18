@@ -1,6 +1,9 @@
+from functools import wraps
 import contextlib
 import shutil
 import tempfile
+
+from nose import SkipTest
 
 
 def build_po_string(data):
@@ -34,3 +37,14 @@ def tempdir():
     dir_ = tempfile.mkdtemp()
     yield dir_
     shutil.rmtree(dir_)
+
+
+def skip_if(testfun):
+    def _skip_if(fun):
+        @wraps(fun)
+        def _skip_if_inner(*args, **kwargs):
+            if testfun():
+                raise SkipTest
+            return fun(*args, **kwargs)
+        return _skip_if_inner
+    return _skip_if

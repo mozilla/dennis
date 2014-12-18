@@ -1,7 +1,7 @@
 import re
 from collections import namedtuple
 
-from dennis.minisix import izip_longest
+from dennis.minisix import izip_longest, HTMLParseError
 from dennis.tools import (
     VariableTokenizer,
     all_subclasses,
@@ -275,6 +275,7 @@ class UnchangedLintRule(LintRule):
 
 class MismatchedHTMLLintRule(LintRule):
     num = 'W303'
+    num_error = 'W304'
     name = 'html'
     desc = 'Checks for matching html between source and translated strings'
 
@@ -288,6 +289,11 @@ class MismatchedHTMLLintRule(LintRule):
             return left == right
 
         def tokenize(text):
+            """Tokenizes the text using the HTMLExtractorTransform
+
+            :raises HTMLParseError: If it's invalid HTML.
+
+            """
             tokens = [token for token in html.transform(vartok, [Token(text)])
                       if token.type == 'html' and not token.s.startswith('&')]
             return sorted(tokens, key=lambda token: token.s)
@@ -296,13 +302,38 @@ class MismatchedHTMLLintRule(LintRule):
             if not trstr.msgstr_string:
                 continue
 
-            msgid_parts = tokenize(trstr.msgid_strings[0])
+            try:
+                msgid_parts = tokenize(trstr.msgid_strings[0])
+            except HTMLParseError as exc:
+                errmsg = (
+                    u'invalid html: msgid has invalid html {0}'
+                    .format(exc)
+                )
+                msgs.append(
+                    LintMessage(
+                        WARNING, linted_entry.poentry.linenum, 0,
+                        self.num_error, errmsg, linted_entry.poentry)
+                )
+                return msgs
 
             if len(trstr.msgid_strings) > 1:
                 # If this is a plural, then we check to see if the two
                 # msgid strings match each other. If not, then we move
                 # on because I have no idea what to do in this case.
-                msgid_plural_parts = tokenize(trstr.msgid_strings[1])
+                try:
+                    msgid_plural_parts = tokenize(trstr.msgid_strings[1])
+                except HTMLParseError as exc:
+                    errmsg = (
+                        u'invalid html: msgid_plural has invalid html {0}'
+                        .format(exc)
+                    )
+
+                    msgs.append(
+                        LintMessage(
+                            WARNING, linted_entry.poentry.linenum, 0,
+                            self.num_error, errmsg, linted_entry.poentry)
+                    )
+                    return msgs
 
                 zipped_parts = izip_longest(
                     msgid_parts, msgid_plural_parts, fillvalue=None)
@@ -311,7 +342,20 @@ class MismatchedHTMLLintRule(LintRule):
                     if not left or not right or not equiv(left, right):
                         return []
 
-            msgstr_parts = tokenize(trstr.msgstr_string)
+            try:
+                msgstr_parts = tokenize(trstr.msgstr_string)
+            except HTMLParseError as exc:
+                errmsg = (
+                    u'invalid html: msgstr has invalid html {0}'
+                    .format(exc)
+                )
+                msgs.append(
+                    LintMessage(
+                        WARNING, linted_entry.poentry.linenum, 0,
+                        self.num_error, errmsg, linted_entry.poentry)
+                )
+                return msgs
+
             for left, right in izip_longest(msgid_parts, msgstr_parts,
                                             fillvalue=None):
                 if not left or not right or not equiv(left, right):
