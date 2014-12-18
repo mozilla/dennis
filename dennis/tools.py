@@ -220,28 +220,22 @@ def parse_pofile(fn_or_string):
     else:
         fp = fn_or_string.splitlines(True)
 
-    linenum_to_block = {}
-    block = []
-    starti = None
-    for i, line in enumerate(fp):
-        if not line.strip() and block:
-            # Empty line so we emit a block and reset starti
-            linenum_to_block[starti+1] = textclass('').join(block)
-            block = []
-            starti = None
-            continue
+    fp = list(fp)
+    entries = list(parsed_pofile)
+    for i, poentry in enumerate(entries):
+        # Grab the lines that make up the poentry.
+        # Note: linenum is 1-based, so we convert it to 0-based.
+        try:
+            lines = fp[poentry.linenum-1:entries[i+1].linenum-1]
+        except IndexError:
+            lines = fp[poentry.linenum-1:]
 
-        if starti is None:
-            starti = i
-        block.append(line)
+        # Nix blank lines at the end.
+        while lines and not lines[-1].strip():
+            lines.pop()
 
-    if block:
-        linenum_to_block[starti+1] = textclass('').join(block)
-
-    # Go through the parsed_pofile list and "fix" all the POEntry
-    # instances.
-    for poentry in parsed_pofile:
-        poentry.original = linenum_to_block[poentry.linenum]
+        # Join them and voila!
+        poentry.original = textclass('').join(lines)
 
     return parsed_pofile
 
