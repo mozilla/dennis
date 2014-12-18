@@ -200,6 +200,24 @@ PO files
 |      |    msgstr: "  "                                                       |
 |      |                                                                       |
 +------+-----------------------------------------------------------------------+
+| W302 | Translated string is identical to source string                       |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |    Error: unchanged: translated string is same as source string       |
+|      |    msgid: "Foo"                                                       |
+|      |    msgstr: "Foo"                                                      |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| W303 | HTML is mismatched between source and translated strings              |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |    Error: html: different html: "<b>" vs. "<i>"                       |
+|      |    msgid: "<b>Foo</b>"                                                |
+|      |    msgstr: "<i>Feh</i>"                                               |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
 
 
 POT files
