@@ -9,10 +9,12 @@ What's new in Dennis
 Version 0.6.1: December 18th, 2014
 ==================================
 
-39208bd Rewrite poentry block parserr (#54)
-b21d553 Handle HTMLParseErrorr in MismatchedHTMLLintRule (#53)
-e719886 Update lintin' wit' warnings we add'd in 0.6
-6312d33 Tweak a bunch o' project summary language
+**Changes**
+
+* 39208bd Rewrite poentry block parserr (#54)
+* b21d553 Handle HTMLParseErrorr in MismatchedHTMLLintRule (#53)
+* e719886 Update lintin' wit' warnings we add'd in 0.6
+* 6312d33 Tweak a bunch o' project summary language
 
 
 Version 0.6: December 16th, 2014
