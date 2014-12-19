@@ -24,12 +24,15 @@ def get_version():
 setup(
     name='dennis',
     version=get_version(),
-    description='l10n and .po/.pot file tools',
+    description=(
+        'Utilities for working with PO and POT files to ease development '
+        'and improve localization quality'
+    ),
     long_description=open(READMEFILE).read(),
     license='Simplified BSD License',
     author='Will Kahn-Greene',
     author_email='willkg@bluesock.org',
-    keywords='l10n localization po pot lint translate',
+    keywords='l10n localization PO POT lint translate development',
     url='http://github.com/willkg/dennis',
     zip_safe=True,
     packages=find_packages(),
