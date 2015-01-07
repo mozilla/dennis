@@ -172,7 +172,7 @@ class MalformedMissingLeftBraceLintRule(LintRule):
         if not vartok.contains('pyformat'):
             return []
 
-        malformed_re = re.compile(r'(?:(?:^|\})[^\{]+\})')
+        malformed_re = re.compile(r'(?:(?:^|\})[^\{]*\})')
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:

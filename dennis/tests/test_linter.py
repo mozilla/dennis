@@ -300,6 +300,18 @@ class MalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
         eq_(msgs[0].msg,
             'missing left curly-brace: } | product}')
 
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/question_details.html:14\n'
+            'msgid "{q} | {product} Support Forum"\n'
+            'msgstr "{q} | {product}} foo bar"\n')
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        eq_(len(msgs), 1)
+        eq_(msgs[0].kind, 'err')
+        eq_(msgs[0].code, 'E103')
+        eq_(msgs[0].msg,
+            'missing left curly-brace: }}')
+
 
 class MissingVarsLintRuleTest(LintRuleTestCase):
     lintrule = MissingVarsLintRule()
