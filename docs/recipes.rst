@@ -49,7 +49,9 @@ written in Python:
    cp locale/templates/LC_MESSAGES/messages.pot \
        locale/xx/LC_MESSAGES/messages.po
 
-   dennis-cmd translate --pipeline=html,pirate --vars=pysprintf,pyformat \
+   dennis-cmd translate \
+       --pipeline=html,pirate \
+       --varsformat=python-format,python-brace-format \
        locale/xx/LC_MESSAGES/messages.po
 
 

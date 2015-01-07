@@ -49,7 +49,7 @@ Dennis can translate around variable tokens in strings. By default, it
 translates around Python variable forms. You can specify other
 variable formats to translate around::
 
-    $ denis-cmd translate --vars=pysprintf,pyformat
+    $ denis-cmd translate --varformat=python-format,python-brace-format
 
 
 .. Note::

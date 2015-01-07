@@ -13,7 +13,7 @@ from dennis.templatelinter import TemplateLinter
 from dennis.tools import (
     FauxTerminal,
     Terminal,
-    get_available_vars,
+    get_available_formats,
     parse_pofile,
     withlines
 )
@@ -66,16 +66,16 @@ if PY2 and not sys.stdout.isatty():
     err = utf8_args(err)
 
 
-def format_vars():
-    vars_ = sorted(get_available_vars().items())
+def format_formats():
+    formats = sorted(get_available_formats().items())
     lines = [
         'Available Variable Formats:',
         '',
         '\b',
     ]
     lines.extend(
-        ['{name:13}  {desc}'.format(name=name, desc=cls.desc)
-         for name, cls in vars_]
+        ['{name:19}  {desc}'.format(name=name, desc=cls.desc)
+         for name, cls in formats]
     )
 
     text = '\n'.join(lines) + '\n'
@@ -158,8 +158,8 @@ def cli():
 @cli.command()
 @click.option('--quiet/--no-quiet', default=False)
 @click.option('--color/--no-color', default=True)
-@click.option('--varformat', default='pysprintf,pyformat',
-              help=('Comma-separated list of variable types. '
+@click.option('--varformat', default='python-format,python-brace-format',
+              help=('Comma-separated list of variable formats. '
                     'See Available Variable Formats.'))
 @click.option('--rules', default='',
               help=('Comma-separated list of lint rules to use. '
@@ -170,7 +170,7 @@ def cli():
               help='Only print errors.')
 @click.argument('path', nargs=-1)
 @click.pass_context
-@epilog(format_vars() + '\n' +
+@epilog(format_formats() + '\n' +
         format_lint_rules() + '\n' +
         format_lint_template_rules())
 def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
@@ -208,7 +208,7 @@ def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
                 if fn.endswith(('.po', '.pot'))]
 
     if not po_files:
-        err('Nothing to work on.')
+        err('Nothing to work on. Use --help for help.')
         ctx.exit(1)
 
     files_to_errors = {}
@@ -419,7 +419,7 @@ def status(ctx, showuntranslated, path):
 
 
 @cli.command()
-@click.option('--varformat', default='pysprintf,pyformat',
+@click.option('--varformat', default='python-format,python-brace-format',
               help=('Comma-separated list of variable types. '
                     'See Available Variable Formats.'))
 @click.option('--pipeline', '-p', default='html,pirate',
@@ -429,7 +429,7 @@ def status(ctx, showuntranslated, path):
               help='Command line args are strings to be translated')
 @click.argument('path', nargs=-1)
 @click.pass_context
-@epilog(format_vars() + '\n' +
+@epilog(format_formats() + '\n' +
         format_pipeline_parts())
 def translate(ctx, varformat, pipeline, strings, path):
     """
@@ -445,7 +445,7 @@ def translate(ctx, varformat, pipeline, strings, path):
         out('dennis version {version}'.format(version=__version__))
 
     if not path:
-        err('Nothing to work on.')
+        err('Nothing to work on. Use --help for help.')
         ctx.exit(1)
 
     translator = Translator(

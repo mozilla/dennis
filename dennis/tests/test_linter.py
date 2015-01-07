@@ -113,7 +113,10 @@ class LinterTest(TestCase):
             'msgid "Foo"\n'
             'msgstr "Oof"\n')
 
-        linter = Linter(['pysprintf', 'pyformat'], ['E201', 'W202'])
+        linter = Linter(
+            ['python-format', 'python-brace-format'],
+            ['E201', 'W202']
+        )
         msgs = linter.verify_file(pofile)
 
         # No warnings or errors, so there are no messages.
@@ -127,7 +130,10 @@ class LinterTest(TestCase):
             '#~ msgstr[0] "Les {count} derniers messages"\n'
             '#~ msgstr[1] "Les {count} derniers messages"\n')
 
-        linter = Linter(['pysprintf', 'pyformat'], ['E201', 'W202'])
+        linter = Linter(
+            ['python-format', 'python-brace-format'],
+            ['E201', 'W202']
+        )
         msgs = linter.verify_file(pofile)
 
         # There were no non-fuzzy strings, so nothing to lint.
@@ -141,7 +147,10 @@ class LinterTest(TestCase):
             '#~ msgstr[0] ""\n'
             '#~ msgstr[1] ""\n')
 
-        linter = Linter(['pysprintf', 'pyformat'], ['E201', 'W202'])
+        linter = Linter(
+            ['python-format', 'python-brace-format'],
+            ['E201', 'W202']
+        )
         msgs = linter.verify_file(pofile)
 
         # There were no translated strings, so nothing to lint.
@@ -155,7 +164,7 @@ def build_linted_entry(po_data):
 
 
 class LintRuleTestCase(TestCase):
-    vartok = VariableTokenizer(['pysprintf', 'pyformat'])
+    vartok = VariableTokenizer(['python-format', 'python-brace-format'])
 
 
 class MalformedNoTypeLintRuleTest(LintRuleTestCase):
@@ -215,7 +224,7 @@ class MalformedNoTypeLintRuleTest(LintRuleTestCase):
         eq_(len(msgs), 0)
 
     # FIXME - test to make sure it doesn't do anything for
-    # non-pysprintf situations.
+    # non-python-format situations.
 
 
 class MalformedMissingRightBraceLintRuleTest(LintRuleTestCase):
@@ -654,7 +663,7 @@ class MismatchedHTMLLintRule(LintRuleTestCase):
 
 
 class TLRTestCase(TestCase):
-    vartok = VariableTokenizer(['pysprintf', 'pyformat'])
+    vartok = VariableTokenizer(['python-format', 'python-brace-format'])
 
 
 class HardToReadNamesTLRTestCase(TLRTestCase):

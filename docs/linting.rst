@@ -102,7 +102,7 @@ PO files
 +======+=======================================================================+
 | E101 | Malformed variable missing type                                       |
 |      |                                                                       |
-|      | Only checks pythonpercent variables.                                  |
+|      | Only checks python-format variables.                                  |
 |      |                                                                       |
 |      | Example (Python)::                                                    |
 |      |                                                                       |
@@ -121,7 +121,7 @@ PO files
 |      |                                                                       |
 |      | For example ``{foo`` with missing ``}``.                              |
 |      |                                                                       |
-|      | Only checks pythonformat variables.                                   |
+|      | Only checks python-brace-format variables.                            |
 |      |                                                                       |
 |      | Example (Python)::                                                    |
 |      |                                                                       |
@@ -140,7 +140,7 @@ PO files
 |      |                                                                       |
 |      | For example ``foo}`` with missing ``{``.                              |
 |      |                                                                       |
-|      | Only checks pythonformat variables.                                   |
+|      | Only checks python-brace-format variables.                            |
 |      |                                                                       |
 |      | Example (Python)::                                                    |
 |      |                                                                       |

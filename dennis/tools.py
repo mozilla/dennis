@@ -19,8 +19,8 @@ except ImportError:
     Terminal = FauxTerminal
 
 
-class Var(object):
-    """Variable base class"""
+class Format(object):
+    """Variable format base class"""
     name = ''
     desc = ''
     regexp = ''
@@ -32,10 +32,11 @@ class Var(object):
         raise NotImplemented
 
 
+# http://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
 # https://docs.python.org/2/library/string.html#format-string-syntax
-class PythonFormatVar(Var):
-    name = 'pyformat'
-    desc = 'Python format string syntax (e.g. "{0}", "{foo}")'
+class PythonBraceFormat(Format):
+    name = 'python-brace-format'
+    desc = 'Python brace format (e.g. "{0}", "{foo}")'
 
     regexp = (
         # {foo}
@@ -51,10 +52,11 @@ class PythonFormatVar(Var):
             return identifier.group(1)
 
 
+# http://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
 # http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
-class PythonPercentVar(Var):
-    name = 'pysprintf'
-    desc = 'Python sprintf syntax (e.g. "%s", "%(foo)s")'
+class PythonFormat(Format):
+    name = 'python-format'
+    desc = 'Python percent format (e.g. "%s", "%(foo)s")'
 
     regexp = (
         # %s and %(foo)s
@@ -77,71 +79,70 @@ class PythonPercentVar(Var):
             return identifier.group(1) or ''
 
 
-def get_available_vars():
+def get_available_formats():
     return dict(
         (thing.name, thing)
         for name, thing in globals().items()
-        if (name.endswith('Var')
-            and issubclass(thing, Var)
+        if (name.endswith('Format')
+            and issubclass(thing, Format)
             and thing.name)
     )
 
 
-class UnknownVar(Exception):
+class UnknownFormat(Exception):
     pass
 
 
 class VariableTokenizer(object):
-    def __init__(self, vars_=None):
+    def __init__(self, formats=None):
         """
-        :arg vars_: List of variable formats
+        :arg formats: List of variable formats
 
             If None, creates a VariableTokenizer that tokenizes on all
-            types of variables. Otherwise just recognizes the listed
-            types.
+            formats of variables. Otherwise just recognizes the listed
+            formats.
 
         """
-        all_vars = get_available_vars()
+        all_formats = get_available_formats()
 
-        if vars_ is None:
-            vars_ = all_vars.keys()
+        if formats is None:
+            formats = all_formats.keys()
 
         # Convert names to classes
-        self.vars_ = []
+        self.formats = []
 
-        for v in vars_:
+        for fmt in formats:
             try:
-                self.vars_.append(all_vars[v])
+                self.formats.append(all_formats[fmt])
             except KeyError:
-                raise UnknownVar(
-                    '{0} is not a known variable type'.format(v))
+                raise UnknownFormat(
+                    '{0} is not a known variable format'.format(fmt))
 
         # Generate variable regexp
         self.vars_re = re.compile(
             r'(' +
-            '|'.join([vt.regexp for vt in self.vars_]) +
+            '|'.join([vt.regexp for vt in self.formats]) +
             r')'
         )
 
-    def contains(self, var_):
-        """Does this tokenizer contain specified variable type?"""
-        return var_ in [tok.name for tok in self.vars_]
+    def contains(self, fmt):
+        """Does this tokenizer contain specified variable format?"""
+        return fmt in [tok.name for tok in self.formats]
 
     def tokenize(self, text):
-        """Breaks s into strings and Python formatting tokens
+        """Breaks s into strings and Python variables
 
         This preserves whitespace.
 
         :arg text: the string to tokenize
 
-        :returns: list of tokens---every even one is a Python formatting
-            token
+        :returns: list of tokens---every even one is a Python variable
 
         """
         return self.vars_re.split(text)
 
     def extract_tokens(self, text, unique=True):
-        """Returns the set of variable tokens in the text"""
+        """Returns the set of variable in the text"""
         try:
             tokens = self.vars_re.findall(text)
             if unique:
@@ -151,13 +152,13 @@ class VariableTokenizer(object):
             print('TYPEERROR: {0}'.format(repr(text)))
 
     def is_token(self, text):
-        """Is this text a variable token?"""
+        """Is this text a variable?"""
         return self.vars_re.match(text) is not None
 
     def extract_variable_name(self, text):
-        for vt in self.vars_:
-            if re.compile(vt.regexp).match(text):
-                return vt.extract_variable_name(text)
+        for fmt in self.formats:
+            if re.compile(fmt.regexp).match(text):
+                return fmt.extract_variable_name(text)
 
 
 def all_subclasses(cls):

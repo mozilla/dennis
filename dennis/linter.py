@@ -99,8 +99,9 @@ class MalformedNoTypeLintRule(LintRule):
         msgs = []
 
         # This only applies if one of the variable tokenizers
-        # is PythonPercentVar.
-        if not vartok.contains('pysprintf'):
+        # is python-format.
+        # FIXME: Generalize this.
+        if not vartok.contains('python-format'):
             return msgs
 
         malformed_re = re.compile(r'(?:%[\(][^\)\s]+[\)](?:\s|$))')
@@ -133,8 +134,9 @@ class MalformedMissingRightBraceLintRule(LintRule):
         msgs = []
 
         # This only applies if one of the variable tokenizers
-        # is PythonFormatVar.
-        if not vartok.contains('pyformat'):
+        # is python-brace-format.
+        # FIXME: Generalize this.
+        if not vartok.contains('python-brace-format'):
             return []
 
         malformed_re = re.compile(r'(?:\{[^\}]+(?:\{|$))')
@@ -168,8 +170,9 @@ class MalformedMissingLeftBraceLintRule(LintRule):
         msgs = []
 
         # This only applies if one of the variable tokenizers
-        # is PythonFormatVar.
-        if not vartok.contains('pyformat'):
+        # is python-brace-format.
+        # FIXME: Generalize this.
+        if not vartok.contains('python-brace-format'):
             return []
 
         malformed_re = re.compile(r'(?:(?:^|\})[^\{]*\})')

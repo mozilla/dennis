@@ -1,7 +1,7 @@
 from dennis.tools import (
     VariableTokenizer,
-    PythonFormatVar,
-    PythonPercentVar,
+    PythonFormat,
+    PythonBraceFormat,
     parse_dennis_note
 )
 
@@ -9,7 +9,7 @@ from nose.tools import eq_
 
 
 def test_python_tokenizing():
-    vartok = VariableTokenizer(['pysprintf', 'pyformat'])
+    vartok = VariableTokenizer(['python-format', 'python-brace-format'])
     data = [
         ('Hello %s', ['Hello ', '%s', '']),
         ('Hello %(username)s', ['Hello ', '%(username)s', '']),
@@ -23,8 +23,8 @@ def test_python_tokenizing():
         eq_(vartok.tokenize(text), expected)
 
 
-def test_pythonformatvar():
-    v = PythonFormatVar()
+def test_pythonbraceformat():
+    v = PythonBraceFormat()
 
     eq_(v.extract_variable_name('{}'), '')
     eq_(v.extract_variable_name('{0}'), '0')
@@ -35,8 +35,8 @@ def test_pythonformatvar():
     eq_(v.extract_variable_name('{abc: >16}'), 'abc')  # format_spec
 
 
-def test_pythonpercentvar():
-    v = PythonPercentVar()
+def test_pythonformat():
+    v = PythonFormat()
 
     eq_(v.extract_variable_name('%s'), '')
     eq_(v.extract_variable_name('%d'), '')
