@@ -72,7 +72,7 @@ Project details
 :Documentation: http://dennis.rtfd.org/
 :Issue tracker: https://github.com/willkg/dennis/issues
 :License:       BSD 3-clause; see LICENSE file
-:Donate:        `gittip <https://www.gittip.com/on/github/willkg/>`_
+:Donate:        `gratipay <https://gratipay.com/willkg/>`_
 
 
 Why is it called Dennis?
