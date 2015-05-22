@@ -39,8 +39,8 @@ setup(
     include_package_data=True,
     # scripts=['bin/dennis-cmd'],
     install_requires=[
-        'polib>=1.0.5',
-        'Click'
+        'polib>=1.0.6',
+        'click==4.0'
     ],
     entry_points="""
         [console_scripts]
