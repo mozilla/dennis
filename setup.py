@@ -37,7 +37,6 @@ setup(
     zip_safe=True,
     packages=find_packages(),
     include_package_data=True,
-    # scripts=['bin/dennis-cmd'],
     install_requires=[
         'polib>=1.0.6',
         'click==4.0'
