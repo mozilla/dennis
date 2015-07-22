@@ -360,9 +360,11 @@ def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
 @cli.command()
 @click.option('--showuntranslated', is_flag=True, default=False,
               help='Show untranslated strings')
+@click.option('--showfuzzy', is_flag=True, default=False,
+              help='Show fuzzy strings')
 @click.argument('path', nargs=-1, type=click.Path(exists=True))
 @click.pass_context
-def status(ctx, showuntranslated, path):
+def status(ctx, showuntranslated, showfuzzy, path):
     """Show status of a .po file."""
     out('dennis version {version}'.format(version=__version__))
 
@@ -404,6 +406,13 @@ def status(ctx, showuntranslated, path):
             out('Untranslated strings:')
             out('')
             for poentry in pofile.untranslated_entries():
+                out(withlines(poentry.linenum, poentry.original))
+                out('')
+
+        if showfuzzy:
+            out('Fuzzy strings:')
+            out('')
+            for poentry in pofile.fuzzy_entries():
                 out(withlines(poentry.linenum, poentry.original))
                 out('')
 
