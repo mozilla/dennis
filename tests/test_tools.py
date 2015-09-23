@@ -5,8 +5,6 @@ from dennis.tools import (
     parse_dennis_note
 )
 
-from nose.tools import eq_
-
 
 def test_python_tokenizing():
     vartok = VariableTokenizer(['python-format', 'python-brace-format'])
@@ -20,29 +18,28 @@ def test_python_tokenizing():
     ]
 
     for text, expected in data:
-        eq_(vartok.tokenize(text), expected)
+        assert vartok.tokenize(text) == expected
 
 
 def test_pythonbraceformat():
     v = PythonBraceFormat()
 
-    eq_(v.extract_variable_name('{}'), '')
-    eq_(v.extract_variable_name('{0}'), '0')
-    eq_(v.extract_variable_name('{abc}'), 'abc')
-    eq_(v.extract_variable_name('{abc.def}'), 'abc.def')
-    eq_(v.extract_variable_name('{abc[0]}'), 'abc[0]')
-    eq_(v.extract_variable_name('{abc!s}'), 'abc')  # conversion
-    eq_(v.extract_variable_name('{abc: >16}'), 'abc')  # format_spec
+    assert v.extract_variable_name('{}') == ''
+    assert v.extract_variable_name('{0}') == '0'
+    assert v.extract_variable_name('{abc}') == 'abc'
+    assert v.extract_variable_name('{abc.def}') == 'abc.def'
+    assert v.extract_variable_name('{abc[0]}') == 'abc[0]'
+    assert v.extract_variable_name('{abc!s}') == 'abc'  # conversion
+    assert v.extract_variable_name('{abc: >16}') == 'abc'  # format_spec
 
 
 def test_pythonformat():
     v = PythonFormat()
 
-    eq_(v.extract_variable_name('%s'), '')
-    eq_(v.extract_variable_name('%d'), '')
-    eq_(v.extract_variable_name('%.2f'), '')
-
-    eq_(v.extract_variable_name('%(foo)s'), 'foo')
+    assert v.extract_variable_name('%s') == ''
+    assert v.extract_variable_name('%d') == ''
+    assert v.extract_variable_name('%.2f') == ''
+    assert v.extract_variable_name('%(foo)s') == 'foo'
 
 
 def test_parse_dennis_note():
@@ -59,4 +56,4 @@ def test_parse_dennis_note():
     ]
 
     for text, expected in data:
-        eq_(parse_dennis_note(text), expected)
+        assert parse_dennis_note(text) == expected

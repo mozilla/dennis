@@ -1,7 +1,3 @@
-from unittest import TestCase
-
-from nose.tools import eq_
-
 from dennis.tools import VariableTokenizer
 from dennis.translator import (
     AngleQuoteTransform,
@@ -21,11 +17,11 @@ from dennis.translator import (
 )
 
 
-class TransformTestCase(TestCase):
+class TransformTestCase:
     vartok = VariableTokenizer(['python-format', 'python-brace-format'])
 
 
-class EmptyTransformTest(TransformTestCase):
+class TestEmptyTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u''),
@@ -38,10 +34,10 @@ class EmptyTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class HahaTransformTest(TransformTestCase):
+class TestHahaTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u'Haha\u2757 Hello'),
@@ -55,10 +51,10 @@ class HahaTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class PirateTransformTest(TransformTestCase):
+class TestPirateTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello',
@@ -92,10 +88,10 @@ class PirateTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class DubstepTransformTest(TransformTestCase):
+class TestDubstepTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello',
@@ -130,10 +126,10 @@ class DubstepTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class ZombieTransformTest(TransformTestCase):
+class TestZombieTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'', u''),
@@ -159,72 +155,90 @@ class ZombieTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class HTMLExtractorTest(TestCase):
+class TestHTMLExtractor:
     vartok = VariableTokenizer(['python-format', 'python-brace-format'])
 
     def test_basic(self):
         trans = HTMLExtractorTransform()
         output = trans.transform(self.vartok, [Token('')])
-        eq_(output, [Token(u'', 'text', True)])
+        assert output == [Token(u'', 'text', True)]
 
         output = trans.transform(self.vartok, [Token('<b>hi</b>')])
-        eq_(output, [
-            Token(u'<b>', 'html', False),
-            Token(u'hi', 'text', True),
-            Token(u'</b>', 'html', False),
-        ])
+        assert (
+            output ==
+            [
+                Token(u'<b>', 'html', False),
+                Token(u'hi', 'text', True),
+                Token(u'</b>', 'html', False),
+            ]
+        )
 
     def test_alt_title_placeholder(self):
         trans = HTMLExtractorTransform()
         output = trans.transform(self.vartok, [
             Token('<img alt="foo">')])
-        eq_(output, [
-            Token(u'<img alt="', 'html', False),
-            Token(u'foo', 'text', True),
-            Token(u'">', 'html', False),
-        ])
+        assert (
+            output ==
+            [
+                Token(u'<img alt="', 'html', False),
+                Token(u'foo', 'text', True),
+                Token(u'">', 'html', False),
+            ]
+        )
 
         output = trans.transform(self.vartok, [
             Token('<img title="foo">')])
-        eq_(output, [
-            Token(u'<img title="', 'html', False),
-            Token(u'foo', 'text', True),
-            Token(u'">', 'html', False),
-        ])
+        assert (
+            output ==
+            [
+                Token(u'<img title="', 'html', False),
+                Token(u'foo', 'text', True),
+                Token(u'">', 'html', False),
+            ]
+        )
 
         output = trans.transform(self.vartok, [
             Token('<input placeholder="foo">')])
-        eq_(output, [
-            Token(u'<input placeholder="', 'html', False),
-            Token(u'foo', 'text', True),
-            Token(u'">', 'html', False),
-        ])
+        assert (
+            output ==
+            [
+                Token(u'<input placeholder="', 'html', False),
+                Token(u'foo', 'text', True),
+                Token(u'">', 'html', False),
+            ]
+        )
 
     def test_script_style(self):
         trans = HTMLExtractorTransform()
         output = trans.transform(self.vartok, [
             Token('<style>TR {white-space: nowrap;}</style>')
         ])
-        eq_(output, [
-            Token(u'<style>', 'html', False),
-            Token(u'TR {white-space: nowrap;}', 'style', False),
-            Token(u'</style>', 'html', False)
-        ])
+        assert (
+            output ==
+            [
+                Token(u'<style>', 'html', False),
+                Token(u'TR {white-space: nowrap;}', 'style', False),
+                Token(u'</style>', 'html', False)
+            ]
+        )
 
         output = trans.transform(self.vartok, [
             Token('<script>console.log("foo");</script>')
         ])
-        eq_(output, [
-            Token(u'<script>', 'html', False),
-            Token(u'console.log("foo");', 'script', False),
-            Token(u'</script>', 'html', False)
-        ])
+        assert (
+            output ==
+            [
+                Token(u'<script>', 'html', False),
+                Token(u'console.log("foo");', 'script', False),
+                Token(u'</script>', 'html', False)
+            ]
+        )
 
 
-class XXXTransformTest(TransformTestCase):
+class TestXXXTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u'xxxHelloxxx'),
@@ -238,10 +252,10 @@ class XXXTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class DoubleTransformTest(TransformTestCase):
+class TestDoubleTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u'Heelloo'),
@@ -254,10 +268,10 @@ class DoubleTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class AngleQuoteTransformTest(TransformTestCase):
+class TestAngleQuoteTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u'\xabHello\xbb'),
@@ -271,10 +285,10 @@ class AngleQuoteTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class ShoutyTransformTest(TransformTestCase):
+class TestShoutyTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u'HELLO'),
@@ -287,10 +301,10 @@ class ShoutyTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class ReverseTransformTest(TransformTestCase):
+class TestReverseTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u'olleH'),
@@ -303,10 +317,10 @@ class ReverseTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class RedactedTransformTest(TransformTestCase):
+class TestRedactedTransform(TransformTestCase):
     def test_basic(self):
         data = [
             (u'Hello', u'Xxxxx'),
@@ -318,35 +332,43 @@ class RedactedTransformTest(TransformTestCase):
             output = trans.transform(self.vartok, [Token(text)])
             output = u''.join([token.s for token in output])
 
-            eq_(output, expected)
+            assert output == expected
 
 
-class TranslatorTest(TestCase):
+class TestTranslator:
     def test_pirate_translate(self):
         trans = Translator(
             ['python-format', 'python-brace-format'],
             ['pirate']
         )
-        eq_(trans.translate_string(u'hello'),
-            u'\'ello ahoy\u2757')
+        assert (
+            trans.translate_string(u'hello') ==
+            u'\'ello ahoy\u2757'
+        )
 
         # Note, this doesn't work right because it's not accounting
         # for html. But it's correct for this test.
-        eq_(trans.translate_string(u'<b>hello</b>'),
-            u'<b>\'ello</b> prepare to be boarded\u2757')
+        assert (
+            trans.translate_string(u'<b>hello</b>') ==
+            u'<b>\'ello</b> prepare to be boarded\u2757'
+        )
 
     def test_html_pirate_translate(self):
         trans = Translator(
             ['python-format', 'python-brace-format'],
             ['html', 'pirate']
         )
-        eq_(trans.translate_string(u'<b>hello</b>'),
-            u'<b>\'ello ahoy\u2757</b>')
+        assert (
+            trans.translate_string(u'<b>hello</b>') ==
+            u'<b>\'ello ahoy\u2757</b>'
+        )
 
     def test_shouty_html_pirate_translate(self):
         trans = Translator(
             ['python-format', 'python-brace-format'],
             ['shouty', 'html', 'pirate']
         )
-        eq_(trans.translate_string(u'<b>hello.</b>\n'),
-            u'<b>HELLO aye\u2757.</b>\n')
+        assert (
+            trans.translate_string(u'<b>hello.</b>\n') ==
+            u'<b>HELLO aye\u2757.</b>\n'
+        )

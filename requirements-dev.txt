@@ -1,5 +1,7 @@
+-e .
+
 Sphinx
-nose
-nosenicedots
+pytest
+pytest-wholenodeid
 django
 tox

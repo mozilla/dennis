@@ -68,13 +68,12 @@ commit with their name on it) get added to the CONTRIBUTORS file. Yay!
 Tests
 =====
 
-Tests are in ``dennis/tests/``. We use `nose
-<https://nose.readthedocs.org/en/latest/>`_ as the test
-runner. Further, we use some nose utilities functions.
+Tests are in ``tests/``. We use py.test as the test
+runner.
 
 To run the tests, do::
 
-    $ nosetests
+    $ py.test
 
 Please write tests for changes you make.
 
