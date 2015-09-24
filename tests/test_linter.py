@@ -1,11 +1,8 @@
 import sys
-import textwrap
 
-from click.testing import CliRunner
 import polib
 import pytest
 
-from dennis.cmdline import lint
 from dennis.linter import (
     BlankLintRule,
     MalformedNoTypeLintRule,
@@ -25,82 +22,6 @@ from dennis.templatelinter import (
 )
 from dennis.tools import VariableTokenizer
 from tests import build_po_string
-
-
-class TestLintCmd:
-    def test_empty(self):
-        res = CliRunner().invoke(lint, [])
-        assert res.exit_code, 1
-        assert 'Nothing to work on' in res.output
-
-    def test_basic(self, tmpdir):
-        pofile = build_po_string(
-            '#: foo/foo.py:5\n'
-            'msgid "Foo: %(l)s"\n'
-            'msgstr "Gmorp!"\n')
-
-        fn = str(tmpdir.join('messages.po'))
-        with open(fn, 'w') as fp:
-            fp.write(pofile)
-
-        res = CliRunner().invoke(lint, ['--no-color', fn])
-
-        # The dennis version will change and the temp directory
-        # we're using will change, so we're lenient when checking
-        # the first two lines.
-        line, output = res.output.split('\n', 1)
-        assert line.startswith('dennis version')
-        line, output = output.split('\n', 1)
-        assert line.startswith('>>> Working on')
-
-        # Note: This test will fail if we ever tweak the
-        # output. That's ok--just verify the new output and update
-        # the test.
-        assert (
-            output ==
-            textwrap.dedent(u"""\
-            W202: missing variables: %(l)s
-            15:#: foo/foo.py:5
-            16:msgid "Foo: %(l)s"
-            17:msgstr "Gmorp!"
-
-            Totals
-              Warnings:     1
-              Errors:       0
-
-            """)
-        )
-
-    def test_no_files_to_work_on(self):
-        res = CliRunner().invoke(lint, ['foo'])
-        assert res.exit_code == 1
-        assert 'Nothing to work on.' in res.output
-
-    def test_file_not_exists(self, tmpdir):
-        fn = str(tmpdir.join('message.po'))
-        res = CliRunner().invoke(lint, [fn])
-
-        assert res.exit_code == 1
-        assert (
-            'IOError' in res.output
-            or 'OSError' in res.output
-        )
-        assert 'does not exist' in res.output
-
-    def test_basic_pot(self, tmpdir):
-        pofile = build_po_string(
-            '#: foo/foo.py:5\n'
-            'msgid "Foo: %(l)s"\n'
-            'msgstr ""\n')
-
-        fn = str(tmpdir.join('messages.pot'))
-        with open(fn, 'w') as fp:
-            fp.write(pofile)
-
-        res = CliRunner().invoke(lint, [fn])
-
-        assert '>>> Working on:' in res.output
-        # FIXME: flesh out this test case
 
 
 class LinterTest:
@@ -634,7 +555,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
         assert msgs[0].kind == 'warn'
         assert msgs[0].code == 'W303'
         assert msgs[0].msg == 'different html: "</b>" vs. "<b>"'
-    
+
     @pytest.mark.skipif(not sys.version.startswith('2.6'),
                         reason='not using python 2.6')
     def test_invalid_html_26(self):

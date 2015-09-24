@@ -212,8 +212,7 @@ def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
                 if fn.endswith(('.po', '.pot'))]
 
     if not po_files:
-        err('Nothing to work on. Use --help for help.')
-        ctx.exit(1)
+        raise click.UsageError('nothing to work on. Use --help for help.')
 
     files_to_errors = {}
     total_error_count = 0
@@ -223,7 +222,7 @@ def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
     for fn in po_files:
         try:
             if not os.path.exists(fn):
-                raise IOError('File "{fn}" does not exist.'.format(fn=fn))
+                raise click.UsageError('file "%s" does not exist.' % fn)
 
             if fn.endswith('.po'):
                 results = linter.verify_file(fn)
@@ -448,6 +447,7 @@ def status(ctx, showuntranslated, showfuzzy, path):
         else:
             out('  Percentage:                {0}%'.format(
                 pofile.percent_translated()))
+
     ctx.exit(0)
 
 
@@ -474,12 +474,12 @@ def translate(ctx, varformat, pipeline, strings, path):
     file.
 
     """
-    if not (len(path) == 1 and path[0] == '-'):
+    if not (path and path[0] == '-'):
+        # We don't want to print this if they're piping to stdin
         out('dennis version {version}'.format(version=__version__))
 
     if not path:
-        err('Nothing to work on. Use --help for help.')
-        ctx.exit(1)
+        raise click.UsageError('nothing to work on. Use --help for help.')
 
     try:
         translator = Translator(varformat.split(','), pipeline.split(','))
@@ -494,13 +494,13 @@ def translate(ctx, varformat, pipeline, strings, path):
                 data = data.encode('utf-8')
             out(data)
 
-    elif path and path[0] == '-':
+    elif path[0] == '-':
         # Read everything from stdin, then translate it
         data = click.get_binary_stream('stdin').read()
         data = translator.translate_string(data)
         out(data)
 
-    elif path:
+    else:
         # Check all the paths first
         for arg in path:
             if not os.path.exists(arg):
@@ -508,9 +508,6 @@ def translate(ctx, varformat, pipeline, strings, path):
 
         for arg in path:
             click.echo(translator.translate_file(arg))
-
-    else:
-        raise click.UsageError('No paths given.')
 
     ctx.exit(0)
 

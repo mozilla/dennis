@@ -17,24 +17,24 @@ def debug(*args):
 
 class Token(object):
     def __init__(self, s, type='text', mutable=True):
+        if not PY2 and not isinstance(s, str):
+            s = s.decode('utf-8')
         self.s = s
         self.type = type
         self.mutable = mutable
 
     def __str__(self):
-        return self.s.encode('utf-8')
-
-    def __unicode__(self):
         return self.s
 
     def __repr__(self):
-        return '<{0} {1}>'.format(self.type, self.s.encode('utf-8'))
+        return '<{0} {1}>'.format(self.type, repr(self.s))
 
     def __eq__(self, token):
         return (
             self.s == token.s
             and self.mutable == token.mutable
-            and self.type == token.type)
+            and self.type == token.type
+        )
 
     def __ne__(self, token):
         return not self.__eq__(token)
@@ -712,7 +712,7 @@ class Translator(object):
             tokens = part.transform(self.vartok, tokens)
 
         # Join all the bits together
-        return u''.join([token.s for token in tokens])
+        return ''.join([token.s for token in tokens])
 
     def translate_file(self, fname):
         """Translates the po file at fname
