@@ -2,6 +2,7 @@ from click.testing import CliRunner
 import pytest
 
 from dennis.cmdline import cli
+from tests import build_po_string
 
 
 @pytest.fixture
@@ -34,9 +35,43 @@ class TestTranslate:
         assert result.exit_code == 0
         assert 'OU812' in result.output
 
-    # FIXME: test --varformat
+    def test_pipeline(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo bar baz"\n'
+            'msgstr ""\n')
+        fn = tmpdir.join('messages.po')
+        fn.write(po_file)
+        # Verify the last line is untranslated
+        assert po_file.endswith('msgstr ""\n')
 
-    # FIXME: test --pipeline
+        result = runner.invoke(cli, ('translate', '-p', 'shouty', str(fn)))
+        assert result.exit_code == 0
+        last_line = fn.read().splitlines()[-1]
+        # Verify the last line is now translated
+        assert last_line == 'msgstr "FOO BAR BAZ"'
+
+    def test_bad_pipeline(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo bar baz"\n'
+            'msgstr ""\n')
+        fn = tmpdir.join('messages.po')
+        fn.write(po_file)
+
+        result = runner.invoke(cli, ('translate', '-p', 'triangle', str(fn)))
+        assert result.exit_code == 2
+        last_line = result.output.splitlines()[-1]
+        assert last_line == 'Error: pipeline "triangle" is not valid'
+
+    def test_nonexistent_file(self, runner, tmpdir):
+        fn = tmpdir.join('missingfile.po')
+        result = runner.invoke(cli, ('translate', '-p', 'shouty', str(fn)))
+        assert result.exit_code == 2
+        last_line = result.output.splitlines()[-1]
+        assert last_line == 'Error: file %s does not exist.' % str(fn)
+
+    # FIXME: test --varformat
 
 
 class TestLint:

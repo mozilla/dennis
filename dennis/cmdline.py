@@ -17,7 +17,11 @@ from dennis.tools import (
     parse_pofile,
     withlines
 )
-from dennis.translator import Translator, get_available_pipeline_parts
+from dennis.translator import (
+    get_available_pipeline_parts,
+    InvalidPipeline,
+    Translator
+)
 
 
 USAGE = '%prog [options] [command] [command-options]'
@@ -477,8 +481,10 @@ def translate(ctx, varformat, pipeline, strings, path):
         err('Nothing to work on. Use --help for help.')
         ctx.exit(1)
 
-    translator = Translator(
-        varformat.split(','), pipeline.split(','))
+    try:
+        translator = Translator(varformat.split(','), pipeline.split(','))
+    except InvalidPipeline as ipe:
+        raise click.UsageError(ipe.args[0])
 
     if strings:
         # Args are strings to be translated
@@ -488,16 +494,23 @@ def translate(ctx, varformat, pipeline, strings, path):
                 data = data.encode('utf-8')
             out(data)
 
-    elif len(path) == 1 and path[0] == '-':
+    elif path and path[0] == '-':
         # Read everything from stdin, then translate it
         data = click.get_binary_stream('stdin').read()
         data = translator.translate_string(data)
         out(data)
 
-    else:
-        # Args are filenames
+    elif path:
+        # Check all the paths first
         for arg in path:
-            translator.translate_file(arg)
+            if not os.path.exists(arg):
+                raise click.UsageError('file %s does not exist.' % arg)
+
+        for arg in path:
+            click.echo(translator.translate_file(arg))
+
+    else:
+        raise click.UsageError('No paths given.')
 
     ctx.exit(0)
 

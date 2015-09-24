@@ -685,7 +685,8 @@ def convert_pipeline(pipeline_spec):
     try:
         pipeline = [pipeline_parts[part] for part in pipeline_spec]
     except KeyError:
-        raise InvalidPipeline(pipeline_spec)
+        raise InvalidPipeline('pipeline "%s" is not valid' %
+                              u','.join(pipeline_spec))
 
     return pipeline
 
@@ -739,5 +740,6 @@ class Translator(object):
             if 'fuzzy' in entry.flags:
                 entry.flags.remove('fuzzy')  # clear the fuzzy flag
             count += 1
-        print('Munged {0} messages in {1}'.format(count, fname))
+
         po.save()
+        return '{0}: Translated {1} messages.'.format(fname, count)
