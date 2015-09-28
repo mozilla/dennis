@@ -104,7 +104,13 @@ class MalformedNoTypeLintRule(LintRule):
         if not vartok.contains('python-format'):
             return msgs
 
-        malformed_re = re.compile(r'(?:%[\(][^\)\s]+[\)](?:\s|$))')
+        malformed_re = re.compile(
+            r'(?:'
+            r'%'                          # %
+            r'[\(][^\)\s]+[\)]'           # things in parens or not
+            r'(?:(?=[^diouxefGgcrs])|$)'  # end of string or something that's not a format char
+            r')'
+        )
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:

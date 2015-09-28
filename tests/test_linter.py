@@ -131,6 +131,18 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
         assert msgs[0].code == 'E101'
         assert msgs[0].msg == 'type missing: %(count)'
 
+    def test_python_var_punctuation(self):
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "%(count)s"\n'
+            'msgstr "%(count)!"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 1
+        assert msgs[0].kind == 'err'
+        assert msgs[0].code == 'E101'
+        assert msgs[0].msg == 'type missing: %(count)'
+
     def test_python_var_not_malformed(self):
         """This used to be a false positive"""
         linted_entry = build_linted_entry(
@@ -140,9 +152,6 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 0
-
-    # FIXME - test to make sure it doesn't do anything for
-    # non-python-format situations.
 
 
 class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
