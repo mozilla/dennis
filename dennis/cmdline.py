@@ -8,8 +8,10 @@ import click
 
 from dennis import __version__
 from dennis.linter import Linter
+from dennis.linter import get_lint_rules_with_names as get_linter_rules
 from dennis.minisix import PY2, textclass
 from dennis.templatelinter import TemplateLinter
+from dennis.templatelinter import get_lint_rules_with_names as get_template_linter_rules
 from dennis.tools import (
     FauxTerminal,
     Terminal,
@@ -102,8 +104,8 @@ def format_pipeline_parts():
 
 
 def format_lint_rules():
-    from dennis.linter import get_available_lint_rules
-    rules = sorted(get_available_lint_rules().items())
+    from dennis.linter import get_lint_rules
+    rules = sorted(get_lint_rules().items())
     lines = [
         'Available Lint Rules:',
         '',
@@ -119,8 +121,8 @@ def format_lint_rules():
 
 
 def format_lint_template_rules():
-    from dennis.templatelinter import get_available_lint_rules
-    rules = sorted(get_available_lint_rules().items())
+    from dennis.templatelinter import get_lint_rules
+    rules = sorted(get_lint_rules().items())
     lines = [
         'Available Template Lint Rules:',
         '',
@@ -194,9 +196,17 @@ def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
     if not color:
         TERM = FauxTerminal()
 
-    linter = Linter(varformat.split(','), rules.split(','))
-    templatelinter = TemplateLinter(varformat.split(','),
-                                    rules.split(','))
+    # Make sure requested rules are valid
+    all_rules = get_linter_rules()
+    all_rules.update(get_template_linter_rules())
+    rules = [rule.strip() for rule in rules.split(',') if rule.strip()]
+    invalid_rules = [rule for rule in rules if rule not in all_rules]
+    if invalid_rules:
+        raise click.UsageError('invalid rules: %s.' % ', '.join(invalid_rules))
+
+    # Build linters and lint
+    linter = Linter(varformat.split(','), rules)
+    templatelinter = TemplateLinter(varformat.split(','), rules)
 
     po_files = []
     for item in path:

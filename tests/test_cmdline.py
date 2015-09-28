@@ -184,6 +184,42 @@ class TestLint:
         assert result.exit_code == 0
         assert result.output == ''
 
+    def test_rules(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo %(bar)s baz"\n'
+            'msgstr "FOO %(bar) BAZ"\n')
+        fn = tmpdir.join('messages.po')
+        fn.write(po_file)
+
+        result = runner.invoke(cli, ('lint', '--rules', 'E101', str(fn)))
+        assert result.exit_code == 1
+        assert 'E101: type missing: %(bar)' in result.output
+
+    def test_template_rules(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo %(o)s baz"\n'
+            'msgstr ""\n')
+        fn = tmpdir.join('messages.pot')
+        fn.write(po_file)
+
+        result = runner.invoke(cli, ('lint', '--rules', 'W501', str(fn)))
+        assert result.exit_code == 0
+        assert 'W501: one character variable name "o"' in result.output
+
+    def test_nonexisting_rule(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo %(o)s baz"\n'
+            'msgstr ""\n')
+        fn = tmpdir.join('messages.pot')
+        fn.write(po_file)
+
+        result = runner.invoke(cli, ('lint', '--rules', 'foo', str(fn)))
+        assert result.exit_code == 2
+        assert 'Error: invalid rules: foo.' in result.output
+
     # FIXME: test --varformat on .po file
 
     # FIXME: test --rules on .po file

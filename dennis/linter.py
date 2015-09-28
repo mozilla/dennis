@@ -401,7 +401,7 @@ class InvalidVarsLintRule(LintRule):
         return msgs
 
 
-def get_available_lint_rules(name_and_num=False):
+def get_lint_rules(name_and_num=False):
     lint_rules = {}
 
     for cls in all_subclasses(LintRule):
@@ -413,23 +413,19 @@ def get_available_lint_rules(name_and_num=False):
     return lint_rules
 
 
-class InvalidRulesSpec(Exception):
-    pass
+def get_lint_rules_with_names():
+    lint_rules = get_lint_rules()
+    for rule in list(lint_rules.values()):
+        lint_rules[rule.name] = rule
+    return lint_rules
 
 
 def convert_rules(rules_spec):
-    # This removes empty strings from the rules_spec.
-    rules_spec = [rule for rule in rules_spec if rule]
-
     if not rules_spec:
-        lint_rules = get_available_lint_rules()
-        return [rule() for num, rule in lint_rules.items()]
+        return [rule() for rule in get_lint_rules().values()]
 
-    try:
-        lint_rules = get_available_lint_rules(name_and_num=True)
-        rules = [lint_rules[rule]() for rule in rules_spec]
-    except KeyError:
-        raise InvalidRulesSpec(rules_spec)
+    lint_rules = get_lint_rules_with_names()
+    rules = [lint_rules[rule]() for rule in rules_spec if rule in lint_rules]
 
     return rules
 
