@@ -204,6 +204,7 @@ class MalformedMissingLeftBraceLintRule(LintRule):
 
 class MissingVarsLintRule(LintRule):
     num = 'W202'
+    num_error = 'E202'
     name = 'missingvars'
     desc = 'Checks for variables in msgid, but missing in msgstr'
 
@@ -226,13 +227,26 @@ class MissingVarsLintRule(LintRule):
             missing = msgid_tokens.difference(msgstr_tokens)
 
             if missing:
-                msgs.append(
-                    LintMessage(
-                        WARNING, linted_entry.poentry.linenum, 0, self.num,
-                        u'missing variables: {0}'.format(
-                            u', '.join(sorted(missing))),
-                        linted_entry.poentry)
-                )
+                if ((vartok.contains('python-format')
+                     and len([var for var in missing if len(var) == 2 and var[0] == '%']))):
+                    # If we're looking at python-format variables and one of these is a
+                    # python-format variable like %s, then this is an error--not a warning.
+                    msgs.append(
+                        LintMessage(
+                            ERROR, linted_entry.poentry.linenum, 0, self.num_error,
+                            u'missing variables: {0}'.format(
+                                u', '.join(sorted(missing))),
+                            linted_entry.poentry)
+                    )
+                else:
+                    # If this is not python-format variables, then this is just a warning.
+                    msgs.append(
+                        LintMessage(
+                            WARNING, linted_entry.poentry.linenum, 0, self.num,
+                            u'missing variables: {0}'.format(
+                                u', '.join(sorted(missing))),
+                            linted_entry.poentry)
+                    )
         return msgs
 
 

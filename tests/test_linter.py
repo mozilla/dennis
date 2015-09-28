@@ -377,6 +377,23 @@ class TestMissingVarsLintRule(LintRuleTestCase):
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 0
 
+    def test_python_format_are_errors_unnamed(self):
+        # python-format unnamed variables must be in the msgstr so they're errors.
+        # Issue #57
+        linted_entry = build_linted_entry(
+            '#: kitsune/kbforums/feeds.py:23\n'
+            'msgid "Recently updated threads about %s"\n'
+            'msgstr "RECENTLY UPDATED THREADS"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 1
+        assert msgs[0].kind == 'err'
+        assert msgs[0].code == 'E202'
+        assert (
+            msgs[0].msg ==
+            'missing variables: %s'
+        )
+
 
 class TestInvalidVarsLintRule(LintRuleTestCase):
     lintrule = InvalidVarsLintRule()
