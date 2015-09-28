@@ -8,10 +8,10 @@ import click
 
 from dennis import __version__
 from dennis.linter import Linter
-from dennis.linter import get_lint_rules_with_names as get_linter_rules
+from dennis.linter import get_lint_rules as get_linter_rules
 from dennis.minisix import PY2, textclass
 from dennis.templatelinter import TemplateLinter
-from dennis.templatelinter import get_lint_rules_with_names as get_template_linter_rules
+from dennis.templatelinter import get_lint_rules as get_template_linter_rules
 from dennis.tools import (
     FauxTerminal,
     Terminal,
@@ -170,6 +170,9 @@ def cli():
 @click.option('--rules', default='',
               help=('Comma-separated list of lint rules to use. '
                     'Defaults to all rules. See Available Lint Rules.'))
+@click.option('--excluderules', default='',
+              help=('Comma-separated list of lint rules to exclude. '
+                    'Defaults to no rules excluded. See Available Lint Rules.'))
 @click.option('--reporter', default='',
               help='Reporter to use for output.')
 @click.option('--errorsonly/--no-errorsonly', default=False,
@@ -179,7 +182,7 @@ def cli():
 @epilog(format_formats() + '\n' +
         format_lint_rules() + '\n' +
         format_lint_template_rules())
-def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
+def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly, path):
     """
     Lints .po/.pot files for issues
 
@@ -197,12 +200,26 @@ def lint(ctx, quiet, color, varformat, rules, reporter, errorsonly, path):
         TERM = FauxTerminal()
 
     # Make sure requested rules are valid
-    all_rules = get_linter_rules()
-    all_rules.update(get_template_linter_rules())
+    all_rules = get_linter_rules(with_names=True)
+    all_rules.update(get_template_linter_rules(with_names=True))
     rules = [rule.strip() for rule in rules.split(',') if rule.strip()]
     invalid_rules = [rule for rule in rules if rule not in all_rules]
     if invalid_rules:
         raise click.UsageError('invalid rules: %s.' % ', '.join(invalid_rules))
+
+    if not rules:
+        rules = get_linter_rules()
+        rules.update(get_template_linter_rules())
+        rules = rules.keys()
+
+    if excluderules:
+        excludes = [rule.strip() for rule in excluderules.split(',') if rule.strip()]
+        invalid_rules = [rule for rule in excludes if rule not in all_rules]
+        if invalid_rules:
+            raise click.UsageError('invalid exclude rules: %s.' % ', '.join(invalid_rules))
+
+        # Remove excluded rules
+        rules = [rule for rule in rules if rule not in excludes]
 
     # Build linters and lint
     linter = Linter(varformat.split(','), rules)

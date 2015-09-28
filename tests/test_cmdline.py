@@ -220,9 +220,20 @@ class TestLint:
         assert result.exit_code == 2
         assert 'Error: invalid rules: foo.' in result.output
 
-    # FIXME: test --varformat on .po file
+    def test_excludes(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo %(o)s baz"\n'
+            'msgstr ""\n')
+        fn = tmpdir.join('messages.pot')
+        fn.write(po_file)
 
-    # FIXME: test --rules on .po file
+        result = runner.invoke(cli, ('lint', '--excluderules', 'W501', str(fn)))
+        assert result.exit_code == 0
+        # The rule that generates this error is excluded, so this error shouldn't show up.
+        assert 'W501: one character variable name "o"' not in result.output
+
+    # FIXME: test --varformat on .po file
 
     # FIXME: test --reporter
 

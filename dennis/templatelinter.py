@@ -118,32 +118,21 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
         return msgs
 
 
-def get_lint_rules(name_and_num=False):
+def get_lint_rules(with_names=False):
     lint_rules = {}
 
     for cls in all_subclasses(TemplateLintRule):
         if cls.num:
             lint_rules[cls.num] = cls
-            if name_and_num and cls.name:
+            if with_names and cls.name:
                 lint_rules[cls.name] = cls
 
     return lint_rules
 
 
-def get_lint_rules_with_names():
-    lint_rules = get_lint_rules()
-    for rule in list(lint_rules.values()):
-        lint_rules[rule.name] = rule
-    return lint_rules
-
-
 def convert_rules(rules_spec):
-    if not rules_spec:
-        return [rule() for rule in get_lint_rules().values()]
-
-    lint_rules = get_lint_rules_with_names()
+    lint_rules = get_lint_rules(with_names=True)
     rules = [lint_rules[rule]() for rule in rules_spec if rule in lint_rules]
-
     return rules
 
 
