@@ -6,3 +6,5 @@ pytest-wholenodeid
 django
 tox
 check-manifest
+twine
+wheel
