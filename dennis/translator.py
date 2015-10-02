@@ -587,6 +587,10 @@ class PirateTransform(Transform):
         return u''.join(out)
 
 
+def collapse_whitespace(text):
+    return re.compile(r'\s+', re.UNICODE).sub(' ', text).strip()
+
+
 class HTMLExtractorTransform(HTMLParser, Transform):
     name = 'html'
     desc = 'Tokenizes HTML bits so only text is translated.'
@@ -654,7 +658,7 @@ class HTMLExtractorTransform(HTMLParser, Transform):
             self.new_tokens.append(Token(data, self.immutable_data_section,
                                          False))
         else:
-            self.new_tokens.append(Token(data))
+            self.new_tokens.append(Token(collapse_whitespace(data)))
 
     def handle_charref(self, name):
         self.new_tokens.append(Token('&#' + name + ';', 'html', False))

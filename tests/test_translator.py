@@ -237,6 +237,15 @@ class TestHTMLExtractor:
             ]
         )
 
+    def test_whitespace_collapse(self):
+        def _trans(text):
+            return HTMLExtractorTransform().transform(self.vartok, [Token(text)])
+
+        assert (
+            _trans('<html><body>hello!</body></html>') ==
+            _trans('<html><body>    hello!    </body></html>')
+        )
+
 
 class TestXXXTransform(TransformTestCase):
     def test_basic(self):
@@ -370,5 +379,5 @@ class TestTranslator:
         )
         assert (
             trans.translate_string(u'<b>hello.</b>\n') ==
-            u'<b>HELLO aye\u2757.</b>\n'
+            u'<b>HELLO aye\u2757.</b>'
         )

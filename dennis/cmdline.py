@@ -482,7 +482,7 @@ def status(ctx, showuntranslated, showfuzzy, path):
 @click.option('--varformat', default='python-format,python-brace-format',
               help=('Comma-separated list of variable types. '
                     'See Available Variable Formats.'))
-@click.option('--pipeline', '-p', default='html,pirate',
+@click.option('--pipeline', '-p', default='pirate',
               help=('Comma-separated translate pipeline. See Available '
                     'Pipeline Parts.'))
 @click.option('--strings', '-s', default=False, is_flag=True,
