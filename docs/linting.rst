@@ -155,6 +155,25 @@ PO files
 |      | >>>                                                                   |
 |      |                                                                       |
 +------+-----------------------------------------------------------------------+
+| E104 | Bad format character                                                  |
+|      |                                                                       |
+|      | For example ``%a``.                                                   |
+|      |                                                                       |
+|      | Only checks python-format variables.                                  |
+|      |                                                                       |
+|      | Example (Python)::                                                    |
+|      |                                                                       |
+|      |     Error: bad format character: %a                                   |
+|      |     msgid: "%s foo"                                                   |
+|      |     msgstr: "%a FOO"                                                  |
+|      |                                                                       |
+|      | >>> "%a" % (1, 2, 3)                                                  |
+|      | Traceback (most recent call last):                                    |
+|      |   File "<stdin>", line 1, in <module>                                 |
+|      | ValueError: unsupported format character 'a' (0x61) at index 1        |
+|      | >>>                                                                   |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
 | E201 | Invalid variables in translated string                                |
 |      |                                                                       |
 |      | There are formatting variable tokens in the *translated* string       |
@@ -184,9 +203,21 @@ PO files
 |      |                                                                       |
 |      | Example::                                                             |
 |      |                                                                       |
-|      |     Warning: mismatched: missing variables: {url}                     |
+|      |     Warning: missingvars: missing variables: {url}                    |
 |      |     msgid: "You can find help at {url}"                               |
 |      |     msgstr: "Get help!"                                               |
+|      |                                                                       |
++------+-----------------------------------------------------------------------+
+| E202 | Missing variables in translated string                                |
+|      |                                                                       |
+|      | For python-format positional variables (e.g. ``%s``), it's an         |
+|      | error when the variable is missing from the translated string.        |
+|      |                                                                       |
+|      | Example::                                                             |
+|      |                                                                       |
+|      |     Error: missingvars: missing variables: %s                         |
+|      |     msgid: "foo %s"                                                   |
+|      |     msgstr: "FOO"                                                     |
 |      |                                                                       |
 +------+-----------------------------------------------------------------------+
 | W301 | String is all whitespace                                              |
