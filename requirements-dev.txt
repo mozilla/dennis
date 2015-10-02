@@ -5,3 +5,4 @@ pytest
 pytest-wholenodeid
 django
 tox
+check-manifest

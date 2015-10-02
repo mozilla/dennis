@@ -6,6 +6,20 @@ What's new in Dennis
    :local:
 
 
+Version 0.7.0: October 2nd, 2015
+================================
+
+* 2d27a8c Add lint rule fer bad format charactarrs (#68)
+* 2bc1053 Missin' python-format variables is an errorrr (#57)
+* 8e178c7 Fix notype test to handle more cases (#63)
+* 90ab98d Implement rule exclusion (#60)
+* caabbbb Rewrite rule spec varrification to work correctly (#61)
+* 7e2f7f0 Add --showfuzzy to status command (#64)
+* 02ea679 Add untranslat'd word counts to status command (#55)
+* 713288b Change Varr to Format and use gettext names (#48)
+* c3c49b9 Handle th' standalone } case (#56)
+
+
 Version 0.6.1: December 18th, 2014
 ==================================
 
