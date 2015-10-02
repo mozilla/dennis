@@ -4,6 +4,7 @@ import polib
 import pytest
 
 from dennis.linter import (
+    BadFormatLintRule,
     BlankLintRule,
     MalformedNoTypeLintRule,
     MalformedMissingRightBraceLintRule,
@@ -83,6 +84,71 @@ def build_linted_entry(po_data):
 
 class LintRuleTestCase:
     vartok = VariableTokenizer(['python-format', 'python-brace-format'])
+
+
+class TestBadFormatLintRule(LintRuleTestCase):
+    lintrule = BadFormatLintRule()
+
+    def test_fine(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo"\n'
+            'msgstr "FOO"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert msgs == []
+
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo %s"\n'
+            'msgstr "FOO %s"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert msgs == []
+
+    def test_bad_format_character(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "%s foo"\n'
+            'msgstr "%a FOO"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 1
+        assert msgs[0].kind == 'err'
+        assert msgs[0].code == 'E104'
+        assert msgs[0].msg == 'bad format character: %a'
+
+    def test_last_character(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "foo %s"\n'
+            'msgstr "FOO %"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 1
+        assert msgs[0].kind == 'err'
+        assert msgs[0].code == 'E104'
+        assert msgs[0].msg == 'bad format character: %'
+
+    def test_handle_double_percent(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "%% foo"\n'
+            'msgstr "%% FOO"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert msgs == []
+
+    def test_not_in_msgid(self):
+        # If there are no vars in the msgid, then we don't want to throw errors about stuff we see
+        # in the translated string because it's likely it's not being interpolated by %.
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "foo 50% omg"\n'
+            'msgstr "FOO 50% OMG"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert msgs == []
 
 
 class TestMalformedNoTypeLintRule(LintRuleTestCase):

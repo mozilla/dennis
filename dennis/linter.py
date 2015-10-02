@@ -29,6 +29,10 @@ class LintMessage(object):
         self.msg = msg
         self.poentry = poentry
 
+    def __repr__(self):
+        return '<LintedMessage %s %s:%s %s %s>' % (
+            self.kind, self.line, self.col, self.code, self.msg)
+
 
 class LintedEntry(object):
     def __init__(self, poentry):
@@ -199,6 +203,45 @@ class MalformedMissingLeftBraceLintRule(LintRule):
                         u', '.join(malformed)),
                     linted_entry.poentry)
             )
+        return msgs
+
+
+class BadFormatLintRule(LintRule):
+    num = 'E104'
+    name = 'badformat'
+    desc = '% followed by a bad format character'
+
+    def lint(self, vartok, linted_entry):
+        msgs = []
+
+        # This only applies if one of the variable tokenizers is python-format.
+        if not vartok.contains('python-format'):
+            return []
+
+        splitter = re.compile(r'(\%(?:.|$))')
+
+        for trstr in linted_entry.strs:
+            if not trstr.msgstr_string:
+                continue
+
+            msgid_tokens = list(vartok.extract_tokens(' '.join(trstr.msgid_strings)))
+            if not msgid_tokens:
+                continue
+            # FIXME: Pretty sure we can just check the first token because they'll
+            # all have to be the same kind of thing.
+            first_token = msgid_tokens[0]
+            if not (len(first_token) == 2 and first_token[0] == '%'):
+                continue
+
+            for match in splitter.findall(trstr.msgstr_string):
+                if len(match) == 1 or match[1] not in '(diouxefGgcrs%':
+                    msgs.append(
+                        LintMessage(
+                            ERROR, linted_entry.poentry.linenum, 0, self.num,
+                            u'bad format character: {0}'.format(match),
+                            linted_entry.poentry
+                        )
+                    )
         return msgs
 
 
