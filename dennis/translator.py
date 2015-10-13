@@ -85,6 +85,7 @@ class DoubleTransform(Transform):
 
         return new_tokens
 
+
 class XXXTransform(Transform):
     name = 'xxx'
     desc = 'Adds xxx before and after lines in a string.'

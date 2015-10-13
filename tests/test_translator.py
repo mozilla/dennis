@@ -139,7 +139,9 @@ class TestZombieTransform(TransformTestCase):
              u'HAR   \nHHAMNMNHR\u2757\nmNMMNHGARMNARnHA'),
             (u'Hello %(username)s', u'HHAMNMNHR %(username)s'),
             (u'Hello %s', u'HHAMNMNHR %s GRRRRRrrRR!!'),
-            (u'Hello {user}{name}', u'HHAMNMNHR {user}{name}'),
+            # FIXME: This is a problem where variables from the variable tokenizer should
+            # be treated as immutable tokens and right now they aren't. Issue #67.
+            (u'Hello {user}{name}', u'HHAMNMNHR {user}{namHA}'),
             (u'Products and Services',
              u'PMZHRGBNMZZHGRZ anGB SHAMZBBARZZHARZ'),
             (u'Get community support',

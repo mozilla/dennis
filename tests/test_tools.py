@@ -9,11 +9,11 @@ from dennis.tools import (
 def test_python_tokenizing():
     vartok = VariableTokenizer(['python-format', 'python-brace-format'])
     data = [
-        ('Hello %s', ['Hello ', '%s', '']),
-        ('Hello %(username)s', ['Hello ', '%(username)s', '']),
-        ('Hello %(user)s%(name)s', ['Hello ', '%(user)s', '', '%(name)s', '']),
-        ('Hello {username}', ['Hello ', '{username}', '']),
-        ('Hello {user}{name}', ['Hello ', '{user}', '', '{name}', '']),
+        ('Hello %s', ['Hello ', '%s']),
+        ('Hello %(username)s', ['Hello ', '%(username)s']),
+        ('Hello %(user)s%(name)s', ['Hello ', '%(user)s', '%(name)s']),
+        ('Hello {username}', ['Hello ', '{username}']),
+        ('Hello {user}{name}', ['Hello ', '{user}', '{name}']),
         ('Products and Services', ['Products and Services']),
     ]
 
@@ -21,16 +21,31 @@ def test_python_tokenizing():
         assert vartok.tokenize(text) == expected
 
 
-def test_pythonbraceformat():
-    v = PythonBraceFormat()
+class TestPythonBraceFormat():
+    def test_parse(self):
+        vartok = VariableTokenizer(['python-brace-format'])
+        data = [
+            ('Hello', ['Hello']),
+            ('{foo}', ['{foo}']),
+            ('Hello {foo}', ['Hello ', '{foo}']),
+            ('{foo} Hello', ['{foo}', ' Hello']),
+            ('{foo:%Y-%m-%d}', ['{foo:%Y-%m-%d}']),
+            ('{foo:%Y-%m-%d %H:%M}', ['{foo:%Y-%m-%d %H:%M}'])
+        ]
 
-    assert v.extract_variable_name('{}') == ''
-    assert v.extract_variable_name('{0}') == '0'
-    assert v.extract_variable_name('{abc}') == 'abc'
-    assert v.extract_variable_name('{abc.def}') == 'abc.def'
-    assert v.extract_variable_name('{abc[0]}') == 'abc[0]'
-    assert v.extract_variable_name('{abc!s}') == 'abc'  # conversion
-    assert v.extract_variable_name('{abc: >16}') == 'abc'  # format_spec
+        for text, expected in data:
+            assert vartok.tokenize(text) == expected
+
+    def test_variable_name(self):
+        v = PythonBraceFormat()
+
+        assert v.extract_variable_name('{}') == ''
+        assert v.extract_variable_name('{0}') == '0'
+        assert v.extract_variable_name('{abc}') == 'abc'
+        assert v.extract_variable_name('{abc.def}') == 'abc.def'
+        assert v.extract_variable_name('{abc[0]}') == 'abc[0]'
+        assert v.extract_variable_name('{abc!s}') == 'abc'  # conversion
+        assert v.extract_variable_name('{abc: >16}') == 'abc'  # format_spec
 
 
 def test_pythonformat():

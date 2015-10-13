@@ -150,6 +150,17 @@ class TestBadFormatLintRule(LintRuleTestCase):
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert msgs == []
 
+    def test_ignore_non_formatting_tokens(self):
+        # If the formatting token is actually part of another formatting token, then we want to
+        # ignore it.
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "foo {startdate:%Y-%m-%d %H:%M} bar"\n'
+            'msgstr "FOO {startdate:%Y-%m-%d %H:%M} BAR"\n'
+        )
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert msgs == []
+
 
 class TestMalformedNoTypeLintRule(LintRuleTestCase):
     lintrule = MalformedNoTypeLintRule()
@@ -308,7 +319,7 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 1
         assert msgs[0].kind == 'err'
-        assert msgs[0].code  == 'E103'
+        assert msgs[0].code == 'E103'
         assert (
             msgs[0].msg ==
             'missing left curly-brace: } | product}'

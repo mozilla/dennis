@@ -39,8 +39,8 @@ class PythonBraceFormat(Format):
     desc = 'Python brace format (e.g. "{0}", "{foo}")'
 
     regexp = (
-        # {foo}
-        r'(?:\{\S*?\})'
+        # {}, {0}, {foo}, {foo:bar}, {foo:bar baz}
+        r'(?:\{[^\}]*?\})'
     )
 
     identifier = re.compile(r'\{([^!:\}]*)')
@@ -139,7 +139,7 @@ class VariableTokenizer(object):
         :returns: list of tokens---every even one is a Python variable
 
         """
-        return self.vars_re.split(text)
+        return [token for token in self.vars_re.split(text) if token]
 
     def extract_tokens(self, text, unique=True):
         """Returns the set of variable in the text"""
