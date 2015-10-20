@@ -42,6 +42,7 @@ For example, this translates strings into Pirate for a web application
 written in Python:
 
 .. code-block:: bash
+   :linenos:
 
    #!/bin/bash
 
@@ -67,9 +68,10 @@ selective MO compiling
 
 The Dennis linter returns an exit code of 1 if the file(s) it's
 linting have errors. You can trivially use this to selectively compile
-PO files into MO files iff they are error free:
+PO files into MO files iff they are error free [#]_:
 
 .. code-block:: bash
+   :linenos:
 
    #!/bin/bash
 
@@ -88,6 +90,11 @@ PO files into MO files iff they are error free:
        fi
    done
 
+.. [#] Dennis doesn't lint the Plural-Forms headers, so it's still
+       possible for the resulting ``.mo`` file to have errors. You
+       can check for errors in the headers by passing the ``--check-header``
+       flag to ``msgfmt``.
+
 
 commit-msg git hook
 ===================
@@ -96,6 +103,7 @@ You can automatically translate all future commit messages for your
 git project by creating a ``commit-msg`` hook like this:
 
 .. code-block:: bash
+   :linenos:
 
    #!/bin/bash
 
@@ -116,6 +124,7 @@ The Dennis translator can take content from stdin. Translate entire
 HTML pages:
 
 .. code-block:: bash
+   :linenos:
 
    #!/bin/bash
 
