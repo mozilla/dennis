@@ -449,6 +449,11 @@ class InvalidVarsLintRule(LintRule):
                 continue
 
             msgid_tokens = vartok.extract_tokens(' '.join(trstr.msgid_strings))
+            # If this is python-format or python-brace-format and there are
+            # no tokens in the msgid, then "no tokens, no problem".
+            if not msgid_tokens:
+                continue
+
             msgstr_tokens = vartok.extract_tokens(trstr.msgstr_string)
 
             invalid = msgstr_tokens.difference(msgid_tokens)

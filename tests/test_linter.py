@@ -495,7 +495,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
     def test_invalid(self):
         linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
-            'msgid "Foo"\n'
+            'msgid "Foo {bar}"\n'
             'msgstr "Oof: {foo}"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
@@ -560,6 +560,15 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             '#: foo/foo.py:5\n'
             'msgid "OMG! Best url is http://example.com/foo"\n'
             'msgstr "http://example.com/foo%20%E5%B4%A9%E6%BA%83 is best"\n')
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 0
+
+    def test_msgid_no_vars(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "http://en.wikipedia.org/wiki/Canvas_element"\n'
+            'msgstr "http://it.wikipedia.org/wiki/Canvas_%28elemento_HTML%29"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 0
