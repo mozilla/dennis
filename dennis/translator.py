@@ -735,9 +735,9 @@ class Translator(object):
         count = 0
         for entry in po:
             if entry.msgid_plural:
-                entry.msgstr_plural['0'] = self.translate_string(
+                entry.msgstr_plural[0] = self.translate_string(
                     entry.msgid)
-                entry.msgstr_plural['1'] = self.translate_string(
+                entry.msgstr_plural[1] = self.translate_string(
                     entry.msgid_plural)
             else:
                 entry.msgstr = self.translate_string(entry.msgid)

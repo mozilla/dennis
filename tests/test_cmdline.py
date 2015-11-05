@@ -1,8 +1,10 @@
+from textwrap import dedent
+
 from click.testing import CliRunner
 import pytest
 
 from dennis.cmdline import cli
-from tests import build_po_string
+from tests import build_po_string, nix_header
 
 
 @pytest.fixture
@@ -124,6 +126,34 @@ class TestTranslate:
         assert result.exit_code == 2
         last_line = result.output.splitlines()[-1]
         assert last_line == 'Error: file %s does not exist.' % str(fn)
+
+    def test_plurals(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: test_project/base/views.py:12 test_project/base/views.py:22\n'
+            '#, python-format\n'
+            'msgid "%(num)s apple"\n'
+            'msgid_plural "%(num)s apples"\n'
+            'msgstr[0] ""\n'
+            'msgstr[1] ""\n'
+        )
+        fn = tmpdir.join('django.po')
+        fn.write(po_file)
+
+        result = runner.invoke(cli, ('translate', '-p', 'shouty', str(fn)))
+        assert result.exit_code == 0
+        pot_file = nix_header(fn.read())
+        # FIXME: This has the wrong variables, too. We need to fix that, too.
+        assert (
+            pot_file ==
+            dedent("""\
+            #: test_project/base/views.py:12 test_project/base/views.py:22
+            #, python-format
+            msgid "%(num)s apple"
+            msgid_plural "%(num)s apples"
+            msgstr[0] "%(NUM)S APPLE"
+            msgstr[1] "%(NUM)S APPLES"
+            """)
+        )
 
 
 class TestLint:
