@@ -75,7 +75,7 @@ if PY2 and not sys.stdout.isatty():
 def format_formats():
     formats = sorted(get_available_formats().items())
     lines = [
-        'Available Variable Formats:',
+        'Available Variable Formats (All enabled by default):',
         '',
         '\b',
     ]
@@ -221,9 +221,11 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
         # Remove excluded rules
         rules = [rule for rule in rules if rule not in excludes]
 
+    varformats = [item for item in varformat.split(',') if item]
+
     # Build linters and lint
-    linter = Linter(varformat.split(','), rules)
-    templatelinter = TemplateLinter(varformat.split(','), rules)
+    linter = Linter(varformats, rules)
+    templatelinter = TemplateLinter(varformats, rules)
 
     po_files = []
     for item in path:
@@ -508,8 +510,10 @@ def translate(ctx, varformat, pipeline, strings, path):
     if not path:
         raise click.UsageError('nothing to work on. Use --help for help.')
 
+    varformats = [item for item in varformat.split(',') if item]
+
     try:
-        translator = Translator(varformat.split(','), pipeline.split(','))
+        translator = Translator(varformats, pipeline.split(','))
     except InvalidPipeline as ipe:
         raise click.UsageError(ipe.args[0])
 
