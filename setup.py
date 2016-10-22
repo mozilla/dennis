@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'polib>=1.0.6',
-        'click==4.0'
+        'click==6.6'
     ],
     entry_points="""
         [console_scripts]
