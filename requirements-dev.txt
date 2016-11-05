@@ -1,4 +1,4 @@
-.
+-e .
 
 # tools
 check-manifest==0.34
