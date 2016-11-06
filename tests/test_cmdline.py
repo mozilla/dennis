@@ -263,7 +263,21 @@ class TestLint:
         # The rule that generates this error is excluded, so this error shouldn't show up.
         assert 'W501: one character variable name "o"' not in result.output
 
-    # FIXME: test --varformat on .po file
+    def test_varformat_no_value(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo %(o)s baz"\n'
+            'msgstr ""\n')
+        fn = tmpdir.join('messages.pot')
+        fn.write(po_file)
+
+        result = runner.invoke(cli, ('lint', '--varformat', '', str(fn)))
+
+        assert result.exit_code == 0
+        # We're not looking at any variables, so we should never have a variable related warning.
+        assert 'W501: one character variable name "o"' not in result.output
+
+    # FIXME: test --varformat with values
 
     # FIXME: test --reporter
 

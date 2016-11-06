@@ -6,6 +6,15 @@ from dennis.tools import (
 )
 
 
+def test_empty_tokenizer():
+    vartok = VariableTokenizer([])
+    assert vartok.contains('python-format') is False
+    assert vartok.tokenize('a b c d e') == ['a b c d e']
+    assert vartok.extract_tokens('a b c d e') == set()
+    assert vartok.is_token('{0}') is False
+    assert vartok.extract_variable_name('{0}') is None
+
+
 def test_python_tokenizing():
     vartok = VariableTokenizer(['python-format', 'python-brace-format'])
     data = [
