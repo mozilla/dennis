@@ -1,3 +1,5 @@
+import pytest
+
 from dennis.tools import (
     VariableTokenizer,
     PythonFormat,
@@ -15,69 +17,67 @@ def test_empty_tokenizer():
     assert vartok.extract_variable_name('{0}') is None
 
 
-def test_python_tokenizing():
+@pytest.mark.parametrize('text,expected', [
+    ('Hello %s', ['Hello ', '%s']),
+    ('Hello %(username)s', ['Hello ', '%(username)s']),
+    ('Hello %(user)s%(name)s', ['Hello ', '%(user)s', '%(name)s']),
+    ('Hello {username}', ['Hello ', '{username}']),
+    ('Hello {user}{name}', ['Hello ', '{user}', '{name}']),
+    ('Products and Services', ['Products and Services']),
+])
+def test_python_tokenizing(text, expected):
     vartok = VariableTokenizer(['python-format', 'python-brace-format'])
-    data = [
-        ('Hello %s', ['Hello ', '%s']),
-        ('Hello %(username)s', ['Hello ', '%(username)s']),
-        ('Hello %(user)s%(name)s', ['Hello ', '%(user)s', '%(name)s']),
-        ('Hello {username}', ['Hello ', '{username}']),
-        ('Hello {user}{name}', ['Hello ', '{user}', '{name}']),
-        ('Products and Services', ['Products and Services']),
-    ]
-
-    for text, expected in data:
-        assert vartok.tokenize(text) == expected
+    assert vartok.tokenize(text) == expected
 
 
 class TestPythonBraceFormat():
-    def test_parse(self):
+    @pytest.mark.parametrize('text,expected', [
+        ('Hello', ['Hello']),
+        ('{foo}', ['{foo}']),
+        ('Hello {foo}', ['Hello ', '{foo}']),
+        ('{foo} Hello', ['{foo}', ' Hello']),
+        ('{foo:%Y-%m-%d}', ['{foo:%Y-%m-%d}']),
+        ('{foo:%Y-%m-%d %H:%M}', ['{foo:%Y-%m-%d %H:%M}'])
+    ])
+    def test_parse(self, text, expected):
         vartok = VariableTokenizer(['python-brace-format'])
-        data = [
-            ('Hello', ['Hello']),
-            ('{foo}', ['{foo}']),
-            ('Hello {foo}', ['Hello ', '{foo}']),
-            ('{foo} Hello', ['{foo}', ' Hello']),
-            ('{foo:%Y-%m-%d}', ['{foo:%Y-%m-%d}']),
-            ('{foo:%Y-%m-%d %H:%M}', ['{foo:%Y-%m-%d %H:%M}'])
-        ]
+        assert vartok.tokenize(text) == expected
 
-        for text, expected in data:
-            assert vartok.tokenize(text) == expected
-
-    def test_variable_name(self):
+    @pytest.mark.parametrize('text,expected', [
+        ('{}', ''),
+        ('{0}', '0'),
+        ('{abc}', 'abc'),
+        ('{abc.def}', 'abc.def'),
+        ('{abc[0]}', 'abc[0]'),
+        ('{abc!s}', 'abc'),  # conversion
+        ('{abc: >16}', 'abc'),  # format_spec
+    ])
+    def test_variable_name(self, text, expected):
         v = PythonBraceFormat()
-
-        assert v.extract_variable_name('{}') == ''
-        assert v.extract_variable_name('{0}') == '0'
-        assert v.extract_variable_name('{abc}') == 'abc'
-        assert v.extract_variable_name('{abc.def}') == 'abc.def'
-        assert v.extract_variable_name('{abc[0]}') == 'abc[0]'
-        assert v.extract_variable_name('{abc!s}') == 'abc'  # conversion
-        assert v.extract_variable_name('{abc: >16}') == 'abc'  # format_spec
+        assert v.extract_variable_name(text) == expected
 
 
-def test_pythonformat():
+@pytest.mark.parametrize('text,expected', [
+    ('%s', ''),
+    ('%d', ''),
+    ('%.2f', ''),
+    ('%(foo)s', 'foo'),
+])
+def test_pythonformat(text, expected):
     v = PythonFormat()
-
-    assert v.extract_variable_name('%s') == ''
-    assert v.extract_variable_name('%d') == ''
-    assert v.extract_variable_name('%.2f') == ''
-    assert v.extract_variable_name('%(foo)s') == 'foo'
+    assert v.extract_variable_name(text) == expected
 
 
-def test_parse_dennis_note():
-    data = [
-        ('', []),
-        ('Foo', []),
-        ('Foo bar', []),
-        ('dennis-ignore', []),
-        ('dennis-ignore: *', '*'),
-        ('dennis-ignore: E101', ['E101']),
-        ('dennis-ignore: E101, E102', ['E101']),
-        ('dennis-ignore: E101,E102', ['E101', 'E102']),
-        ('localizers ignore this: dennis-ignore: E101,E102', ['E101', 'E102'])
-    ]
-
-    for text, expected in data:
-        assert parse_dennis_note(text) == expected
+@pytest.mark.parametrize('text,expected', [
+    ('', []),
+    ('Foo', []),
+    ('Foo bar', []),
+    ('dennis-ignore', []),
+    ('dennis-ignore: *', '*'),
+    ('dennis-ignore: E101', ['E101']),
+    ('dennis-ignore: E101, E102', ['E101']),
+    ('dennis-ignore: E101,E102', ['E101', 'E102']),
+    ('localizers ignore this: dennis-ignore: E101,E102', ['E101', 'E102']),
+])
+def test_parse_dennis_note(text, expected):
+    assert parse_dennis_note(text) == expected
