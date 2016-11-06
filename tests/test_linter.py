@@ -161,6 +161,16 @@ class TestBadFormatLintRule(LintRuleTestCase):
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert msgs == []
 
+    def test_varformat_empty(self):
+        vartok = VariableTokenizer([])
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "%s foo"\n'
+            'msgstr "%a FOO"\n'
+        )
+        msgs = self.lintrule.lint(vartok, linted_entry)
+        assert msgs == []
+
 
 class TestMalformedNoTypeLintRule(LintRuleTestCase):
     lintrule = MalformedNoTypeLintRule()
@@ -180,7 +190,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
             'msgstr "Oof: {foo}"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
 
     def test_python_var_with_space(self):
         linted_entry = build_linted_entry(
@@ -228,7 +238,19 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
             'msgstr "%(stars)s de %(user)s el %(date)s (%(locale)s)"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
+
+    def test_varformat_empty(self):
+        vartok = VariableTokenizer([])
+
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/answers.html:56\n'
+            'msgid "%(count)s view"\n'
+            'msgid_plural "%(count)s views"\n'
+            'msgstr[0] "%(count) zoo"\n')
+
+        msgs = self.lintrule.lint(vartok, linted_entry)
+        assert msgs == []
 
 
 class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
@@ -292,6 +314,16 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
             'missing right curly-brace: {0]" excede el tamano de {'
         )
 
+    def test_varformat_empty(self):
+        vartok = VariableTokenizer([])
+
+        linted_entry = build_linted_entry(
+            'msgid "Value for key \\"{0}\\" exceeds the length of {1}"\n'
+            'msgstr "Valor para la clave \\"{0}\\" excede el tamano de {1]"\n')
+
+        msgs = self.lintrule.lint(vartok, linted_entry)
+        assert msgs == []
+
 
 class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
     lintrule = MalformedMissingLeftBraceLintRule()
@@ -338,6 +370,17 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
             msgs[0].msg ==
             'missing left curly-brace: }}'
         )
+
+    def test_varformat_empty(self):
+        vartok = VariableTokenizer([])
+
+        linted_entry = build_linted_entry(
+            '#: kitsune/questions/templates/questions/question_details.html:14\n'
+            'msgid "{q} | {product} Support Forum"\n'
+            'msgstr "{q} | {product}} foo bar"\n')
+
+        msgs = self.lintrule.lint(vartok, linted_entry)
+        assert msgs == []
 
 
 class TestMissingVarsLintRule(LintRuleTestCase):
@@ -471,6 +514,17 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'missing variables: %s'
         )
 
+    def test_varformat_empty(self):
+        vartok = VariableTokenizer([])
+
+        linted_entry = build_linted_entry(
+            '#: kitsune/kbforums/feeds.py:23\n'
+            'msgid "Recently updated threads about %s"\n'
+            'msgstr "RECENTLY UPDATED THREADS"\n'
+        )
+        msgs = self.lintrule.lint(vartok, linted_entry)
+        assert msgs == []
+
 
 class TestInvalidVarsLintRule(LintRuleTestCase):
     lintrule = InvalidVarsLintRule()
@@ -482,7 +536,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "Oof"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
 
         linted_entry = build_linted_entry(
             '#: foo/foo.py:5\n'
@@ -490,7 +544,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "Oof: {foo}"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
 
     def test_invalid(self):
         linted_entry = build_linted_entry(
@@ -539,7 +593,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr[0] "{n} mooo"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
 
     def test_double_percent(self):
         # Double-percent shouldn't be picked up as a variable.
@@ -550,7 +604,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "more than 50%% of the traffic"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
 
     def test_urlencoded_urls(self):
         # urlencoding uses % and that shouldn't get picked up
@@ -562,7 +616,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "http://example.com/foo%20%E5%B4%A9%E6%BA%83 is best"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
 
     def test_msgid_no_vars(self):
         linted_entry = build_linted_entry(
@@ -571,7 +625,17 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "http://it.wikipedia.org/wiki/Canvas_%28elemento_HTML%29"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
+        assert msgs == []
+
+    def test_varformat_empty(self):
+        vartok = VariableTokenizer([])
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo {bar}"\n'
+            'msgstr "Oof: {foo}"\n')
+
+        msgs = self.lintrule.lint(vartok, linted_entry)
+        assert msgs == []
 
 
 class TestBlankLintRule(LintRuleTestCase):

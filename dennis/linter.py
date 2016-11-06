@@ -102,9 +102,7 @@ class MalformedNoTypeLintRule(LintRule):
     def lint(self, vartok, linted_entry):
         msgs = []
 
-        # This only applies if one of the variable tokenizers
-        # is python-format.
-        # FIXME: Generalize this.
+        # This only applies if one of the variable tokenizers is python-format.
         if not vartok.contains('python-format'):
             return msgs
 
@@ -143,9 +141,7 @@ class MalformedMissingRightBraceLintRule(LintRule):
     def lint(self, vartok, linted_entry):
         msgs = []
 
-        # This only applies if one of the variable tokenizers
-        # is python-brace-format.
-        # FIXME: Generalize this.
+        # This only applies if one of the variable tokenizers is python-brace-format.
         if not vartok.contains('python-brace-format'):
             return []
 
@@ -179,9 +175,7 @@ class MalformedMissingLeftBraceLintRule(LintRule):
     def lint(self, vartok, linted_entry):
         msgs = []
 
-        # This only applies if one of the variable tokenizers
-        # is python-brace-format.
-        # FIXME: Generalize this.
+        # This only applies if one of the variable tokenizers is python-brace-format.
         if not vartok.contains('python-brace-format'):
             return []
 
@@ -253,6 +247,11 @@ class MissingVarsLintRule(LintRule):
 
     def lint(self, vartok, linted_entry):
         msgs = []
+
+        # If there are no variable formats, skip this rule.
+        if not vartok.formats:
+            return []
+
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
@@ -443,6 +442,10 @@ class InvalidVarsLintRule(LintRule):
     desc = 'Checks for variables not in msgid, but in msgstr'
 
     def lint(self, vartok, linted_entry):
+        # If there are no variable formats, skip this rule.
+        if not vartok.formats:
+            return []
+
         msgs = []
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:

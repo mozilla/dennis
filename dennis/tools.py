@@ -108,22 +108,30 @@ class VariableTokenizer(object):
         if formats is None:
             formats = all_formats.keys()
 
-        # Convert names to classes
-        self.formats = []
+        formats = [fmt for fmt in formats if fmt]
 
-        for fmt in formats:
-            try:
-                self.formats.append(all_formats[fmt])
-            except KeyError:
-                raise UnknownFormat(
-                    '{0} is not a known variable format'.format(fmt))
+        # If they don't want variable tokenizing at all
+        if not formats:
+            self.formats = []
+            self.vars_re = None
 
-        # Generate variable regexp
-        self.vars_re = re.compile(
-            r'(' +
-            '|'.join([vt.regexp for vt in self.formats]) +
-            r')'
-        )
+        else:
+            # Convert names to classes
+            self.formats = []
+
+            for fmt in formats:
+                try:
+                    self.formats.append(all_formats[fmt])
+                except KeyError:
+                    raise UnknownFormat(
+                        '{0} is not a known variable format'.format(fmt))
+
+            # Generate variable regexp
+            self.vars_re = re.compile(
+                r'(' +
+                '|'.join([vt.regexp for vt in self.formats]) +
+                r')'
+            )
 
     def contains(self, fmt):
         """Does this tokenizer contain specified variable format?"""
@@ -139,10 +147,15 @@ class VariableTokenizer(object):
         :returns: list of tokens---every even one is a Python variable
 
         """
+        if not self.vars_re:
+            return [text]
         return [token for token in self.vars_re.split(text) if token]
 
     def extract_tokens(self, text, unique=True):
         """Returns the set of variable in the text"""
+        if not self.vars_re:
+            return set()
+
         try:
             tokens = self.vars_re.findall(text)
             if unique:
@@ -153,6 +166,8 @@ class VariableTokenizer(object):
 
     def is_token(self, text):
         """Is this text a variable?"""
+        if not self.vars_re:
+            return False
         return self.vars_re.match(text) is not None
 
     def extract_variable_name(self, text):
