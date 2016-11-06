@@ -39,8 +39,7 @@ class TestStatus:
         result = runner.invoke(cli, ('status', str(fn)))
         assert result.exit_code == 0
 
-        # FIXME: This would be a lot easier if the status was
-        # structured and parseable.
+        # FIXME: This would be a lot easier if the status was structured and parseable.
         pairs = build_key_val(result.output)
         assert pairs['Total strings'] == '1'
         assert pairs['Total translateable words'] == '3'
@@ -57,8 +56,7 @@ class TestStatus:
         result = runner.invoke(cli, ('status', str(fn)))
         assert result.exit_code == 0
 
-        # FIXME: This would be a lot easier if the status was
-        # structured and parseable.
+        # FIXME: This would be a lot easier if the status was structured and parseable.
         pairs = build_key_val(result.output)
         assert pairs['Total strings'] == '1'
         assert pairs['Total translateable words'] == '3'

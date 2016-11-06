@@ -1,3 +1,5 @@
+import pytest
+
 from dennis.tools import VariableTokenizer
 from dennis.translator import (
     AngleQuoteTransform,
@@ -22,142 +24,130 @@ class TransformTestCase:
 
 
 class TestEmptyTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u''),
-            (u'OMG!', u''),
-            (u'', u'')
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u''),
+        (u'OMG!', u''),
+        (u'', u''),
+    ])
+    def test_basic(self, text, expected):
+        trans = EmptyTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = EmptyTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestHahaTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u'Haha\u2757 Hello'),
-            (u'OMG! Hello!', u'Haha\u2757 OMG! Haha\u2757 Hello!'),
-            (u'', u'Haha\u2757 '),
-            (u'Hi!\nHello!', u'Haha\u2757 Hi!\nHaha\u2757 Hello!'),
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u'Haha\u2757 Hello'),
+        (u'OMG! Hello!', u'Haha\u2757 OMG! Haha\u2757 Hello!'),
+        (u'', u'Haha\u2757 '),
+        (u'Hi!\nHello!', u'Haha\u2757 Hi!\nHaha\u2757 Hello!'),
+    ])
+    def test_basic(self, text, expected):
+        trans = HahaTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = HahaTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestPirateTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello',
-             u'\'ello ahoy\u2757'),
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello',
+         u'\'ello ahoy\u2757'),
 
-            (u'Hello %(username)s',
-             u'\'ello %(username)s ahoy\u2757'),
+        (u'Hello %(username)s',
+         u'\'ello %(username)s ahoy\u2757'),
 
-            (u'Hello %s',
-             u'\'ello %s cap\'n\u2757'),
+        (u'Hello %s',
+         u'\'ello %s cap\'n\u2757'),
 
-            (u'Hello {user}{name}',
-             u'\'ello {user}{name} ahoy\u2757'),
+        (u'Hello {user}{name}',
+         u'\'ello {user}{name} ahoy\u2757'),
 
-            (u'Products and Services',
-             u'Products and Sarrvices yo-ho-ho\u2757'),
+        (u'Products and Services',
+         u'Products and Sarrvices yo-ho-ho\u2757'),
 
-            (u'Get community support',
-             u'Get community supparrt yo-ho-ho\u2757'),
+        (u'Get community support',
+         u'Get community supparrt yo-ho-ho\u2757'),
 
-            (u'Your input helps make Mozilla better',
-             u'Yerr input \'elps make Mozillar betterr prepare to '
-             u'be boarded\u2757'),
+        (u'Your input helps make Mozilla better',
+         u'Yerr input \'elps make Mozillar betterr prepare to be boarded\u2757'),
 
-            (u'Super browsing',
-             u'Superr browsin\' arrRRRrrr\u2757'),
-        ]
+        (u'Super browsing',
+         u'Superr browsin\' arrRRRrrr\u2757'),
+    ])
+    def test_basic(self, text, expected):
+        trans = PirateTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = PirateTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestDubstepTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello',
-             u'Hello t-t-t-t\u2757'),
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello',
+         u'Hello t-t-t-t\u2757'),
 
-            (u'Hello %(username)s',
-             u'Hello t-t-t-t %(username)s BWWWWWWAAAAAAAAaaaaaa\u2757'),
+        (u'Hello %(username)s',
+         u'Hello t-t-t-t %(username)s BWWWWWWAAAAAAAAaaaaaa\u2757'),
 
-            (u'Hello %s',
-             u'Hello t-t-t-t %s BWWWWAAAAAaaaa\u2757'),
+        (u'Hello %s',
+         u'Hello t-t-t-t %s BWWWWAAAAAaaaa\u2757'),
 
-            (u'Hello {user}{name}',
-             u'Hello t-t-t-t {user}{name} BWWWWWWAAAAAAAAaaaaaa\u2757'),
+        (u'Hello {user}{name}',
+         u'Hello t-t-t-t {user}{name} BWWWWWWAAAAAAAAaaaaaa\u2757'),
 
-            (u'Products and Services',
-             u'Products and Services BWWWWWAAAAAAAaaaaa\u2757'),
+        (u'Products and Services',
+         u'Products and Services BWWWWWAAAAAAAaaaaa\u2757'),
 
-            (u'Get community support',
-             (u'Get t-t-t-t community BWWWWWAAAAAAAaaaaa support '
-              u'V\u221eP V\u221eP\u2757')),
+        (u'Get community support',
+         (u'Get t-t-t-t community BWWWWWAAAAAAAaaaaa support V\u221eP V\u221eP\u2757')),
 
-            (u'Your input helps make Mozilla better',
-             (u'Your input helps make BWWWWWAAAAAAAaaaaa Mozilla '
-              u'....vvvVV better BWWWWWWAAAAAAAAaaaaaa\u2757')),
+        (u'Your input helps make Mozilla better',
+         (u'Your input helps make BWWWWWAAAAAAAaaaaa Mozilla '
+          u'....vvvVV better BWWWWWWAAAAAAAAaaaaaa\u2757')),
 
-            (u'Super browsing',
-             u'Super t-t-t-t browsing BWWWWWAAAAAAAaaaaa\u2757'),
-        ]
+        (u'Super browsing',
+         u'Super t-t-t-t browsing BWWWWWAAAAAAAaaaaa\u2757'),
+    ])
+    def test_basic(self, text, expected):
+        trans = DubstepTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = DubstepTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestZombieTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'', u''),
-            (u'Hello', u'HHAMNMNHR RARRR!!!'),
-            (u'Hi\nHello', u'HAR\nHHAMNMNHR BR-R-R-RAINS!'),
-            (u'Hi   \nHello!\nmultiline',
-             u'HAR   \nHHAMNMNHR\u2757\nmNMMNHGARMNARnHA'),
-            (u'Hello %(username)s', u'HHAMNMNHR %(username)s'),
-            (u'Hello %s', u'HHAMNMNHR %s GRRRRRrrRR!!'),
-            # FIXME: This is a problem where variables from the variable tokenizer should
-            # be treated as immutable tokens and right now they aren't. Issue #67.
-            (u'Hello {user}{name}', u'HHAMNMNHR {user}{namHA}'),
-            (u'Products and Services',
-             u'PMZHRGBNMZZHGRZ anGB SHAMZBBARZZHARZ'),
-            (u'Get community support',
-             u'GHAHG ZZHRmmNMnARHGRA RZNMBZBZHRMZHG'),
-            (u'Your input helps make Mozilla better',
-             (u'YHRNMMZ ARnBZNMHG hHAMNBZRZ maBGHA MHRzARMNMNa bHAHGHGHAMZ '
-              'BR-R-R-RAINS!')),
-            (u'Super browsing', u'SNMBZHAMZ bMZHRZMRZARng'),
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'', u''),
+        (u'Hello', u'HHAMNMNHR RARRR!!!'),
+        (u'Hi\nHello', u'HAR\nHHAMNMNHR BR-R-R-RAINS!'),
+        (u'Hi   \nHello!\nmultiline',
+         u'HAR   \nHHAMNMNHR\u2757\nmNMMNHGARMNARnHA'),
+        (u'Hello %(username)s', u'HHAMNMNHR %(username)s'),
+        (u'Hello %s', u'HHAMNMNHR %s GRRRRRrrRR!!'),
+        # FIXME: This is a problem where variables from the variable tokenizer should
+        # be treated as immutable tokens and right now they aren't. Issue #67.
+        (u'Hello {user}{name}', u'HHAMNMNHR {user}{namHA}'),
+        (u'Products and Services',
+         u'PMZHRGBNMZZHGRZ anGB SHAMZBBARZZHARZ'),
+        (u'Get community support',
+         u'GHAHG ZZHRmmNMnARHGRA RZNMBZBZHRMZHG'),
+        (u'Your input helps make Mozilla better',
+         (u'YHRNMMZ ARnBZNMHG hHAMNBZRZ maBGHA MHRzARMNMNa bHAHGHGHAMZ '
+          'BR-R-R-RAINS!')),
+        (u'Super browsing', u'SNMBZHAMZ bMZHRZMRZARng'),
+    ])
+    def test_basic(self, text, expected):
+        trans = ZombieTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = ZombieTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestHTMLExtractor:
@@ -250,100 +240,88 @@ class TestHTMLExtractor:
 
 
 class TestXXXTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u'xxxHelloxxx'),
-            (u'OMG!', u'xxxOMG!xxx'),
-            (u'Line\nWith\nCRs', u'xxxLinexxx\nxxxWithxxx\nxxxCRsxxx'),
-            (u'Line.  \nWith!\nCRs', u'xxxLine.xxx  \nxxxWith!xxx\nxxxCRsxxx')
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u'xxxHelloxxx'),
+        (u'OMG!', u'xxxOMG!xxx'),
+        (u'Line\nWith\nCRs', u'xxxLinexxx\nxxxWithxxx\nxxxCRsxxx'),
+        (u'Line.  \nWith!\nCRs', u'xxxLine.xxx  \nxxxWith!xxx\nxxxCRsxxx')
+    ])
+    def test_basic(self, text, expected):
+        trans = XXXTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = XXXTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestDoubleTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u'Heelloo'),
-            (u'OMG!', u'OOMG!'),
-            (u'Line\nWith\nCRs', u'Liinee\nWiith\nCRs'),
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u'Heelloo'),
+        (u'OMG!', u'OOMG!'),
+        (u'Line\nWith\nCRs', u'Liinee\nWiith\nCRs'),
+    ])
+    def test_basic(self, text, expected):
+        trans = DoubleTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = DoubleTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestAngleQuoteTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u'\xabHello\xbb'),
-            (u'OMG!', u'\xabOMG!\xbb'),
-            (u'Line\nWith\nCRs', u'\xabLine\nWith\nCRs\xbb'),
-            (u'Line.  \nWith!\nCRs', u'\xabLine.  \nWith!\nCRs\xbb'),
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u'\xabHello\xbb'),
+        (u'OMG!', u'\xabOMG!\xbb'),
+        (u'Line\nWith\nCRs', u'\xabLine\nWith\nCRs\xbb'),
+        (u'Line.  \nWith!\nCRs', u'\xabLine.  \nWith!\nCRs\xbb'),
+    ])
+    def test_basic(self, text, expected):
+        trans = AngleQuoteTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = AngleQuoteTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestShoutyTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u'HELLO'),
-            (u'OMG!', u'OMG!'),
-            (u'<b>Hello.</b>', u'<B>HELLO.</B>'),
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u'HELLO'),
+        (u'OMG!', u'OMG!'),
+        (u'<b>Hello.</b>', u'<B>HELLO.</B>'),
+    ])
+    def test_basic(self, text, expected):
+        trans = ShoutyTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = ShoutyTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestReverseTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u'olleH'),
-            (u'OMG!', u'!GMO'),
-            (u'Hello. This is a test.', u'.tset a si sihT .olleH'),
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u'olleH'),
+        (u'OMG!', u'!GMO'),
+        (u'Hello. This is a test.', u'.tset a si sihT .olleH'),
+    ])
+    def test_basic(self, text, expected):
+        trans = ReverseTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = ReverseTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestRedactedTransform(TransformTestCase):
-    def test_basic(self):
-        data = [
-            (u'Hello', u'Xxxxx'),
-            (u'OMG!', u'XXX!'),
-        ]
+    @pytest.mark.parametrize('text,expected', [
+        (u'Hello', u'Xxxxx'),
+        (u'OMG!', u'XXX!'),
+    ])
+    def test_basic(self, text, expected):
+        trans = RedactedTransform()
+        output = trans.transform(self.vartok, [Token(text)])
+        output = u''.join([token.s for token in output])
 
-        for text, expected in data:
-            trans = RedactedTransform()
-            output = trans.transform(self.vartok, [Token(text)])
-            output = u''.join([token.s for token in output])
-
-            assert output == expected
+        assert output == expected
 
 
 class TestTranslator:

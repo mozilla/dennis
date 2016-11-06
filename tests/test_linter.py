@@ -732,25 +732,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
         assert msgs[0].code == 'W303'
         assert msgs[0].msg == 'different html: "</b>" vs. "<b>"'
 
-    @pytest.mark.skipif(not sys.version.startswith('2.6'),
-                        reason='not using python 2.6')
-    def test_invalid_html_26(self):
-        linted_entry = build_linted_entry(
-            u'#: foo/foo.py:5\n' +
-            u'msgid "<a>Foo</a>"\n' +
-            u'msgstr "<a>ARGH</\u0430>"\n')
-
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 1
-        assert msgs[0].kind == 'warn'
-        assert msgs[0].code == 'W304'
-        # HTMLParser in Python 2.6 throws an HTMLParseError, so we
-        # get a different error code.
-        assert msgs[0].msg.startswith(u'invalid html: msgstr has invalid')
-
-    @pytest.mark.skipif(sys.version.startswith('2.6'),
-                        reason='using python 2.6')
-    def test_invalid_html_gt_26(self):
+    def test_invalid_html(self):
         linted_entry = build_linted_entry(
             u'#: foo/foo.py:5\n' +
             u'msgid "<a>Foo</a>"\n' +
