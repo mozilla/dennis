@@ -279,7 +279,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
 
         if not quiet and not reporter:
             out(TERM.bold_green,
-                '>>> Working on: {fn}'.format(fn=fn),
+                u'>>> Working on: {fn}'.format(fn=fn),
                 TERM.normal)
 
         error_results = [res for res in results if res.kind == 'err']
