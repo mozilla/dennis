@@ -6,6 +6,26 @@ What's new in Dennis
    :local:
 
 
+Version 0.8.0: January 3rd, 2017
+================================
+
+* b0705f4 Clean up pytest code and drop Python 2.6 bits
+* d27790b Fix th' --varformat flag to alloww nay formats (#83)
+* 3bf0929 Switch travis sudo flag
+* 990c842 Update requirements 
+* 0d00ad4 Add travis supparrt
+* 528fcc1 Fix support for Python 3.5 (Thanks John Vandenberg!)
+* 700490d Add Travis CI testing (#88)
+* a59a9bb Fix translation o' plurals (#79)
+* aca57f6 Fix false positive wit' InvalidVarsLintRule (#78)
+* 581f230 Add note about --check-headerr flag to recipes
+* bce6308 Fix PythonBraceFormat regexp to handle spaces
+* 7016ee4 Add .cache to .gitignore
+* 05a4e14 Collapse th' whitespace in text in th' html transform
+* 75fa600 Prepare fer 0.8 development
+* 070808d Add additional dev-relat'd packages
+
+
 Version 0.7.0: October 2nd, 2015
 ================================
 

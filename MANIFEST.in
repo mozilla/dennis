@@ -4,7 +4,9 @@ include CHANGELOG
 include CONTRIBUTORS
 include setup.py
 include requirements-dev.txt
+include tox.ini
 include MANIFEST.in
+include .editorconfig
 
 include bin/dennis-cmd
 
