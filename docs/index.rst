@@ -85,7 +85,6 @@ User guide
    translating
    linting
    statusing
-   django
    api
    recipes
 

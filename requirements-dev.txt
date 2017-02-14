@@ -8,6 +8,3 @@ Sphinx==1.4.8
 tox==2.4.1
 twine==1.8.1
 wheel==0.29.0
-
-# environments
-django==1.10.2
