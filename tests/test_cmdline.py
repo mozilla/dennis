@@ -134,7 +134,7 @@ class TestTranslate:
             'msgstr[0] ""\n'
             'msgstr[1] ""\n'
         )
-        fn = tmpdir.join('django.po')
+        fn = tmpdir.join('messages.po')
         fn.write(po_file)
 
         result = runner.invoke(cli, ('translate', '-p', 'shouty', str(fn)))
