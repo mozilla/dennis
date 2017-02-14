@@ -249,7 +249,8 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
     for fn in po_files:
         try:
             if not os.path.exists(fn):
-                raise click.UsageError('file "%s" does not exist.' % fn)
+                raise click.UsageError(u'File "{fn}" does not exist.'.format(
+                    fn=click.format_filename(fn)))
 
             if fn.endswith('.po'):
                 results = linter.verify_file(fn)
@@ -257,7 +258,8 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
                 results = templatelinter.verify_file(fn)
         except IOError as ioe:
             # This is not a valid .po file. So mark it as an error.
-            err('>>> Problem opening file: {fn}'.format(fn=fn))
+            err(u'>>> Problem opening file: {fn}'.format(
+                fn=click.format_filename(fn)))
             err(repr(ioe))
             out('')
 
@@ -279,7 +281,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
 
         if not quiet and not reporter:
             out(TERM.bold_green,
-                '>>> Working on: {fn}'.format(fn=fn),
+                u'>>> Working on: {fn}'.format(fn=click.format_filename(fn)),
                 TERM.normal)
 
         error_results = [res for res in results if res.kind == 'err']
@@ -414,16 +416,20 @@ def status(ctx, showuntranslated, showfuzzy, path):
     for fn in po_files:
         try:
             if not os.path.exists(fn):
-                raise IOError('File "{fn}" does not exist.'.format(fn=fn))
+                raise IOError(u'File "{fn}" does not exist.'.format(
+                    fn=click.format_filename(fn)))
 
             pofile = parse_pofile(fn)
         except IOError as ioe:
-            err('>>> Problem opening file: {fn}'.format(fn=fn))
+            err(u'>>> Problem opening file: {fn}'.format(
+                fn=click.format_filename(fn)))
             err(repr(ioe))
             continue
 
         out('')
-        out(TERM.bold_green, '>>> Working on: {fn}'.format(fn=fn), TERM.normal)
+        out(TERM.bold_green,
+            u'>>> Working on: {fn}'.format(fn=click.format_filename(fn)),
+            TERM.normal)
 
         out('Metadata:')
         for key in ('Language', 'Report-Msgid-Bugs-To', 'PO-Revision-Date',
@@ -531,7 +537,8 @@ def translate(ctx, varformat, pipeline, strings, path):
         # Check all the paths first
         for arg in path:
             if not os.path.exists(arg):
-                raise click.UsageError('file %s does not exist.' % arg)
+                raise click.UsageError(u'File {fn} does not exist.'.format(
+                    fn=click.format_filename(arg)))
 
         for arg in path:
             click.echo(translator.translate_file(arg))

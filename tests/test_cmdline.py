@@ -123,7 +123,7 @@ class TestTranslate:
         result = runner.invoke(cli, ('translate', '-p', 'shouty', str(fn)))
         assert result.exit_code == 2
         last_line = result.output.splitlines()[-1]
-        assert last_line == 'Error: file %s does not exist.' % str(fn)
+        assert last_line == 'Error: File %s does not exist.' % str(fn)
 
     def test_plurals(self, runner, tmpdir):
         po_file = build_po_string(
@@ -174,6 +174,17 @@ class TestLint:
         assert len(output_lines) == 1
         assert output_lines[0].startswith('dennis version')
 
+    def test_linting_non_ascii_filename(self, runner, tmpdir):
+        po_file = build_po_string(
+            '#: foo/foo.py:5\n'
+            'msgid "Foo %(foo)s bar baz"\n'
+            'msgstr "Foo %(bar)s"\n')
+        fn = tmpdir.join('T\xc3\xa9l\xc3\xa9chargements', 'messages.po')
+        fn.write(po_file, ensure=True)
+
+        result = runner.invoke(cli, ('lint', str(tmpdir)))
+        assert result.exit_code == 1
+
     def test_linting_fail(self, runner, tmpdir):
         po_file = build_po_string(
             '#: foo/foo.py:5\n'
@@ -198,7 +209,7 @@ class TestLint:
         result = runner.invoke(cli, ('lint', str(fn)))
         assert result.exit_code == 2
         last_line = result.output.splitlines()[-1]
-        assert last_line == 'Error: file "%s" does not exist.' % str(fn)
+        assert last_line == 'Error: File "%s" does not exist.' % str(fn)
 
     def test_quiet(self, runner, tmpdir):
         po_file = build_po_string(
