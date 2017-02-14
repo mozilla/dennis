@@ -38,8 +38,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'polib>=1.0.6',
-        'click==6.6'
+        'polib>=1.0.8',
+        'click>=6',
     ],
     entry_points="""
         [console_scripts]
