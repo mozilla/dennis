@@ -91,3 +91,48 @@ To build the docs, do::
 
 Please make changes to the documentation as required by the changes
 you make.
+
+
+Release howto
+=============
+
+1. Check out master tip.
+
+2. Check to make sure ``setup.py`` and ``requirements-dev.txt`` files have
+   correct versions of requirements.
+
+3. Update version number in ``dennis/__init__.py``
+
+   1. Set ``__version__`` to something like ``0.4``.
+   2. Set ``__releasedate__`` to something like ``20120731``.
+
+4. Update ``CHANGELOG``. Usually, I do something like::
+
+       git log --oneline v0.4..HEAD
+
+   replacing ``v0.4`` with the most recent tag. Then I copy and paste that,
+   remove uninteresting lines and add a header.
+
+5. Verify correctness.
+
+   1. Run the tests with ``tox``.
+   2. Review the ``README.rst``.
+   3. Build the docs and review them.
+
+6. Tag the release::
+
+       git tag -a v0.4
+
+   Copy the last section of the ``CHANGELOG`` into the tag commit message.
+
+7. Push everything::
+
+       git push --tags official master
+
+8. Update PyPI::
+
+       rm -rf dist/*
+       python setup.py sdist bdist_wheel
+       twine upload dist/*
+
+9. Announce the release.
