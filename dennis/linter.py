@@ -13,7 +13,8 @@ from dennis.tools import (
 IdString = namedtuple('IdString', ('msgid_fields', 'msgid_strings'))
 TranslatedString = namedtuple(
     'TranslatedString',
-    ('msgid_fields', 'msgid_strings', 'msgstr_field', 'msgstr_string'))
+    ('msgid_fields', 'msgid_strings', 'msgstr_field', 'msgstr_string')
+)
 
 
 WARNING = 'warn'

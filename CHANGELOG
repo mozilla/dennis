@@ -6,6 +6,14 @@ What's new in Dennis
    :local:
 
 
+Version 0.9.1: in development
+=============================
+
+* update versions
+* add testing for Python 3.6
+* drop support for Python 3.3
+
+
 Version 0.9.0: February 2nd, 2017
 =================================
 
