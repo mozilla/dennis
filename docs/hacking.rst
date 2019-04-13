@@ -82,7 +82,7 @@ Documentation
 =============
 
 Documentation is in ``docs/``. We use `Sphinx
-<http://sphinx-doc.org/>`_ as the documentation generator.
+<https://sphinx-doc.org/>`_ as the documentation generator.
 
 To build the docs, do::
 

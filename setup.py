@@ -33,7 +33,7 @@ setup(
     author='Will Kahn-Greene',
     author_email='willkg@bluesock.org',
     keywords='l10n localization PO POT lint translate development',
-    url='http://github.com/willkg/dennis',
+    url='https://github.com/willkg/dennis',
     zip_safe=True,
     packages=find_packages(),
     include_package_data=True,

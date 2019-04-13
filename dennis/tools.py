@@ -32,7 +32,7 @@ class Format(object):
         raise NotImplemented
 
 
-# http://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
+# https://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
 # https://docs.python.org/2/library/string.html#format-string-syntax
 class PythonBraceFormat(Format):
     name = 'python-brace-format'
@@ -52,8 +52,8 @@ class PythonBraceFormat(Format):
             return identifier.group(1)
 
 
-# http://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
-# http://docs.python.org/2/library/stdtypes.html#string-formatting-operations
+# https://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
+# https://docs.python.org/2/library/stdtypes.html#string-formatting-operations
 class PythonFormat(Format):
     name = 'python-format'
     desc = 'Python percent format (e.g. "%s", "%(foo)s")'

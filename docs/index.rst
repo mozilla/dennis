@@ -68,11 +68,10 @@ Get help::
 Project details
 ===============
 
-:Code:          http://github.com/willkg/dennis
-:Documentation: http://dennis.rtfd.org/
+:Code:          https://github.com/willkg/dennis
+:Documentation: https://dennis.readthedocs.io/
 :Issue tracker: https://github.com/willkg/dennis/issues
 :License:       BSD 3-clause; see LICENSE file
-:Donate:        `gittip <https://www.gittip.com/on/github/willkg/>`_
 
 
 User guide
