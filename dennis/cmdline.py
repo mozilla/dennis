@@ -9,7 +9,6 @@ import click
 from dennis import __version__
 from dennis.linter import Linter
 from dennis.linter import get_lint_rules as get_linter_rules
-from dennis.minisix import PY2, textclass
 from dennis.templatelinter import TemplateLinter
 from dennis.templatelinter import get_lint_rules as get_template_linter_rules
 from dennis.tools import (
@@ -62,14 +61,6 @@ def err(*s):
     for part in parts:
         click.echo(part, nl=False, err=True)
     click.echo('')
-
-
-if PY2 and not sys.stdout.isatty():
-    # If it's Python2 and not a tty, then we need to encode the text
-    # type things as utf8 before spitting them out to stdout and
-    # stderr.
-    out = utf8_args(out)
-    err = utf8_args(err)
 
 
 def format_formats():
@@ -298,7 +289,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
                 if reporter == 'line':
                     out(fn,
                         ':',
-                        textclass(msg.poentry.linenum),
+                        str(msg.poentry.linenum),
                         ':',
                         '0',
                         ':',
@@ -319,7 +310,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
                 if reporter == 'line':
                     out(fn,
                         ':',
-                        textclass(msg.poentry.linenum),
+                        str(msg.poentry.linenum),
                         ':',
                         '0',
                         ':',
@@ -523,8 +514,6 @@ def translate(ctx, varformat, pipeline, strings, path):
         # Args are strings to be translated
         for arg in path:
             data = translator.translate_string(arg)
-            if PY2:
-                data = data.encode('utf-8')
             out(data)
 
     elif path[0] == '-':

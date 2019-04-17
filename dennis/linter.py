@@ -1,7 +1,7 @@
 import re
 from collections import namedtuple
+from itertools import zip_longest
 
-from dennis.minisix import izip_longest, HTMLParseError
 from dennis.tools import (
     VariableTokenizer,
     all_subclasses,
@@ -19,6 +19,10 @@ TranslatedString = namedtuple(
 
 WARNING = 'warn'
 ERROR = 'err'
+
+
+class HTMLParseError(Exception):
+    pass
 
 
 class LintMessage(object):
@@ -401,7 +405,7 @@ class MismatchedHTMLLintRule(LintRule):
                     )
                     return msgs
 
-                zipped_parts = izip_longest(
+                zipped_parts = zip_longest(
                     msgid_parts, msgid_plural_parts, fillvalue=None)
 
                 for left, right in zipped_parts:
@@ -422,8 +426,8 @@ class MismatchedHTMLLintRule(LintRule):
                 )
                 return msgs
 
-            for left, right in izip_longest(msgid_parts, msgstr_parts,
-                                            fillvalue=None):
+            for left, right in zip_longest(msgid_parts, msgstr_parts,
+                                           fillvalue=None):
                 if not left or not right or not equiv(left, right):
                     msgs.append(
                         LintMessage(

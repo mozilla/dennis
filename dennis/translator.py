@@ -3,7 +3,8 @@ import string
 
 import polib
 
-from dennis.minisix import PY2, HTMLParser
+from html.parser import HTMLParser
+
 from dennis.tools import VariableTokenizer, all_subclasses
 
 
@@ -17,7 +18,7 @@ def debug(*args):
 
 class Token(object):
     def __init__(self, s, type='text', mutable=True):
-        if not PY2 and not isinstance(s, str):
+        if not isinstance(s, str):
             s = s.decode('utf-8')
         self.s = s
         self.type = type
@@ -705,9 +706,6 @@ class Translator(object):
 
     def translate_string(self, s):
         """Translates string s and returns the new string"""
-        if PY2 and isinstance(s, str):
-            s = s.decode('utf-8')
-
         # Create the initial token
         tokens = [Token(s)]
 

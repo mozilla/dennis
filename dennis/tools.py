@@ -1,9 +1,7 @@
 import re
 
-from dennis.minisix import textclass
 
-
-class _MockBlessedThing(textclass):
+class _MockBlessedThing(str):
     def __call__(self, s):
         return s
 
@@ -210,9 +208,9 @@ def parse_pofile(fn_or_string):
 
     When polib parses a pofile, it captures the line number of the
     start of the block, but doesn't capture the original string for
-    the block. When you call str()/unicode() on the poentry, it
-    "reassembles" the block with textwrapped lines, so it returns
-    something substantially different than the original block. This is
+    the block. When you call str() on the poentry, it "reassembles"
+    the block with textwrapped lines, so it returns something
+    substantially different than the original block. This is
     problematic if we want to print out the block with the line
     numbers--one for each line.
 
@@ -251,7 +249,7 @@ def parse_pofile(fn_or_string):
             lines.pop()
 
         # Join them and voila!
-        poentry.original = textclass('').join(lines)
+        poentry.original = ''.join(lines)
 
     return parsed_pofile
 
@@ -264,6 +262,6 @@ def withlines(linenum, poentry_text):
     lines_with_nums = zip(range(start, start+100), poentry_text.splitlines())
 
     for line_no, line in lines_with_nums:
-        new_text.append(textclass(line_no) + textclass(':') + textclass(line))
+        new_text.append(str(line_no) + ':' + str(line))
 
-    return textclass('\n').join(new_text)
+    return '\n'.join(new_text)
