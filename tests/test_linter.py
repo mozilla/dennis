@@ -663,7 +663,7 @@ class TestBlankLintRule(LintRuleTestCase):
             assert len(msgs) == 1
             assert msgs[0].kind == 'warn'
             assert msgs[0].code == 'W301'
-            assert msgs[0].msg == u'translated string is solely whitespace'
+            assert msgs[0].msg == 'translated string is solely whitespace'
 
 
 class TestUnchangedLintRule(LintRuleTestCase):
@@ -679,7 +679,7 @@ class TestUnchangedLintRule(LintRuleTestCase):
         assert len(msgs) == 1
         assert msgs[0].kind == 'warn'
         assert msgs[0].code == 'W302'
-        assert msgs[0].msg == u'translated string is same as source string'
+        assert msgs[0].msg == 'translated string is same as source string'
 
 
 class TestMismatchedHTMLLintRule(LintRuleTestCase):
@@ -731,9 +731,9 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
 
     def test_invalid_html(self):
         linted_entry = build_linted_entry(
-            u'#: foo/foo.py:5\n' +
-            u'msgid "<a>Foo</a>"\n' +
-            u'msgstr "<a>ARGH</\u0430>"\n')
+            '#: foo/foo.py:5\n' +
+            'msgid "<a>Foo</a>"\n' +
+            'msgstr "<a>ARGH</\u0430>"\n')
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 1
@@ -747,7 +747,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
         # vs.
         #
         # [<html <a>>]
-        assert msgs[0].msg == u'different html: "</a>" vs. "<a>"'
+        assert msgs[0].msg == 'different html: "</a>" vs. "<a>"'
 
 
 class TLRTestCase:

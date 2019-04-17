@@ -25,7 +25,7 @@ class HTMLParseError(Exception):
     pass
 
 
-class LintMessage(object):
+class LintMessage:
     def __init__(self, kind, line, col, code, msg, poentry):
         self.kind = kind
         self.line = line
@@ -39,7 +39,7 @@ class LintMessage(object):
             self.kind, self.line, self.col, self.code, self.msg)
 
 
-class LintedEntry(object):
+class LintedEntry:
     def __init__(self, poentry):
         self.poentry = poentry
         self.msgid = poentry.msgid
@@ -82,7 +82,7 @@ class LintedEntry(object):
         return strs
 
 
-class LintRule(object):
+class LintRule:
     num = ''
     name = ''
     desc = ''
@@ -131,7 +131,7 @@ class MalformedNoTypeLintRule(LintRule):
             msgs.append(
                 LintMessage(
                     ERROR, linted_entry.poentry.linenum, 0, self.num,
-                    u'type missing: {}'.format(u', '.join(malformed)),
+                    'type missing: {}'.format(', '.join(malformed)),
                     linted_entry.poentry)
             )
 
@@ -164,8 +164,8 @@ class MalformedMissingRightBraceLintRule(LintRule):
             msgs.append(
                 LintMessage(
                     ERROR, linted_entry.poentry.linenum, 0, self.num,
-                    u'missing right curly-brace: {}'.format(
-                        u', '.join(malformed)),
+                    'missing right curly-brace: {}'.format(
+                        ', '.join(malformed)),
                     linted_entry.poentry)
             )
 
@@ -198,8 +198,8 @@ class MalformedMissingLeftBraceLintRule(LintRule):
             msgs.append(
                 LintMessage(
                     ERROR, linted_entry.poentry.linenum, 0, self.num,
-                    u'missing left curly-brace: {}'.format(
-                        u', '.join(malformed)),
+                    'missing left curly-brace: {}'.format(
+                        ', '.join(malformed)),
                     linted_entry.poentry)
             )
         return msgs
@@ -237,7 +237,7 @@ class BadFormatLintRule(LintRule):
                     msgs.append(
                         LintMessage(
                             ERROR, linted_entry.poentry.linenum, 0, self.num,
-                            u'bad format character: {}'.format(match),
+                            'bad format character: {}'.format(match),
                             linted_entry.poentry
                         )
                     )
@@ -281,8 +281,8 @@ class MissingVarsLintRule(LintRule):
                     msgs.append(
                         LintMessage(
                             ERROR, linted_entry.poentry.linenum, 0, self.num_error,
-                            u'missing variables: {}'.format(
-                                u', '.join(sorted(missing))),
+                            'missing variables: {}'.format(
+                                ', '.join(sorted(missing))),
                             linted_entry.poentry)
                     )
                 else:
@@ -290,8 +290,8 @@ class MissingVarsLintRule(LintRule):
                     msgs.append(
                         LintMessage(
                             WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            u'missing variables: {}'.format(
-                                u', '.join(sorted(missing))),
+                            'missing variables: {}'.format(
+                                ', '.join(sorted(missing))),
                             linted_entry.poentry)
                     )
         return msgs
@@ -313,7 +313,7 @@ class BlankLintRule(LintRule):
                 msgs.append(
                     LintMessage(
                         WARNING, linted_entry.poentry.linenum, 0, self.num,
-                        u'translated string is solely whitespace',
+                        'translated string is solely whitespace',
                         linted_entry.poentry)
                 )
 
@@ -336,7 +336,7 @@ class UnchangedLintRule(LintRule):
                 msgs.append(
                     LintMessage(
                         WARNING, linted_entry.poentry.linenum, 0, self.num,
-                        u'translated string is same as source string',
+                        'translated string is same as source string',
                         linted_entry.poentry)
                 )
 
@@ -376,7 +376,7 @@ class MismatchedHTMLLintRule(LintRule):
                 msgid_parts = tokenize(trstr.msgid_strings[0])
             except HTMLParseError as exc:
                 errmsg = (
-                    u'invalid html: msgid has invalid html {}'
+                    'invalid html: msgid has invalid html {}'
                     .format(exc)
                 )
                 msgs.append(
@@ -394,7 +394,7 @@ class MismatchedHTMLLintRule(LintRule):
                     msgid_plural_parts = tokenize(trstr.msgid_strings[1])
                 except HTMLParseError as exc:
                     errmsg = (
-                        u'invalid html: msgid_plural has invalid html {}'
+                        'invalid html: msgid_plural has invalid html {}'
                         .format(exc)
                     )
 
@@ -416,7 +416,7 @@ class MismatchedHTMLLintRule(LintRule):
                 msgstr_parts = tokenize(trstr.msgstr_string)
             except HTMLParseError as exc:
                 errmsg = (
-                    u'invalid html: msgstr has invalid html {}'
+                    'invalid html: msgstr has invalid html {}'
                     .format(exc)
                 )
                 msgs.append(
@@ -432,9 +432,9 @@ class MismatchedHTMLLintRule(LintRule):
                     msgs.append(
                         LintMessage(
                             WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            u'different html: "{}" vs. "{}"'.format(
-                                left.s if left else u'',
-                                right.s if right else u''),
+                            'different html: "{}" vs. "{}"'.format(
+                                left.s if left else '',
+                                right.s if right else ''),
                             linted_entry.poentry)
                     )
                     break
@@ -470,8 +470,8 @@ class InvalidVarsLintRule(LintRule):
                 msgs.append(
                     LintMessage(
                         ERROR, linted_entry.poentry.linenum, 0, self.num,
-                        u'invalid variables: {}'.format(
-                            u', '.join(sorted(invalid))),
+                        'invalid variables: {}'.format(
+                            ', '.join(sorted(invalid))),
                         linted_entry.poentry)
                 )
         return msgs
@@ -495,7 +495,7 @@ def convert_rules(rules_spec):
     return rules
 
 
-class Linter(object):
+class Linter:
     def __init__(self, vars_, rules_spec):
         self.vartok = VariableTokenizer(vars_)
         self.rules_spec = rules_spec

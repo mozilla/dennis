@@ -6,7 +6,7 @@ class _MockBlessedThing(str):
         return s
 
 
-class FauxTerminal(object):
+class FauxTerminal:
     def __getattr__(self, attr, default=None):
         return _MockBlessedThing()
 
@@ -17,7 +17,7 @@ except ImportError:
     Terminal = FauxTerminal
 
 
-class Format(object):
+class Format:
     """Variable format base class"""
     name = ''
     desc = ''
@@ -91,7 +91,7 @@ class UnknownFormat(Exception):
     pass
 
 
-class VariableTokenizer(object):
+class VariableTokenizer:
     def __init__(self, formats=None):
         """
         :arg formats: List of variable formats

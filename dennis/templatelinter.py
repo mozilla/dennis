@@ -14,7 +14,7 @@ WARNING = 'warn'
 ERROR = 'err'
 
 
-class TemplateLintRule(object):
+class TemplateLintRule:
     num = ''
     name = ''
     desc = ''
@@ -55,7 +55,7 @@ class HardToReadNamesTLR(TemplateLintRule):
                     msgs.append(
                         LintMessage(
                             WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            u'hard to read variable name "{}"'.format(
+                            'hard to read variable name "{}"'.format(
                                 token),
                             linted_entry.poentry)
                     )
@@ -84,7 +84,7 @@ class OneCharNamesTLR(TemplateLintRule):
                     msgs.append(
                         LintMessage(
                             WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            u'one character variable name "{}"'.format(
+                            'one character variable name "{}"'.format(
                                 token),
                             linted_entry.poentry)
                     )
@@ -112,7 +112,7 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
                 msgs.append(
                     LintMessage(
                         WARNING, linted_entry.poentry.linenum, 0, self.num,
-                        u'multiple variables with no name.',
+                        'multiple variables with no name.',
                         linted_entry.poentry)
                 )
         return msgs
@@ -136,7 +136,7 @@ def convert_rules(rules_spec):
     return rules
 
 
-class TemplateLinter(object):
+class TemplateLinter:
     def __init__(self, vars_, rules_spec):
         self.vartok = VariableTokenizer(vars_)
         self.rules_spec = rules_spec
