@@ -1,7 +1,4 @@
-import sys
-
 import polib
-import pytest
 
 from dennis.linter import (
     BadFormatLintRule,
