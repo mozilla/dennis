@@ -55,7 +55,7 @@ class HardToReadNamesTLR(TemplateLintRule):
                     msgs.append(
                         LintMessage(
                             WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            u'hard to read variable name "{0}"'.format(
+                            u'hard to read variable name "{}"'.format(
                                 token),
                             linted_entry.poentry)
                     )
@@ -84,7 +84,7 @@ class OneCharNamesTLR(TemplateLintRule):
                     msgs.append(
                         LintMessage(
                             WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            u'one character variable name "{0}"'.format(
+                            u'one character variable name "{}"'.format(
                                 token),
                             linted_entry.poentry)
                     )

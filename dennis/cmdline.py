@@ -459,17 +459,17 @@ def status(ctx, showuntranslated, showfuzzy, path):
         untranslated_total = len(pofile.untranslated_entries())
 
         out('Statistics:')
-        out('  Total strings:             {0}'.format(total_strings))
-        out('    Translated:              {0}'.format(translated_total))
-        out('    Untranslated:            {0}'.format(untranslated_total))
-        out('    Fuzzy:                   {0}'.format(fuzzy_total))
-        out('  Total translateable words: {0}'.format(total_words))
-        out('    Translated:              {0}'.format(translated_words))
-        out('    Untranslated:            {0}'.format(untranslated_words))
+        out('  Total strings:             {}'.format(total_strings))
+        out('    Translated:              {}'.format(translated_total))
+        out('    Untranslated:            {}'.format(untranslated_total))
+        out('    Fuzzy:                   {}'.format(fuzzy_total))
+        out('  Total translateable words: {}'.format(total_words))
+        out('    Translated:              {}'.format(translated_words))
+        out('    Untranslated:            {}'.format(untranslated_words))
         if untranslated_words == 0:
             out('  Percentage:                100% COMPLETE!')
         else:
-            out('  Percentage:                {0}%'.format(
+            out('  Percentage:                {}%'.format(
                 pofile.percent_translated()))
 
     ctx.exit(0)

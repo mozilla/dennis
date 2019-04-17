@@ -78,13 +78,13 @@ class PythonFormat(Format):
 
 
 def get_available_formats():
-    return dict(
-        (thing.name, thing)
+    return {
+        thing.name: thing
         for name, thing in globals().items()
         if (name.endswith('Format')
             and issubclass(thing, Format)
             and thing.name)
-    )
+    }
 
 
 class UnknownFormat(Exception):
@@ -122,7 +122,7 @@ class VariableTokenizer(object):
                     self.formats.append(all_formats[fmt])
                 except KeyError:
                     raise UnknownFormat(
-                        '{0} is not a known variable format'.format(fmt))
+                        '{} is not a known variable format'.format(fmt))
 
             # Generate variable regexp
             self.vars_re = re.compile(
@@ -160,7 +160,7 @@ class VariableTokenizer(object):
                 tokens = set(tokens)
             return tokens
         except TypeError:
-            print('TYPEERROR: {0}'.format(repr(text)))
+            print('TYPEERROR: {}'.format(repr(text)))
 
     def is_token(self, text):
         """Is this text a variable?"""

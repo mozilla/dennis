@@ -28,7 +28,7 @@ class Token(object):
         return self.s
 
     def __repr__(self):
-        return '<{0} {1}>'.format(self.type, repr(self.s))
+        return '<{} {}>'.format(self.type, repr(self.s))
 
     def __eq__(self, token):
         return (
@@ -366,8 +366,8 @@ class RedactedTransform(Transform):
     desc = 'Redacts everything.'
 
     def transform(self, vartok, token_stream):
-        redact_map = dict((c, 'X') for c in string.ascii_uppercase)
-        redact_map.update(dict((c, 'x') for c in string.ascii_lowercase))
+        redact_map = {c: 'X' for c in string.ascii_uppercase}
+        redact_map.update({c: 'x' for c in string.ascii_lowercase})
 
         new_tokens = []
         for token in token_stream:
@@ -745,4 +745,4 @@ class Translator(object):
             count += 1
 
         po.save()
-        return '{0}: Translated {1} messages.'.format(fname, count)
+        return '{}: Translated {} messages.'.format(fname, count)
