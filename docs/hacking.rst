@@ -68,12 +68,12 @@ commit with their name on it) get added to the CONTRIBUTORS file. Yay!
 Tests
 =====
 
-Tests are in ``tests/``. We use py.test as the test
+Tests are in ``tests/``. We use pytest as the test
 runner.
 
 To run the tests, do::
 
-    $ py.test
+    $ pytest
 
 Please write tests for changes you make.
 

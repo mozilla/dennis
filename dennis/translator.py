@@ -3,7 +3,8 @@ import string
 
 import polib
 
-from dennis.minisix import PY2, HTMLParser
+from html.parser import HTMLParser
+
 from dennis.tools import VariableTokenizer, all_subclasses
 
 
@@ -15,9 +16,9 @@ def debug(*args):
         print(' '.join([str(arg) for arg in args]))
 
 
-class Token(object):
+class Token:
     def __init__(self, s, type='text', mutable=True):
-        if not PY2 and not isinstance(s, str):
+        if not isinstance(s, str):
             s = s.decode('utf-8')
         self.s = s
         self.type = type
@@ -27,7 +28,7 @@ class Token(object):
         return self.s
 
     def __repr__(self):
-        return '<{0} {1}>'.format(self.type, repr(self.s))
+        return '<{} {}>'.format(self.type, repr(self.s))
 
     def __eq__(self, token):
         return (
@@ -40,7 +41,7 @@ class Token(object):
         return not self.__eq__(token)
 
 
-class Transform(object):
+class Transform:
     name = ''
     desc = ''
 
@@ -101,7 +102,7 @@ class XXXTransform(Transform):
             s = token.s
             for line in s.splitlines(True):
                 line, ending = self.split_ending(line)
-                line = u'xxx' + line + u'xxx' + ending
+                line = 'xxx' + line + 'xxx' + ending
                 new_s.append(line)
 
             new_tokens.append(Token(''.join(new_s)))
@@ -115,9 +116,9 @@ class XXXTransform(Transform):
                 ending.insert(0, s[-1])
                 s = s[:-1]
             else:
-                return s, u''.join(ending)
+                return s, ''.join(ending)
 
-        return u'', ''.join(ending)
+        return '', ''.join(ending)
 
 
 class HahaTransform(Transform):
@@ -125,7 +126,7 @@ class HahaTransform(Transform):
     desc = 'Adds haha! before sentences in a string.'
 
     def transform(self, vartok, token_stream):
-        haha = u'Haha\u2757'
+        haha = 'Haha\u2757'
 
         new_tokens = []
         for token in token_stream:
@@ -133,14 +134,14 @@ class HahaTransform(Transform):
                 new_tokens.append(token)
                 continue
 
-            new_s = [haha + u' ']
+            new_s = [haha + ' ']
 
             for i, c in enumerate(token.s):
                 if c in ('.!?'):
                     try:
                         if token.s[i+1] == ' ':
                             new_s.append(c)
-                            new_s.append(u' ')
+                            new_s.append(' ')
                             new_s.append(haha)
                             continue
                     except IndexError:
@@ -148,7 +149,7 @@ class HahaTransform(Transform):
                 if c == '\n':
                     new_s.append(c)
                     new_s.append(haha)
-                    new_s.append(u' ')
+                    new_s.append(' ')
                     continue
 
                 new_s.append(c)
@@ -164,9 +165,9 @@ class HahaTransform(Transform):
                 ending.insert(0, s[-1])
                 s = s[:-1]
             else:
-                return s, u''.join(ending)
+                return s, ''.join(ending)
 
-        return u'', ''.join(ending)
+        return '', ''.join(ending)
 
 
 class AngleQuoteTransform(XXXTransform):
@@ -181,7 +182,7 @@ class AngleQuoteTransform(XXXTransform):
                 continue
 
             s, ending = self.split_ending(token.s)
-            s = u'\u00ab' + s + u'\u00bb' + ending
+            s = '\u00ab' + s + '\u00bb' + ending
             new_tokens.append(Token(s))
 
         return new_tokens
@@ -228,19 +229,19 @@ class DubstepTransform(Transform):
         tl = len(text) % 40
 
         if tl < 7:
-            return u't-t-t-t'
+            return 't-t-t-t'
         if tl < 9:
-            return u'V\u221eP V\u221eP'
+            return 'V\u221eP V\u221eP'
         if tl < 11:
-            return u'....vvvVV'
+            return '....vvvVV'
         if tl < 13:
-            return u'BWAAAaaT'
+            return 'BWAAAaaT'
 
         return (
-            u'B' +
-            (u'W' * int(tl / 4)) +
-            (u'A' * int(tl / 3)) +
-            (u'a' * int(tl / 4)))
+            'B' +
+            ('W' * int(tl / 4)) +
+            ('A' * int(tl / 3)) +
+            ('a' * int(tl / 4)))
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -256,18 +257,18 @@ class DubstepTransform(Transform):
                 # print i, c, new_string, current_string
                 if c == ' ':
                     if i % 2:
-                        current_string.append(u' ')
+                        current_string.append(' ')
                         current_string.append(
-                            self.bwaa(u''.join(current_string)))
+                            self.bwaa(''.join(current_string)))
 
                 if c == '\n':
-                    new_string.append(u''.join(current_string))
+                    new_string.append(''.join(current_string))
                     current_string = []
 
                 elif c in ('.!?'):
                     try:
                         if token.s[i+1] == ' ':
-                            new_string.append(u''.join(current_string))
+                            new_string.append(''.join(current_string))
                             current_string = []
                     except IndexError:
                         pass
@@ -275,10 +276,10 @@ class DubstepTransform(Transform):
                 current_string.append(c)
 
             if current_string:
-                new_string.append(u''.join(current_string))
+                new_string.append(''.join(current_string))
 
-            new_string = u' '.join(new_string)
-            new_string = new_string + u' ' + self.bwaa(new_string) + u'\u2757'
+            new_string = ' '.join(new_string)
+            new_string = new_string + ' ' + self.bwaa(new_string) + '\u2757'
 
             new_tokens.append(Token(new_string))
 
@@ -292,49 +293,49 @@ class ZombieTransform(Transform):
     desc = 'Zombie.'
 
     zombish = {
-        'c': u'ZZ',
-        'd': u'GB',
-        'e': u'HA',
-        'f': u'ZR',
-        'i': u'AR',
-        'j': u'GA',
-        'k': u'BG',
-        'l': u'MN',
-        'o': u'HR',
-        'p': u'BZ',
-        'q': u'GH',
-        'r': u'MZ',
-        's': u'RZ',
-        't': u'HG',
-        'u': u'NM',
-        'v': u'BB',
-        'w': u'ZM',
-        'x': u'ZB',
-        'y': u'RA',
+        'c': 'ZZ',
+        'd': 'GB',
+        'e': 'HA',
+        'f': 'ZR',
+        'i': 'AR',
+        'j': 'GA',
+        'k': 'BG',
+        'l': 'MN',
+        'o': 'HR',
+        'p': 'BZ',
+        'q': 'GH',
+        'r': 'MZ',
+        's': 'RZ',
+        't': 'HG',
+        'u': 'NM',
+        'v': 'BB',
+        'w': 'ZM',
+        'x': 'ZB',
+        'y': 'RA',
     }
 
     def last_bit(self, text=''):
         tl = len(text) % 40
 
         if tl < 7:
-            return u'CZCPT!'
+            return 'CZCPT!'
         if tl < 9:
-            return u'RAR!'
+            return 'RAR!'
         if tl < 11:
-            return u'RARRR!!!'
+            return 'RARRR!!!'
         if tl < 13:
-            return u'GRRRRRrrRR!!'
+            return 'GRRRRRrrRR!!'
         if tl < 20:
-            return u'BR-R-R-RAINS!'
-        return u''
+            return 'BR-R-R-RAINS!'
+        return ''
 
     def zombie_transform(self, text):
         if not text.strip():
             return text
 
-        new_string = u''.join([self.zombish.get(c, c) for c in text])
-        new_string = new_string.replace(u'.', u'\u2757')
-        new_string = new_string.replace(u'!', u'\u2757')
+        new_string = ''.join([self.zombish.get(c, c) for c in text])
+        new_string = new_string.replace('.', '\u2757')
+        new_string = new_string.replace('!', '\u2757')
         return new_string
 
     def transform(self, vartok, token_stream):
@@ -351,9 +352,9 @@ class ZombieTransform(Transform):
                     part = self.zombie_transform(part)
                 new_string.append(part)
 
-            new_string = u''.join(new_string)
+            new_string = ''.join(new_string)
             if new_string.strip():
-                new_string = new_string + u' ' + self.last_bit(new_string)
+                new_string = new_string + ' ' + self.last_bit(new_string)
                 new_string = new_string.strip()
             new_tokens.append(Token(new_string))
 
@@ -365,8 +366,8 @@ class RedactedTransform(Transform):
     desc = 'Redacts everything.'
 
     def transform(self, vartok, token_stream):
-        redact_map = dict((c, 'X') for c in string.ascii_uppercase)
-        redact_map.update(dict((c, 'x') for c in string.ascii_lowercase))
+        redact_map = {c: 'X' for c in string.ascii_uppercase}
+        redact_map.update({c: 'x' for c in string.ascii_lowercase})
 
         new_tokens = []
         for token in token_stream:
@@ -375,7 +376,7 @@ class RedactedTransform(Transform):
                 continue
 
             new_s = [redact_map.get(c, c) for c in token.s]
-            new_tokens.append(Token(u''.join(new_s)))
+            new_tokens.append(Token(''.join(new_s)))
 
         return new_tokens
 
@@ -392,7 +393,7 @@ class PirateTransform(Transform):
                 new_tokens.append(token)
                 continue
 
-            out = u''
+            out = ''
             for i, part in enumerate(vartok.tokenize(token.s)):
                 if i % 2 == 0:
                     out += self.pirate_transform(part)
@@ -403,35 +404,35 @@ class PirateTransform(Transform):
             # only if the string isn't entirely whitespace.
             if not self.is_whitespace(out):
                 s, ending = self.split_ending(out)
-                out = (s + u' ' + self.COLOR[len(out) % len(self.COLOR)] +
+                out = (s + ' ' + self.COLOR[len(out) % len(self.COLOR)] +
                        ending)
 
                 # This guarantees that every string has at least one
                 # unicode charater
                 if '!' not in out:
-                    out = out + u'!'
+                    out = out + '!'
 
                 # Replace all ! with related unicode character.
-                out = out.replace(u'!', u'\u2757')
+                out = out.replace('!', '\u2757')
 
             new_tokens.append(Token(out))
 
         return new_tokens
 
     COLOR = [
-        u'arr!',
-        u'arrRRr!',
-        u'arrRRRrrr!',
-        u'matey!',
-        u'me mateys!',
-        u'ahoy!',
-        u'aye!',
-        u'ye scalleywag!',
-        u'cap\'n!',
-        u'yo-ho-ho!',
-        u'shiver me timbers!',
-        u'ye landlubbers!',
-        u'prepare to be boarded!',
+        'arr!',
+        'arrRRr!',
+        'arrRRRrrr!',
+        'matey!',
+        'me mateys!',
+        'ahoy!',
+        'aye!',
+        'ye scalleywag!',
+        'cap\'n!',
+        'yo-ho-ho!',
+        'shiver me timbers!',
+        'ye landlubbers!',
+        'prepare to be boarded!',
         ]
 
     def wc(self, c):
@@ -508,9 +509,9 @@ class PirateTransform(Transform):
                 ending.insert(0, s[-1])
                 s = s[:-1]
             else:
-                return s, u''.join(ending)
+                return s, ''.join(ending)
 
-        return u'', ''.join(ending)
+        return '', ''.join(ending)
 
     def pirate_transform(self, s):
         """Transforms a token into Pirate.
@@ -585,7 +586,7 @@ class PirateTransform(Transform):
                 out.append(s[0])
                 s = s[1:]
 
-        return u''.join(out)
+        return ''.join(out)
 
 
 def collapse_whitespace(text):
@@ -691,12 +692,12 @@ def convert_pipeline(pipeline_spec):
         pipeline = [pipeline_parts[part] for part in pipeline_spec]
     except KeyError:
         raise InvalidPipeline('pipeline "%s" is not valid' %
-                              u','.join(pipeline_spec))
+                              ','.join(pipeline_spec))
 
     return pipeline
 
 
-class Translator(object):
+class Translator:
     """Translates a string using the specified pipeline"""
     def __init__(self, variable_formats, pipeline_spec):
         self.vartok = VariableTokenizer(variable_formats)
@@ -705,9 +706,6 @@ class Translator(object):
 
     def translate_string(self, s):
         """Translates string s and returns the new string"""
-        if PY2 and isinstance(s, str):
-            s = s.decode('utf-8')
-
         # Create the initial token
         tokens = [Token(s)]
 
@@ -747,4 +745,4 @@ class Translator(object):
             count += 1
 
         po.save()
-        return '{0}: Translated {1} messages.'.format(fname, count)
+        return '{}: Translated {} messages.'.format(fname, count)

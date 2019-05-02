@@ -1,14 +1,12 @@
 import re
 
-from dennis.minisix import textclass
 
-
-class _MockBlessedThing(textclass):
+class _MockBlessedThing(str):
     def __call__(self, s):
         return s
 
 
-class FauxTerminal(object):
+class FauxTerminal:
     def __getattr__(self, attr, default=None):
         return _MockBlessedThing()
 
@@ -19,7 +17,7 @@ except ImportError:
     Terminal = FauxTerminal
 
 
-class Format(object):
+class Format:
     """Variable format base class"""
     name = ''
     desc = ''
@@ -80,20 +78,20 @@ class PythonFormat(Format):
 
 
 def get_available_formats():
-    return dict(
-        (thing.name, thing)
+    return {
+        thing.name: thing
         for name, thing in globals().items()
         if (name.endswith('Format')
             and issubclass(thing, Format)
             and thing.name)
-    )
+    }
 
 
 class UnknownFormat(Exception):
     pass
 
 
-class VariableTokenizer(object):
+class VariableTokenizer:
     def __init__(self, formats=None):
         """
         :arg formats: List of variable formats
@@ -124,7 +122,7 @@ class VariableTokenizer(object):
                     self.formats.append(all_formats[fmt])
                 except KeyError:
                     raise UnknownFormat(
-                        '{0} is not a known variable format'.format(fmt))
+                        '{} is not a known variable format'.format(fmt))
 
             # Generate variable regexp
             self.vars_re = re.compile(
@@ -162,7 +160,7 @@ class VariableTokenizer(object):
                 tokens = set(tokens)
             return tokens
         except TypeError:
-            print('TYPEERROR: {0}'.format(repr(text)))
+            print('TYPEERROR: {}'.format(repr(text)))
 
     def is_token(self, text):
         """Is this text a variable?"""
@@ -210,9 +208,9 @@ def parse_pofile(fn_or_string):
 
     When polib parses a pofile, it captures the line number of the
     start of the block, but doesn't capture the original string for
-    the block. When you call str()/unicode() on the poentry, it
-    "reassembles" the block with textwrapped lines, so it returns
-    something substantially different than the original block. This is
+    the block. When you call str() on the poentry, it "reassembles"
+    the block with textwrapped lines, so it returns something
+    substantially different than the original block. This is
     problematic if we want to print out the block with the line
     numbers--one for each line.
 
@@ -251,7 +249,7 @@ def parse_pofile(fn_or_string):
             lines.pop()
 
         # Join them and voila!
-        poentry.original = textclass('').join(lines)
+        poentry.original = ''.join(lines)
 
     return parsed_pofile
 
@@ -264,6 +262,6 @@ def withlines(linenum, poentry_text):
     lines_with_nums = zip(range(start, start+100), poentry_text.splitlines())
 
     for line_no, line in lines_with_nums:
-        new_text.append(textclass(line_no) + textclass(':') + textclass(line))
+        new_text.append(str(line_no) + ':' + str(line))
 
-    return textclass('\n').join(new_text)
+    return '\n'.join(new_text)

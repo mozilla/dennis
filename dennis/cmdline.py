@@ -9,7 +9,6 @@ import click
 from dennis import __version__
 from dennis.linter import Linter
 from dennis.linter import get_lint_rules as get_linter_rules
-from dennis.minisix import PY2, textclass
 from dennis.templatelinter import TemplateLinter
 from dennis.templatelinter import get_lint_rules as get_template_linter_rules
 from dennis.tools import (
@@ -62,14 +61,6 @@ def err(*s):
     for part in parts:
         click.echo(part, nl=False, err=True)
     click.echo('')
-
-
-if PY2 and not sys.stdout.isatty():
-    # If it's Python2 and not a tty, then we need to encode the text
-    # type things as utf8 before spitting them out to stdout and
-    # stderr.
-    out = utf8_args(out)
-    err = utf8_args(err)
 
 
 def format_formats():
@@ -249,7 +240,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
     for fn in po_files:
         try:
             if not os.path.exists(fn):
-                raise click.UsageError(u'File "{fn}" does not exist.'.format(
+                raise click.UsageError('File "{fn}" does not exist.'.format(
                     fn=click.format_filename(fn)))
 
             if fn.endswith('.po'):
@@ -258,7 +249,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
                 results = templatelinter.verify_file(fn)
         except IOError as ioe:
             # This is not a valid .po file. So mark it as an error.
-            err(u'>>> Problem opening file: {fn}'.format(
+            err('>>> Problem opening file: {fn}'.format(
                 fn=click.format_filename(fn)))
             err(repr(ioe))
             out('')
@@ -281,7 +272,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
 
         if not quiet and not reporter:
             out(TERM.bold_green,
-                u'>>> Working on: {fn}'.format(fn=click.format_filename(fn)),
+                '>>> Working on: {fn}'.format(fn=click.format_filename(fn)),
                 TERM.normal)
 
         error_results = [res for res in results if res.kind == 'err']
@@ -298,7 +289,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
                 if reporter == 'line':
                     out(fn,
                         ':',
-                        textclass(msg.poentry.linenum),
+                        str(msg.poentry.linenum),
                         ':',
                         '0',
                         ':',
@@ -319,7 +310,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
                 if reporter == 'line':
                     out(fn,
                         ':',
-                        textclass(msg.poentry.linenum),
+                        str(msg.poentry.linenum),
                         ':',
                         '0',
                         ':',
@@ -416,19 +407,19 @@ def status(ctx, showuntranslated, showfuzzy, path):
     for fn in po_files:
         try:
             if not os.path.exists(fn):
-                raise IOError(u'File "{fn}" does not exist.'.format(
+                raise IOError('File "{fn}" does not exist.'.format(
                     fn=click.format_filename(fn)))
 
             pofile = parse_pofile(fn)
         except IOError as ioe:
-            err(u'>>> Problem opening file: {fn}'.format(
+            err('>>> Problem opening file: {fn}'.format(
                 fn=click.format_filename(fn)))
             err(repr(ioe))
             continue
 
         out('')
         out(TERM.bold_green,
-            u'>>> Working on: {fn}'.format(fn=click.format_filename(fn)),
+            '>>> Working on: {fn}'.format(fn=click.format_filename(fn)),
             TERM.normal)
 
         out('Metadata:')
@@ -468,17 +459,17 @@ def status(ctx, showuntranslated, showfuzzy, path):
         untranslated_total = len(pofile.untranslated_entries())
 
         out('Statistics:')
-        out('  Total strings:             {0}'.format(total_strings))
-        out('    Translated:              {0}'.format(translated_total))
-        out('    Untranslated:            {0}'.format(untranslated_total))
-        out('    Fuzzy:                   {0}'.format(fuzzy_total))
-        out('  Total translateable words: {0}'.format(total_words))
-        out('    Translated:              {0}'.format(translated_words))
-        out('    Untranslated:            {0}'.format(untranslated_words))
+        out('  Total strings:             {}'.format(total_strings))
+        out('    Translated:              {}'.format(translated_total))
+        out('    Untranslated:            {}'.format(untranslated_total))
+        out('    Fuzzy:                   {}'.format(fuzzy_total))
+        out('  Total translateable words: {}'.format(total_words))
+        out('    Translated:              {}'.format(translated_words))
+        out('    Untranslated:            {}'.format(untranslated_words))
         if untranslated_words == 0:
             out('  Percentage:                100% COMPLETE!')
         else:
-            out('  Percentage:                {0}%'.format(
+            out('  Percentage:                {}%'.format(
                 pofile.percent_translated()))
 
     ctx.exit(0)
@@ -523,8 +514,6 @@ def translate(ctx, varformat, pipeline, strings, path):
         # Args are strings to be translated
         for arg in path:
             data = translator.translate_string(arg)
-            if PY2:
-                data = data.encode('utf-8')
             out(data)
 
     elif path[0] == '-':
@@ -537,7 +526,7 @@ def translate(ctx, varformat, pipeline, strings, path):
         # Check all the paths first
         for arg in path:
             if not os.path.exists(arg):
-                raise click.UsageError(u'File {fn} does not exist.'.format(
+                raise click.UsageError('File {fn} does not exist.'.format(
                     fn=click.format_filename(arg)))
 
         for arg in path:
