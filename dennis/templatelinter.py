@@ -2,22 +2,19 @@ from dennis.tools import (
     VariableTokenizer,
     all_subclasses,
     parse_dennis_note,
-    parse_pofile
+    parse_pofile,
 )
-from dennis.linter import (
-    LintedEntry,
-    LintMessage
-)
+from dennis.linter import LintedEntry, LintMessage
 
 
-WARNING = 'warn'
-ERROR = 'err'
+WARNING = "warn"
+ERROR = "err"
 
 
 class TemplateLintRule:
-    num = ''
-    name = ''
-    desc = ''
+    num = ""
+    name = ""
+    desc = ""
 
     def lint(self, vartok, linted_entry):
         """Takes a linted entry and adds errors and warnings
@@ -27,15 +24,15 @@ class TemplateLintRule:
         :arg linted_entry: the LintedEntry to work on
 
         """
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class HardToReadNamesTLR(TemplateLintRule):
-    num = 'W500'
-    name = 'hardtoread'
-    desc = 'Looks for vars that are hard to read like o, O, 0, l, 1'
+    num = "W500"
+    name = "hardtoread"
+    desc = "Looks for vars that are hard to read like o, O, 0, l, 1"
 
-    hard_to_read = ('o', 'O', '0', 'l', '1')
+    hard_to_read = ("o", "O", "0", "l", "1")
 
     def lint(self, vartok, linted_entry):
         msgs = []
@@ -47,25 +44,29 @@ class HardToReadNamesTLR(TemplateLintRule):
                 continue
 
             msgid_tokens = vartok.extract_tokens(s)
-            msgid_tokens = [vartok.extract_variable_name(token)
-                            for token in msgid_tokens]
+            msgid_tokens = [
+                vartok.extract_variable_name(token) for token in msgid_tokens
+            ]
 
             for token in msgid_tokens:
                 if token in self.hard_to_read:
                     msgs.append(
                         LintMessage(
-                            WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            'hard to read variable name "{}"'.format(
-                                token),
-                            linted_entry.poentry)
+                            WARNING,
+                            linted_entry.poentry.linenum,
+                            0,
+                            self.num,
+                            'hard to read variable name "{}"'.format(token),
+                            linted_entry.poentry,
+                        )
                     )
         return msgs
 
 
 class OneCharNamesTLR(TemplateLintRule):
-    num = 'W501'
-    name = 'onechar'
-    desc = 'Looks for one character variable names'
+    num = "W501"
+    name = "onechar"
+    desc = "Looks for one character variable names"
 
     def lint(self, vartok, linted_entry):
         msgs = []
@@ -76,25 +77,29 @@ class OneCharNamesTLR(TemplateLintRule):
                 continue
 
             msgid_tokens = vartok.extract_tokens(s)
-            msgid_tokens = [vartok.extract_variable_name(token)
-                            for token in msgid_tokens]
+            msgid_tokens = [
+                vartok.extract_variable_name(token) for token in msgid_tokens
+            ]
 
             for token in msgid_tokens:
                 if len(token) == 1 and token.isalpha():
                     msgs.append(
                         LintMessage(
-                            WARNING, linted_entry.poentry.linenum, 0, self.num,
-                            'one character variable name "{}"'.format(
-                                token),
-                            linted_entry.poentry)
+                            WARNING,
+                            linted_entry.poentry.linenum,
+                            0,
+                            self.num,
+                            'one character variable name "{}"'.format(token),
+                            linted_entry.poentry,
+                        )
                     )
         return msgs
 
 
 class MultipleUnnamedVarsTLR(TemplateLintRule):
-    num = 'W502'
-    name = 'unnamed'
-    desc = 'Looks for multiple unnamed variables'
+    num = "W502"
+    name = "unnamed"
+    desc = "Looks for multiple unnamed variables"
 
     def lint(self, vartok, linted_entry):
         msgs = []
@@ -105,15 +110,20 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
                 continue
 
             msgid_tokens = vartok.extract_tokens(s, unique=False)
-            msgid_tokens = [vartok.extract_variable_name(token)
-                            for token in msgid_tokens]
+            msgid_tokens = [
+                vartok.extract_variable_name(token) for token in msgid_tokens
+            ]
 
-            if msgid_tokens.count('') > 1:
+            if msgid_tokens.count("") > 1:
                 msgs.append(
                     LintMessage(
-                        WARNING, linted_entry.poentry.linenum, 0, self.num,
-                        'multiple variables with no name.',
-                        linted_entry.poentry)
+                        WARNING,
+                        linted_entry.poentry.linenum,
+                        0,
+                        self.num,
+                        "multiple variables with no name.",
+                        linted_entry.poentry,
+                    )
                 )
         return msgs
 
@@ -151,7 +161,7 @@ class TemplateLinter:
 
         # Check the comment to see if what we should ignore.
         for lint_rule in self.rules:
-            if skip == '*' or lint_rule.num in skip:
+            if skip == "*" or lint_rule.num in skip:
                 continue
 
             msgs.extend(lint_rule.lint(self.vartok, linted_entry))

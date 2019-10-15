@@ -19,29 +19,30 @@ except ImportError:
 
 class Format:
     """Variable format base class"""
-    name = ''
-    desc = ''
-    regexp = ''
+
+    name = ""
+    desc = ""
+    regexp = ""
 
     identifier = None
 
     @classmethod
     def extract_variable_name(cls, text):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 # https://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
 # https://docs.python.org/2/library/string.html#format-string-syntax
 class PythonBraceFormat(Format):
-    name = 'python-brace-format'
+    name = "python-brace-format"
     desc = 'Python brace format (e.g. "{0}", "{foo}")'
 
     regexp = (
         # {}, {0}, {foo}, {foo:bar}, {foo:bar baz}
-        r'(?:\{[^\}]*?\})'
+        r"(?:\{[^\}]*?\})"
     )
 
-    identifier = re.compile(r'\{([^!:\}]*)')
+    identifier = re.compile(r"\{([^!:\}]*)")
 
     @classmethod
     def extract_variable_name(cls, text):
@@ -53,7 +54,7 @@ class PythonBraceFormat(Format):
 # https://www.gnu.org/software/gettext/manual/html_node/python_002dformat.html#python_002dformat
 # https://docs.python.org/2/library/stdtypes.html#string-formatting-operations
 class PythonFormat(Format):
-    name = 'python-format'
+    name = "python-format"
     desc = 'Python percent format (e.g. "%s", "%(foo)s")'
 
     regexp = (
@@ -61,29 +62,25 @@ class PythonFormat(Format):
         # Note: This doesn't support %E or %F because of problems
         # with false positives and urlencoding. Theoretically those
         # aren't getting used in gettext contexts anyhow.
-        r'(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs])'
+        r"(?:%(?:[(]\S+?[)])?[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs])"
     )
 
     identifier = re.compile(
-        r'%'
-        r'(?:' + r'\((\S+?)\)' + r')?'
-        r'[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs]'
+        r"%" r"(?:" + r"\((\S+?)\)" + r")?" r"[#0+-]?[\.\d\*]*[hlL]?[diouxefGgcrs]"
     )
 
     @classmethod
     def extract_variable_name(cls, text):
         identifier = cls.identifier.match(text)
         if identifier:
-            return identifier.group(1) or ''
+            return identifier.group(1) or ""
 
 
 def get_available_formats():
     return {
         thing.name: thing
         for name, thing in globals().items()
-        if (name.endswith('Format')
-            and issubclass(thing, Format)
-            and thing.name)
+        if (name.endswith("Format") and issubclass(thing, Format) and thing.name)
     }
 
 
@@ -121,14 +118,11 @@ class VariableTokenizer:
                 try:
                     self.formats.append(all_formats[fmt])
                 except KeyError:
-                    raise UnknownFormat(
-                        '{} is not a known variable format'.format(fmt))
+                    raise UnknownFormat("{} is not a known variable format".format(fmt))
 
             # Generate variable regexp
             self.vars_re = re.compile(
-                r'(' +
-                '|'.join([vt.regexp for vt in self.formats]) +
-                r')'
+                r"(" + "|".join([vt.regexp for vt in self.formats]) + r")"
             )
 
     def contains(self, fmt):
@@ -160,7 +154,7 @@ class VariableTokenizer:
                 tokens = set(tokens)
             return tokens
         except TypeError:
-            print('TYPEERROR: {}'.format(repr(text)))
+            print("TYPEERROR: {}".format(repr(text)))
 
     def is_token(self, text):
         """Is this text a variable?"""
@@ -184,7 +178,7 @@ def all_subclasses(cls):
 # Matches:
 # "dennis-ignore: *" to skip all the rules
 # "dennis-ignore: E201,..." to ignore specific rules
-DENNIS_NOTE_RE = re.compile(r'dennis-ignore:\s+(\*|[EW0-9,]+)')
+DENNIS_NOTE_RE = re.compile(r"dennis-ignore:\s+(\*|[EW0-9,]+)")
 
 
 def parse_dennis_note(text):
@@ -197,10 +191,10 @@ def parse_dennis_note(text):
         return []
 
     match = match.group(1).strip()
-    if match == '*':
-        return '*'
+    if match == "*":
+        return "*"
 
-    return [item for item in match.split(',') if item]
+    return [item for item in match.split(",") if item]
 
 
 def parse_pofile(fn_or_string):
@@ -229,8 +223,8 @@ def parse_pofile(fn_or_string):
     # accurately print out what was in the pofile because polib will
     # reassembled what it parsed, but it's not the same.
     if _is_file(fn_or_string):
-        enc = detect_encoding(fn_or_string, 'pofile')
-        fp = io.open(fn_or_string, 'rt', encoding=enc)
+        enc = detect_encoding(fn_or_string, "pofile")
+        fp = io.open(fn_or_string, "rt", encoding=enc)
     else:
         fp = fn_or_string.splitlines(True)
 
@@ -240,16 +234,16 @@ def parse_pofile(fn_or_string):
         # Grab the lines that make up the poentry.
         # Note: linenum is 1-based, so we convert it to 0-based.
         try:
-            lines = fp[poentry.linenum-1:entries[i+1].linenum-1]
+            lines = fp[poentry.linenum - 1 : entries[i + 1].linenum - 1]
         except IndexError:
-            lines = fp[poentry.linenum-1:]
+            lines = fp[poentry.linenum - 1 :]
 
         # Nix blank lines at the end.
         while lines and not lines[-1].strip():
             lines.pop()
 
         # Join them and voila!
-        poentry.original = ''.join(lines)
+        poentry.original = "".join(lines)
 
     return parsed_pofile
 
@@ -259,9 +253,9 @@ def withlines(linenum, poentry_text):
     start = linenum
     new_text = []
 
-    lines_with_nums = zip(range(start, start+100), poentry_text.splitlines())
+    lines_with_nums = zip(range(start, start + 100), poentry_text.splitlines())
 
     for line_no, line in lines_with_nums:
-        new_text.append(str(line_no) + ':' + str(line))
+        new_text.append(str(line_no) + ":" + str(line))
 
-    return '\n'.join(new_text)
+    return "\n".join(new_text)

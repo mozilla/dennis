@@ -11,3 +11,8 @@ clean:  ## Clean build artifacts
 	rm -rf docs/_build/*
 	find dennis/ tests/ -name __pycache__ | xargs rm -rf
 	find dennis/ tests/ -name '*.pyc' | xargs rm -rf
+
+.PHONY: lint
+lint:  ## Lint and black reformat files
+	black --target-version=py35 dennis tests
+	flake8 dennis tests

@@ -16,9 +16,9 @@ msgstr ""
 
 
 def build_po_string(data):
-    return POFILE_HEADER + '\n' + data
+    return POFILE_HEADER + "\n" + data
 
 
 def nix_header(pot_file):
     """Nix the POT file header since it changes and we don't care"""
-    return pot_file[pot_file.find('\n\n')+2:]
+    return pot_file[pot_file.find("\n\n") + 2 :]

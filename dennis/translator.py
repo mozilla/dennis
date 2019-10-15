@@ -13,13 +13,13 @@ DEBUG = False
 
 def debug(*args):
     if DEBUG:
-        print(' '.join([str(arg) for arg in args]))
+        print(" ".join([str(arg) for arg in args]))
 
 
 class Token:
-    def __init__(self, s, type='text', mutable=True):
+    def __init__(self, s, type="text", mutable=True):
         if not isinstance(s, str):
-            s = s.decode('utf-8')
+            s = s.decode("utf-8")
         self.s = s
         self.type = type
         self.mutable = mutable
@@ -28,7 +28,7 @@ class Token:
         return self.s
 
     def __repr__(self):
-        return '<{} {}>'.format(self.type, repr(self.s))
+        return "<{} {}>".format(self.type, repr(self.s))
 
     def __eq__(self, token):
         return (
@@ -42,8 +42,8 @@ class Token:
 
 
 class Transform:
-    name = ''
-    desc = ''
+    name = ""
+    desc = ""
 
     def transform(self, vartok, token_stream):
         """Takes a token stream and returns a token stream
@@ -56,20 +56,20 @@ class Transform:
         :return: iterable of transformed tokens
 
         """
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class EmptyTransform(Transform):
-    name = 'empty'
-    desc = 'Returns empty strings.'
+    name = "empty"
+    desc = "Returns empty strings."
 
     def transform(self, vartok, token_stream):
-        return [Token('')]
+        return [Token("")]
 
 
 class DoubleTransform(Transform):
-    name = 'double'
-    desc = 'Doubles all vowels in a string.'
+    name = "double"
+    desc = "Doubles all vowels in a string."
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -79,17 +79,17 @@ class DoubleTransform(Transform):
                 continue
 
             s = token.s
-            for char in 'aeiouyAEIOUY':
+            for char in "aeiouyAEIOUY":
                 s = s.replace(char, char + char)
 
-            new_tokens.append(Token(''.join(s)))
+            new_tokens.append(Token("".join(s)))
 
         return new_tokens
 
 
 class XXXTransform(Transform):
-    name = 'xxx'
-    desc = 'Adds xxx before and after lines in a string.'
+    name = "xxx"
+    desc = "Adds xxx before and after lines in a string."
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -102,10 +102,10 @@ class XXXTransform(Transform):
             s = token.s
             for line in s.splitlines(True):
                 line, ending = self.split_ending(line)
-                line = 'xxx' + line + 'xxx' + ending
+                line = "xxx" + line + "xxx" + ending
                 new_s.append(line)
 
-            new_tokens.append(Token(''.join(new_s)))
+            new_tokens.append(Token("".join(new_s)))
 
         return new_tokens
 
@@ -116,17 +116,17 @@ class XXXTransform(Transform):
                 ending.insert(0, s[-1])
                 s = s[:-1]
             else:
-                return s, ''.join(ending)
+                return s, "".join(ending)
 
-        return '', ''.join(ending)
+        return "", "".join(ending)
 
 
 class HahaTransform(Transform):
-    name = 'haha'
-    desc = 'Adds haha! before sentences in a string.'
+    name = "haha"
+    desc = "Adds haha! before sentences in a string."
 
     def transform(self, vartok, token_stream):
-        haha = 'Haha\u2757'
+        haha = "Haha\u2757"
 
         new_tokens = []
         for token in token_stream:
@@ -134,27 +134,27 @@ class HahaTransform(Transform):
                 new_tokens.append(token)
                 continue
 
-            new_s = [haha + ' ']
+            new_s = [haha + " "]
 
             for i, c in enumerate(token.s):
-                if c in ('.!?'):
+                if c in (".!?"):
                     try:
-                        if token.s[i+1] == ' ':
+                        if token.s[i + 1] == " ":
                             new_s.append(c)
-                            new_s.append(' ')
+                            new_s.append(" ")
                             new_s.append(haha)
                             continue
                     except IndexError:
                         pass
-                if c == '\n':
+                if c == "\n":
                     new_s.append(c)
                     new_s.append(haha)
-                    new_s.append(' ')
+                    new_s.append(" ")
                     continue
 
                 new_s.append(c)
 
-            new_tokens.append(Token(''.join(new_s)))
+            new_tokens.append(Token("".join(new_s)))
 
         return new_tokens
 
@@ -165,14 +165,14 @@ class HahaTransform(Transform):
                 ending.insert(0, s[-1])
                 s = s[:-1]
             else:
-                return s, ''.join(ending)
+                return s, "".join(ending)
 
-        return '', ''.join(ending)
+        return "", "".join(ending)
 
 
 class AngleQuoteTransform(XXXTransform):
-    name = 'anglequote'
-    desc = 'Encloses string in unicode angle quotes.'
+    name = "anglequote"
+    desc = "Encloses string in unicode angle quotes."
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -182,15 +182,15 @@ class AngleQuoteTransform(XXXTransform):
                 continue
 
             s, ending = self.split_ending(token.s)
-            s = '\u00ab' + s + '\u00bb' + ending
+            s = "\u00ab" + s + "\u00bb" + ending
             new_tokens.append(Token(s))
 
         return new_tokens
 
 
 class ShoutyTransform(Transform):
-    name = 'shouty'
-    desc = 'Translates into all caps.'
+    name = "shouty"
+    desc = "Translates into all caps."
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -205,8 +205,8 @@ class ShoutyTransform(Transform):
 
 
 class ReverseTransform(Transform):
-    name = 'reverse'
-    desc = 'Reverses strings for RTL.'
+    name = "reverse"
+    desc = "Reverses strings for RTL."
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -221,27 +221,23 @@ class ReverseTransform(Transform):
 
 
 class DubstepTransform(Transform):
-    name = 'dubstep'
-    desc = 'Translates into written form of dubstep.'
+    name = "dubstep"
+    desc = "Translates into written form of dubstep."
 
-    def bwaa(self, text=''):
+    def bwaa(self, text=""):
         """BWAAs based on how far into the string we are"""
         tl = len(text) % 40
 
         if tl < 7:
-            return 't-t-t-t'
+            return "t-t-t-t"
         if tl < 9:
-            return 'V\u221eP V\u221eP'
+            return "V\u221eP V\u221eP"
         if tl < 11:
-            return '....vvvVV'
+            return "....vvvVV"
         if tl < 13:
-            return 'BWAAAaaT'
+            return "BWAAAaaT"
 
-        return (
-            'B' +
-            ('W' * int(tl / 4)) +
-            ('A' * int(tl / 3)) +
-            ('a' * int(tl / 4)))
+        return "B" + ("W" * int(tl / 4)) + ("A" * int(tl / 3)) + ("a" * int(tl / 4))
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -255,20 +251,19 @@ class DubstepTransform(Transform):
 
             for i, c in enumerate(token.s):
                 # print i, c, new_string, current_string
-                if c == ' ':
+                if c == " ":
                     if i % 2:
-                        current_string.append(' ')
-                        current_string.append(
-                            self.bwaa(''.join(current_string)))
+                        current_string.append(" ")
+                        current_string.append(self.bwaa("".join(current_string)))
 
-                if c == '\n':
-                    new_string.append(''.join(current_string))
+                if c == "\n":
+                    new_string.append("".join(current_string))
                     current_string = []
 
-                elif c in ('.!?'):
+                elif c in (".!?"):
                     try:
-                        if token.s[i+1] == ' ':
-                            new_string.append(''.join(current_string))
+                        if token.s[i + 1] == " ":
+                            new_string.append("".join(current_string))
                             current_string = []
                     except IndexError:
                         pass
@@ -276,10 +271,10 @@ class DubstepTransform(Transform):
                 current_string.append(c)
 
             if current_string:
-                new_string.append(''.join(current_string))
+                new_string.append("".join(current_string))
 
-            new_string = ' '.join(new_string)
-            new_string = new_string + ' ' + self.bwaa(new_string) + '\u2757'
+            new_string = " ".join(new_string)
+            new_string = new_string + " " + self.bwaa(new_string) + "\u2757"
 
             new_tokens.append(Token(new_string))
 
@@ -289,53 +284,53 @@ class DubstepTransform(Transform):
 class ZombieTransform(Transform):
     # Inspired by
     # http://forum.rpg.net/showthread.php?218042-Necro-Urban-Dead-The-zombie-speech-project/
-    name = 'zombie'
-    desc = 'Zombie.'
+    name = "zombie"
+    desc = "Zombie."
 
     zombish = {
-        'c': 'ZZ',
-        'd': 'GB',
-        'e': 'HA',
-        'f': 'ZR',
-        'i': 'AR',
-        'j': 'GA',
-        'k': 'BG',
-        'l': 'MN',
-        'o': 'HR',
-        'p': 'BZ',
-        'q': 'GH',
-        'r': 'MZ',
-        's': 'RZ',
-        't': 'HG',
-        'u': 'NM',
-        'v': 'BB',
-        'w': 'ZM',
-        'x': 'ZB',
-        'y': 'RA',
+        "c": "ZZ",
+        "d": "GB",
+        "e": "HA",
+        "f": "ZR",
+        "i": "AR",
+        "j": "GA",
+        "k": "BG",
+        "l": "MN",
+        "o": "HR",
+        "p": "BZ",
+        "q": "GH",
+        "r": "MZ",
+        "s": "RZ",
+        "t": "HG",
+        "u": "NM",
+        "v": "BB",
+        "w": "ZM",
+        "x": "ZB",
+        "y": "RA",
     }
 
-    def last_bit(self, text=''):
+    def last_bit(self, text=""):
         tl = len(text) % 40
 
         if tl < 7:
-            return 'CZCPT!'
+            return "CZCPT!"
         if tl < 9:
-            return 'RAR!'
+            return "RAR!"
         if tl < 11:
-            return 'RARRR!!!'
+            return "RARRR!!!"
         if tl < 13:
-            return 'GRRRRRrrRR!!'
+            return "GRRRRRrrRR!!"
         if tl < 20:
-            return 'BR-R-R-RAINS!'
-        return ''
+            return "BR-R-R-RAINS!"
+        return ""
 
     def zombie_transform(self, text):
         if not text.strip():
             return text
 
-        new_string = ''.join([self.zombish.get(c, c) for c in text])
-        new_string = new_string.replace('.', '\u2757')
-        new_string = new_string.replace('!', '\u2757')
+        new_string = "".join([self.zombish.get(c, c) for c in text])
+        new_string = new_string.replace(".", "\u2757")
+        new_string = new_string.replace("!", "\u2757")
         return new_string
 
     def transform(self, vartok, token_stream):
@@ -352,9 +347,9 @@ class ZombieTransform(Transform):
                     part = self.zombie_transform(part)
                 new_string.append(part)
 
-            new_string = ''.join(new_string)
+            new_string = "".join(new_string)
             if new_string.strip():
-                new_string = new_string + ' ' + self.last_bit(new_string)
+                new_string = new_string + " " + self.last_bit(new_string)
                 new_string = new_string.strip()
             new_tokens.append(Token(new_string))
 
@@ -362,12 +357,12 @@ class ZombieTransform(Transform):
 
 
 class RedactedTransform(Transform):
-    name = 'redacted'
-    desc = 'Redacts everything.'
+    name = "redacted"
+    desc = "Redacts everything."
 
     def transform(self, vartok, token_stream):
-        redact_map = {c: 'X' for c in string.ascii_uppercase}
-        redact_map.update({c: 'x' for c in string.ascii_lowercase})
+        redact_map = {c: "X" for c in string.ascii_uppercase}
+        redact_map.update({c: "x" for c in string.ascii_lowercase})
 
         new_tokens = []
         for token in token_stream:
@@ -376,14 +371,14 @@ class RedactedTransform(Transform):
                 continue
 
             new_s = [redact_map.get(c, c) for c in token.s]
-            new_tokens.append(Token(''.join(new_s)))
+            new_tokens.append(Token("".join(new_s)))
 
         return new_tokens
 
 
 class PirateTransform(Transform):
-    name = 'pirate'
-    desc = 'Translates text into Pirate!'
+    name = "pirate"
+    desc = "Translates text into Pirate!"
 
     def transform(self, vartok, token_stream):
         new_tokens = []
@@ -393,7 +388,7 @@ class PirateTransform(Transform):
                 new_tokens.append(token)
                 continue
 
-            out = ''
+            out = ""
             for i, part in enumerate(vartok.tokenize(token.s)):
                 if i % 2 == 0:
                     out += self.pirate_transform(part)
@@ -404,45 +399,44 @@ class PirateTransform(Transform):
             # only if the string isn't entirely whitespace.
             if not self.is_whitespace(out):
                 s, ending = self.split_ending(out)
-                out = (s + ' ' + self.COLOR[len(out) % len(self.COLOR)] +
-                       ending)
+                out = s + " " + self.COLOR[len(out) % len(self.COLOR)] + ending
 
                 # This guarantees that every string has at least one
                 # unicode charater
-                if '!' not in out:
-                    out = out + '!'
+                if "!" not in out:
+                    out = out + "!"
 
                 # Replace all ! with related unicode character.
-                out = out.replace('!', '\u2757')
+                out = out.replace("!", "\u2757")
 
             new_tokens.append(Token(out))
 
         return new_tokens
 
     COLOR = [
-        'arr!',
-        'arrRRr!',
-        'arrRRRrrr!',
-        'matey!',
-        'me mateys!',
-        'ahoy!',
-        'aye!',
-        'ye scalleywag!',
-        'cap\'n!',
-        'yo-ho-ho!',
-        'shiver me timbers!',
-        'ye landlubbers!',
-        'prepare to be boarded!',
-        ]
+        "arr!",
+        "arrRRr!",
+        "arrRRRrrr!",
+        "matey!",
+        "me mateys!",
+        "ahoy!",
+        "aye!",
+        "ye scalleywag!",
+        "cap'n!",
+        "yo-ho-ho!",
+        "shiver me timbers!",
+        "ye landlubbers!",
+        "prepare to be boarded!",
+    ]
 
     def wc(self, c):
-        return c == '\'' or c in string.ascii_letters
+        return c == "'" or c in string.ascii_letters
 
     def nwc(self, c):
         return not self.wc(c)
 
     def is_whitespace(self, s):
-        return re.match('^\\s*$', s) is not None
+        return re.match("^\\s*$", s) is not None
 
     # List of transform rules. The tuples have:
     #
@@ -458,48 +452,44 @@ class PirateTransform(Transform):
         # INW?, NIW?, match, WC?, NW?, replacement
         # Anti-replacements: need these so that we make sure these words
         # don't get screwed up by later rules.
-        (False, True, 'need', False, True, 'need'),
-        (False, True, 'Need', False, True, 'Need'),
-
+        (False, True, "need", False, True, "need"),
+        (False, True, "Need", False, True, "Need"),
         # Replace entire words
-        (False, True, 'add-on', False, True, 'bilge rat'),
-        (False, True, 'add-ons', False, True, 'bilge rats'),
-        (False, True, 'are', False, True, 'bee'),
-        (False, True, 'browser', False, True, 'corsairr'),
-        (False, True, 'for', False, True, 'fer'),
-        (False, True, 'Hi', False, True, 'H\'ello'),
-        (False, True, 'my', False, True, 'me'),
-        (False, True, 'no', False, True, 'nay'),
-        (False, True, 'of', False, True, 'o\''),
-        (False, True, 'over', False, True, 'o\'err'),
-        (False, True, 'plugin', False, True, 'mug o\' grog'),
-        (False, True, 'plugins', False, True, 'mugs o\' grog'),
-        (False, True, 'program', False, True, 'Jolly Rogerr'),
-        (False, True, 'the', False, True, 'th\''),
-        (False, True, 'there', False, True, 'tharr'),
-        (False, True, 'want', False, True, 'wants'),
-        (False, True, 'where', False, True, '\'erre'),
-        (False, True, 'with', False, True, 'wit\''),
-        (False, True, 'yes', False, True, 'aye'),
-        (False, True, 'you', False, True, 'ye\''),
-        (False, True, 'You', False, True, 'Ye\''),
-        (False, True, 'your', False, True, 'yerr'),
-        (False, True, 'Your', False, True, 'Yerr'),
-
+        (False, True, "add-on", False, True, "bilge rat"),
+        (False, True, "add-ons", False, True, "bilge rats"),
+        (False, True, "are", False, True, "bee"),
+        (False, True, "browser", False, True, "corsairr"),
+        (False, True, "for", False, True, "fer"),
+        (False, True, "Hi", False, True, "H'ello"),
+        (False, True, "my", False, True, "me"),
+        (False, True, "no", False, True, "nay"),
+        (False, True, "of", False, True, "o'"),
+        (False, True, "over", False, True, "o'err"),
+        (False, True, "plugin", False, True, "mug o' grog"),
+        (False, True, "plugins", False, True, "mugs o' grog"),
+        (False, True, "program", False, True, "Jolly Rogerr"),
+        (False, True, "the", False, True, "th'"),
+        (False, True, "there", False, True, "tharr"),
+        (False, True, "want", False, True, "wants"),
+        (False, True, "where", False, True, "'erre"),
+        (False, True, "with", False, True, "wit'"),
+        (False, True, "yes", False, True, "aye"),
+        (False, True, "you", False, True, "ye'"),
+        (False, True, "You", False, True, "Ye'"),
+        (False, True, "your", False, True, "yerr"),
+        (False, True, "Your", False, True, "Yerr"),
         # Prefixes
-        (False, True, 'hel', True, False, '\'el'),
-        (False, True, 'Hel', True, False, '\'el'),
-
+        (False, True, "hel", True, False, "'el"),
+        (False, True, "Hel", True, False, "'el"),
         # Mid-word
-        (True, False, 'er', True, False, 'arr'),
-
+        (True, False, "er", True, False, "arr"),
         # Suffixes
-        (True, False, 'a', False, True, 'ar'),
-        (True, False, 'ed', False, True, '\'d'),
-        (True, False, 'ing', False, True, 'in\''),
-        (True, False, 'ort', False, True, 'arrt'),
-        (True, False, 'r', False, True, 'rr'),
-        (True, False, 'w', False, True, 'ww'),
+        (True, False, "a", False, True, "ar"),
+        (True, False, "ed", False, True, "'d"),
+        (True, False, "ing", False, True, "in'"),
+        (True, False, "ort", False, True, "arrt"),
+        (True, False, "r", False, True, "rr"),
+        (True, False, "w", False, True, "ww"),
     )
 
     def split_ending(self, s):
@@ -509,9 +499,9 @@ class PirateTransform(Transform):
                 ending.insert(0, s[-1])
                 s = s[:-1]
             else:
-                return s, ''.join(ending)
+                return s, "".join(ending)
 
-        return '', ''.join(ending)
+        return "", "".join(ending)
 
     def pirate_transform(self, s):
         """Transforms a token into Pirate.
@@ -527,7 +517,7 @@ class PirateTransform(Transform):
 
         # TODO: This is awful--better to do a real lexer
         while s:
-            if s.startswith(('.', '!', '?')):
+            if s.startswith((".", "!", "?")):
                 in_word = False
                 out.append(s[0])
                 s = s[1:]
@@ -538,16 +528,16 @@ class PirateTransform(Transform):
             for mem in self.TRANSFORM:
                 # Match inside a word? (Not a prefix.)
                 if in_word and not mem[0]:
-                    debug(mem, 'not in word')
+                    debug(mem, "not in word")
                     continue
 
                 # Not match inside a word? (Prefix.)
                 if not in_word and not mem[1]:
-                    debug(mem, 'in word')
+                    debug(mem, "in word")
                     continue
 
                 if not s.startswith(mem[2]):
-                    debug(mem, 'not match')
+                    debug(mem, "not match")
                     continue
 
                 # Check the character after the match to see if it's a
@@ -555,12 +545,12 @@ class PirateTransform(Transform):
                 try:
                     # WC: word character
                     if mem[3] and not self.wc(s[len(mem[2])]):
-                        debug(mem, 'not wc')
+                        debug(mem, "not wc")
                         continue
                 except IndexError:
                     # We don't count EOS as a word character.
                     if mem[3]:
-                        debug(mem, 'not wc')
+                        debug(mem, "not wc")
                         continue
 
                 # Check the character after the match to see if it's not a
@@ -568,16 +558,16 @@ class PirateTransform(Transform):
                 try:
                     # NW: not word character
                     if mem[4] and not self.nwc(s[len(mem[2])]):
-                        debug(mem, 'wc')
+                        debug(mem, "wc")
                         continue
                 except IndexError:
                     # We count EOS as a non-word character.
                     if not mem[4]:
-                        debug(mem, 'wc')
+                        debug(mem, "wc")
                         continue
 
                 out.append(mem[5])
-                s = s[len(mem[2]):]
+                s = s[len(mem[2]) :]
                 in_word = True
                 break
 
@@ -586,16 +576,16 @@ class PirateTransform(Transform):
                 out.append(s[0])
                 s = s[1:]
 
-        return ''.join(out)
+        return "".join(out)
 
 
 def collapse_whitespace(text):
-    return re.compile(r'\s+', re.UNICODE).sub(' ', text).strip()
+    return re.compile(r"\s+", re.UNICODE).sub(" ", text).strip()
 
 
 class HTMLExtractorTransform(HTMLParser, Transform):
-    name = 'html'
-    desc = 'Tokenizes HTML bits so only text is translated.'
+    name = "html"
+    desc = "Tokenizes HTML bits so only text is translated."
 
     def __init__(self):
         HTMLParser.__init__(self)
@@ -621,52 +611,51 @@ class HTMLExtractorTransform(HTMLParser, Transform):
 
     def handle_starttag(self, tag, attrs, closed=False):
         # style and script contents should be immutable
-        if tag in ('style', 'script'):
+        if tag in ("style", "script"):
             self.immutable_data_section = tag
 
         # We want to translate alt and title values, but that's
         # it. So this gets a little goofy looking token-wise.
 
-        s = '<' + tag
+        s = "<" + tag
         for name, val in attrs:
-            s += ' '
+            s += " "
             s += name
             s += '="'
 
-            if name in ['alt', 'title', 'placeholder']:
-                self.new_tokens.append(Token(s, 'html', False))
+            if name in ["alt", "title", "placeholder"]:
+                self.new_tokens.append(Token(s, "html", False))
                 if val:
                     self.new_tokens.append(Token(val))
-                s = ''
+                s = ""
             elif val:
                 s += val
             s += '"'
         if closed:
-            s += ' /'
-        s += '>'
+            s += " /"
+        s += ">"
 
         if s:
-            self.new_tokens.append(Token(s, 'html', False))
+            self.new_tokens.append(Token(s, "html", False))
 
     def handle_startendtag(self, tag, attrs):
         self.handle_starttag(tag, attrs, closed=True)
 
     def handle_endtag(self, tag):
         self.immutable_data_section = None
-        self.new_tokens.append(Token('</' + tag + '>', 'html', False))
+        self.new_tokens.append(Token("</" + tag + ">", "html", False))
 
     def handle_data(self, data):
         if self.immutable_data_section:
-            self.new_tokens.append(Token(data, self.immutable_data_section,
-                                         False))
+            self.new_tokens.append(Token(data, self.immutable_data_section, False))
         else:
             self.new_tokens.append(Token(collapse_whitespace(data)))
 
     def handle_charref(self, name):
-        self.new_tokens.append(Token('&#' + name + ';', 'html', False))
+        self.new_tokens.append(Token("&#" + name + ";", "html", False))
 
     def handle_entityref(self, name):
-        self.new_tokens.append(Token('&' + name + ';', 'html', False))
+        self.new_tokens.append(Token("&" + name + ";", "html", False))
 
 
 def get_available_pipeline_parts():
@@ -681,6 +670,7 @@ def get_available_pipeline_parts():
 
 class InvalidPipeline(Exception):
     """Raised when the pipeline spec contains invalid parts"""
+
     pass
 
 
@@ -691,14 +681,14 @@ def convert_pipeline(pipeline_spec):
     try:
         pipeline = [pipeline_parts[part] for part in pipeline_spec]
     except KeyError:
-        raise InvalidPipeline('pipeline "%s" is not valid' %
-                              ','.join(pipeline_spec))
+        raise InvalidPipeline('pipeline "%s" is not valid' % ",".join(pipeline_spec))
 
     return pipeline
 
 
 class Translator:
     """Translates a string using the specified pipeline"""
+
     def __init__(self, variable_formats, pipeline_spec):
         self.vartok = VariableTokenizer(variable_formats)
         self.pipeline_spec = pipeline_spec
@@ -715,7 +705,7 @@ class Translator:
             tokens = part.transform(self.vartok, tokens)
 
         # Join all the bits together
-        return ''.join([token.s for token in tokens])
+        return "".join([token.s for token in tokens])
 
     def translate_file(self, fname):
         """Translates the po file at fname
@@ -727,22 +717,20 @@ class Translator:
         po = polib.pofile(fname)
 
         # FIXME - This might be a bit goofy
-        po.metadata['Language'] = ",".join(self.pipeline_spec)
-        po.metadata['Plural-Forms'] = 'nplurals=2; plural= n != 1'
-        po.metadata['Content-Type'] = 'text/plain; charset=UTF-8'
+        po.metadata["Language"] = ",".join(self.pipeline_spec)
+        po.metadata["Plural-Forms"] = "nplurals=2; plural= n != 1"
+        po.metadata["Content-Type"] = "text/plain; charset=UTF-8"
         count = 0
         for entry in po:
             if entry.msgid_plural:
-                entry.msgstr_plural[0] = self.translate_string(
-                    entry.msgid)
-                entry.msgstr_plural[1] = self.translate_string(
-                    entry.msgid_plural)
+                entry.msgstr_plural[0] = self.translate_string(entry.msgid)
+                entry.msgstr_plural[1] = self.translate_string(entry.msgid_plural)
             else:
                 entry.msgstr = self.translate_string(entry.msgid)
 
-            if 'fuzzy' in entry.flags:
-                entry.flags.remove('fuzzy')  # clear the fuzzy flag
+            if "fuzzy" in entry.flags:
+                entry.flags.remove("fuzzy")  # clear the fuzzy flag
             count += 1
 
         po.save()
-        return '{}: Translated {} messages.'.format(fname, count)
+        return "{}: Translated {} messages.".format(fname, count)
