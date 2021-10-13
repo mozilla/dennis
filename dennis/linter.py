@@ -488,6 +488,32 @@ class MismatchedHTMLLintRule(LintRule):
         return msgs
 
 
+class EmptyLintRule(LintRule):
+    num = "W304"
+    name = "empty"
+    desc = "Untranslated string"
+
+    def lint(self, vartok, linted_entry):
+        msgs = []
+
+        for trstr in linted_entry.strs:
+            if trstr.msgstr_string:
+                continue
+
+            msgs.append(
+                LintMessage(
+                    WARNING,
+                    linted_entry.poentry.linenum,
+                    0,
+                    self.num,
+                    "String is untranslated",
+                    linted_entry.poentry,
+                )
+            )
+
+        return msgs
+
+
 class InvalidVarsLintRule(LintRule):
     num = "E201"
     name = "invalidvars"
@@ -580,7 +606,9 @@ class Linter:
         """
         po = parse_pofile(filename_or_string)
         msgs = []
-        for entry in po.translated_entries():
+        for entry in po:
+            if entry.fuzzy or entry.obsolete:
+                continue
             msgs.extend(self.lint_poentry(entry))
 
         return msgs
