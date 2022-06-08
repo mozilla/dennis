@@ -1,12 +1,11 @@
 -e .
 
 # tools
-black==19.3b0 ; python_version >= '3.6'
-check-manifest==0.37
-flake8==3.7.8
-pytest==3.7.2
-pytest-wholenodeid==0.2
-Sphinx==1.7.7
-tox==3.2.1
-twine==1.11.0
-wheel==0.31.1
+black==22.3.0
+check-manifest==0.48
+flake8==4.0.1
+pytest==7.1.2
+Sphinx==4.3.2
+tox==3.25.0
+twine==4.0.1
+wheel==0.37.1
