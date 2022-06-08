@@ -12,8 +12,6 @@ from dennis.linter import get_lint_rules as get_linter_rules
 from dennis.templatelinter import TemplateLinter
 from dennis.templatelinter import get_lint_rules as get_template_linter_rules
 from dennis.tools import (
-    FauxTerminal,
-    Terminal,
     get_available_formats,
     parse_pofile,
     withlines,
@@ -23,13 +21,6 @@ from dennis.translator import get_available_pipeline_parts, InvalidPipeline, Tra
 
 USAGE = "%prog [options] [command] [command-options]"
 VERSION = "dennis " + __version__
-
-# blessings.Terminal and our FauxTerminal don't maintain any state so
-# we can make it global
-if sys.stdout.isatty():
-    TERM = Terminal()
-else:
-    TERM = FauxTerminal()
 
 
 def utf8_args(fun):
@@ -41,20 +32,9 @@ def utf8_args(fun):
     return _utf8_args
 
 
-def out(*s):
-    for part in s:
-        click.echo(part, nl=False)
-    click.echo("")
-
-
-def err(*s):
+def err(s):
     """Prints a single-line string to stderr."""
-    parts = [TERM.bold_red, "Error: "]
-    parts.extend(s)
-    parts.append(TERM.normal)
-    for part in parts:
-        click.echo(part, nl=False, err=True)
-    click.echo("")
+    click.secho(f"Error: {s}", fg="red", bold=True, err=True)
 
 
 def format_formats():
@@ -136,7 +116,6 @@ def cli():
 
 @cli.command()
 @click.option("--quiet/--no-quiet", default=False)
-@click.option("--color/--no-color", default=True)
 @click.option(
     "--varformat",
     default="python-format,python-brace-format",
@@ -167,7 +146,7 @@ def cli():
 @epilog(
     format_formats() + "\n" + format_lint_rules() + "\n" + format_lint_template_rules()
 )
-def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly, path):
+def lint(ctx, quiet, varformat, rules, excluderules, reporter, errorsonly, path):
     """
     Lints .po/.pot files for issues
 
@@ -176,13 +155,8 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
     documentation for details.
 
     """
-    global TERM
-
     if not quiet:
-        out("dennis version {version}".format(version=__version__))
-
-    if not color:
-        TERM = FauxTerminal()
+        click.echo(f"dennis version {__version__}")
 
     # Make sure requested rules are valid
     all_rules = get_linter_rules(with_names=True)
@@ -237,11 +211,10 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
     total_files_with_errors = 0
 
     for fn in po_files:
+        formatted_fn = click.format_filename(fn)
         try:
             if not os.path.exists(fn):
-                raise click.UsageError(
-                    'File "{fn}" does not exist.'.format(fn=click.format_filename(fn))
-                )
+                raise click.UsageError(f'File "{formatted_fn}" does not exist.')
 
             if fn.endswith(".po"):
                 results = linter.verify_file(fn)
@@ -249,9 +222,9 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
                 results = templatelinter.verify_file(fn)
         except IOError as ioe:
             # This is not a valid .po file. So mark it as an error.
-            err(">>> Problem opening file: {fn}".format(fn=click.format_filename(fn)))
+            err(f">>> Problem opening file: {formatted_fn}")
             err(repr(ioe))
-            out("")
+            click.echo("")
 
             # FIXME - should we track this separately as an invalid
             # file?
@@ -270,11 +243,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
             continue
 
         if not quiet and not reporter:
-            out(
-                TERM.bold_green,
-                ">>> Working on: {fn}".format(fn=click.format_filename(fn)),
-                TERM.normal,
-            )
+            click.secho(f">>> Working on: {formatted_fn}", fg="green", bold=True)
 
         error_results = [res for res in results if res.kind == "err"]
         warning_results = [res for res in results if res.kind == "warn"]
@@ -288,40 +257,20 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
         if not quiet:
             for msg in error_results:
                 if reporter == "line":
-                    out(
-                        fn,
-                        ":",
-                        str(msg.poentry.linenum),
-                        ":",
-                        "0",
-                        ":",
-                        msg.code,
-                        ":",
-                        msg.msg,
-                    )
+                    click.echo(f"{fn}: {msg.poentry.linenum}: 0: {msg.code}: {msg.msg}")
                 else:
-                    out(TERM.bold_red, msg.code, ": ", msg.msg, TERM.normal)
-                    out(withlines(msg.poentry.linenum, msg.poentry.original))
-                    out("")
+                    err(f"{msg.code}: {msg.msg}")
+                    click.echo(withlines(msg.poentry.linenum, msg.poentry.original))
+                    click.echo("")
 
         if not quiet and not errorsonly:
             for msg in warning_results:
                 if reporter == "line":
-                    out(
-                        fn,
-                        ":",
-                        str(msg.poentry.linenum),
-                        ":",
-                        "0",
-                        ":",
-                        msg.code,
-                        ":",
-                        msg.msg,
-                    )
+                    click.echo(f"{fn}: {msg.poentry.linenum}: 0: {msg.code}: {msg.msg}")
                 else:
-                    out(TERM.bold_yellow, msg.code, ": ", msg.msg, TERM.normal)
-                    out(withlines(msg.poentry.linenum, msg.poentry.original))
-                    out("")
+                    click.secho(f"{msg.code}: {msg.msg}", fg="yellow", bold=True)
+                    click.echo(withlines(msg.poentry.linenum, msg.poentry.original))
+                    click.echo("")
 
         files_to_errors[fn] = (error_count, warning_count)
 
@@ -329,61 +278,43 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
             total_files_with_errors += 1
 
         if not quiet and reporter != "line":
-            out("Totals")
+            click.echo("Totals")
             if not errorsonly:
-                out("  Warnings: {warnings:5}".format(warnings=warning_count))
-            out("  Errors:   {errors:5}\n".format(errors=error_count))
+                click.echo(f"  Warnings: {warning_count:5}")
+            click.echo(f"  Errors:   {error_count:5}")
+            click.echo("")
 
     if len(po_files) > 1 and not quiet and reporter != "line":
-        out("Final totals")
-        out(
-            "  Number of files examined:          {count:5}".format(count=len(po_files))
-        )
-        out(
-            "  Total number of files with errors: {count:5}".format(
-                count=total_files_with_errors
-            )
-        )
+        click.echo("Final totals")
+        click.echo(f"  Number of files examined:          {len(po_files):5}")
+        click.echo(f"  Total number of files with errors: {total_files_with_errors:5}")
         if not errorsonly:
-            out(
-                "  Total number of warnings:          {count:5}".format(
-                    count=total_warning_count
-                )
-            )
-        out(
-            "  Total number of errors:            {count:5}".format(
-                count=total_error_count
-            )
-        )
-        out("")
+            click.echo(f"  Total number of warnings:          {total_warning_count:5}")
+        click.echo(f"  Total number of errors:            {total_error_count:5}")
+        click.echo("")
 
         file_counts = [
             (counts[0], counts[1], fn.split(os.sep)[-3], fn.split(os.sep)[-1])
             for (fn, counts) in files_to_errors.items()
         ]
 
-        # If we're showing errors only, then don't talk about warnings.
-        if errorsonly:
-            header = "Errors  Filename"
-            line = " {errors:5}  {locale} ({fn})"
-        else:
-            header = "Warnings  Errors  Filename"
-            line = "   {warnings:5}   {errors:5}  {locale} ({fn})"
-
         file_counts = list(reversed(sorted(file_counts)))
         printed_header = False
         for error_count, warning_count, locale, fn in file_counts:
             if not error_count and not warning_count:
                 continue
+
             if not printed_header:
-                out(header)
+                if errorsonly:
+                    click.echo("Errors  Filename")
+                else:
+                    click.echo("Warnings  Errors  Filename")
                 printed_header = True
 
-            out(
-                line.format(
-                    warnings=warning_count, errors=error_count, fn=fn, locale=locale
-                )
-            )
+            if errorsonly:
+                click.echo(f" {error_count:5}  {locale} ({fn})")
+            else:
+                click.echo(f"   {warning_count:5}   {error_count:5}  {locale} ({fn})")
 
     # Return 0 if everything was fine or 1 if there were errors.
     ctx.exit(code=1 if total_error_count else 0)
@@ -398,7 +329,7 @@ def lint(ctx, quiet, color, varformat, rules, excluderules, reporter, errorsonly
 @click.pass_context
 def status(ctx, showuntranslated, showfuzzy, path):
     """Show status of a .po file."""
-    out("dennis version {version}".format(version=__version__))
+    click.echo(f"dennis version {__version__}")
 
     po_files = []
     for item in path:
@@ -413,26 +344,21 @@ def status(ctx, showuntranslated, showfuzzy, path):
     po_files = [os.path.abspath(fn) for fn in po_files if fn.endswith(".po")]
 
     for fn in po_files:
+        formatted_fn = click.format_filename(fn)
         try:
             if not os.path.exists(fn):
-                raise IOError(
-                    'File "{fn}" does not exist.'.format(fn=click.format_filename(fn))
-                )
+                raise IOError(f'File "{formatted_fn}" does not exist.')
 
             pofile = parse_pofile(fn)
         except IOError as ioe:
-            err(">>> Problem opening file: {fn}".format(fn=click.format_filename(fn)))
+            err(f">>> Problem opening file: {formatted_fn}")
             err(repr(ioe))
             continue
 
-        out("")
-        out(
-            TERM.bold_green,
-            ">>> Working on: {fn}".format(fn=click.format_filename(fn)),
-            TERM.normal,
-        )
+        click.echo("")
+        click.secho(f">>> Working on: {formatted_fn}", fg="green", bold=True)
 
-        out("Metadata:")
+        click.echo("Metadata:")
         for key in (
             "Language",
             "Report-Msgid-Bugs-To",
@@ -442,22 +368,22 @@ def status(ctx, showuntranslated, showfuzzy, path):
             "Plural-Forms",
         ):
             if key in pofile.metadata and pofile.metadata[key]:
-                out("  ", key, ": ", pofile.metadata[key])
-        out("")
+                click.echo(f"  {key}: {pofile.metadata[key]}")
+        click.echo("")
 
         if showuntranslated:
-            out("Untranslated strings:")
-            out("")
+            click.echo("Untranslated strings:")
+            click.echo("")
             for poentry in pofile.untranslated_entries():
-                out(withlines(poentry.linenum, poentry.original))
-                out("")
+                click.echo(withlines(poentry.linenum, poentry.original))
+                click.echo("")
 
         if showfuzzy:
-            out("Fuzzy strings:")
-            out("")
+            click.echo("Fuzzy strings:")
+            click.echo("")
             for poentry in pofile.fuzzy_entries():
-                out(withlines(poentry.linenum, poentry.original))
-                out("")
+                click.echo(withlines(poentry.linenum, poentry.original))
+                click.echo("")
 
         total_words = 0
         translated_words = 0
@@ -474,18 +400,18 @@ def status(ctx, showuntranslated, showfuzzy, path):
         fuzzy_total = len(pofile.fuzzy_entries())
         untranslated_total = len(pofile.untranslated_entries())
 
-        out("Statistics:")
-        out("  Total strings:             {}".format(total_strings))
-        out("    Translated:              {}".format(translated_total))
-        out("    Untranslated:            {}".format(untranslated_total))
-        out("    Fuzzy:                   {}".format(fuzzy_total))
-        out("  Total translateable words: {}".format(total_words))
-        out("    Translated:              {}".format(translated_words))
-        out("    Untranslated:            {}".format(untranslated_words))
+        click.echo("Statistics:")
+        click.echo(f"  Total strings:             {total_strings}")
+        click.echo(f"    Translated:              {translated_total}")
+        click.echo(f"    Untranslated:            {untranslated_total}")
+        click.echo(f"    Fuzzy:                   {fuzzy_total}")
+        click.echo(f"  Total translateable words: {total_words}")
+        click.echo(f"    Translated:              {translated_words}")
+        click.echo(f"    Untranslated:            {untranslated_words}")
         if untranslated_words == 0:
-            out("  Percentage:                100% COMPLETE!")
+            click.echo("  Percentage:                100% COMPLETE!")
         else:
-            out("  Percentage:                {}%".format(pofile.percent_translated()))
+            click.echo(f"  Percentage:                {pofile.percent_translated()}%")
 
     ctx.exit(0)
 
@@ -524,7 +450,7 @@ def translate(ctx, varformat, pipeline, strings, path):
     """
     if not (path and path[0] == "-"):
         # We don't want to print this if they're piping to stdin
-        out("dennis version {version}".format(version=__version__))
+        click.echo(f"dennis version {__version__}")
 
     if not path:
         raise click.UsageError("nothing to work on. Use --help for help.")
@@ -538,13 +464,13 @@ def translate(ctx, varformat, pipeline, strings, path):
         # Args are strings to be translated
         for arg in path:
             data = translator.translate_string(arg)
-            out(data)
+            click.echo(data)
 
     elif path[0] == "-":
         # Read everything from stdin, then translate it
         data = click.get_binary_stream("stdin").read()
         data = translator.translate_string(data)
-        out(data)
+        click.echo(data)
 
     else:
         # Check all the paths first
@@ -571,8 +497,8 @@ def exception_handler(exc_type, exc_value, exc_tb):
     click.echo("bug report:")
     click.echo("")
     click.echo("---")
-    out("Dennis: ", repr(__version__))
-    out("Python: ", repr(sys.version))
-    out("Command line: ", repr(sys.argv))
+    click.echo(f"Dennis: {__version__}")
+    click.echo(f"Python: {sys.version}")
+    click.echo(f"Command line: {sys.argv}")
     click.echo("".join(traceback.format_exception(exc_type, exc_value, exc_tb)))
     click.echo("---")

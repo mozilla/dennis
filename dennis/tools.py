@@ -1,20 +1,6 @@
 import re
 
-
-class _MockBlessedThing(str):
-    def __call__(self, s):
-        return s
-
-
-class FauxTerminal:
-    def __getattr__(self, attr, default=None):
-        return _MockBlessedThing()
-
-
-try:
-    from blessings import Terminal
-except ImportError:
-    Terminal = FauxTerminal
+import click
 
 
 class Format:
@@ -154,7 +140,7 @@ class VariableTokenizer:
                 tokens = set(tokens)
             return tokens
         except TypeError:
-            print("TYPEERROR: {}".format(repr(text)))
+            click.echo("TYPEERROR: {}".format(repr(text)))
 
     def is_token(self, text):
         """Is this text a variable?"""

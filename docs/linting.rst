@@ -25,9 +25,6 @@ token issues::
 This runs multiple lint rules on all the strings in the PO file
 generating a list of errors and a list of warnings.
 
-Wait, but that's ugly and hard to read! If you install ``blessings``, it
-comes colorized and really easy to parse. All hail blessings!
-
 Dennis can also lint your POT files and point out issues that can
 result in poor translations. You can lint POT files like this::
 

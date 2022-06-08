@@ -1,9 +1,9 @@
 import re
 import string
 
-import polib
-
+import click
 from html.parser import HTMLParser
+import polib
 
 from dennis.tools import VariableTokenizer, all_subclasses
 
@@ -13,7 +13,7 @@ DEBUG = False
 
 def debug(*args):
     if DEBUG:
-        print(" ".join([str(arg) for arg in args]))
+        click.echo(" ".join([str(arg) for arg in args]))
 
 
 class Token:
