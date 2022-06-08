@@ -125,6 +125,11 @@ dubstep
 
 The dubstep transform is an experience.
 
+First, it builds over the course of the string, so longer strings have more
+dubstepperies than short strings.
+
+Second, it adds dupsteppish punctuation to punctuation.
+
 
 empty
 -----
