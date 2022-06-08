@@ -6,12 +6,17 @@ What's new in Dennis
    :local:
 
 
-Version 0.9.1: in development
+Version 1.0.0: in development
 =============================
 
-* update versions
-* add testing for Python 3.6
-* drop support for Python 3.3
+* b38a678 Drop Python 3.5/3.6; add Python 3.9/3.10 (#122, #123, #124, #125)
+* b6d34d7 Redo tarrminal printin' and colorr (#71)
+
+  There's an additional backwards-incompatible change here in which we drop
+  the ``--color`` and ``--no-color`` arguments from ``dennis-cmd lint``.
+* 658f951 Document dubstep (#74)
+* adb4ae1 Rework CI so it uses a matrix
+* transfer project from willkg to mozilla for ongoing maintenance and support
 
 
 Version 0.9.0: February 2nd, 2017
@@ -35,7 +40,7 @@ Version 0.8.0: January 3rd, 2017
 * b0705f4 Clean up pytest code and drop Python 2.6 bits
 * d27790b Fix th' --varformat flag to alloww nay formats (#83)
 * 3bf0929 Switch travis sudo flag
-* 990c842 Update requirements 
+* 990c842 Update requirements
 * 0d00ad4 Add travis supparrt
 * 528fcc1 Fix support for Python 3.5 (Thanks John Vandenberg!)
 * 700490d Add Travis CI testing (#88)
@@ -134,7 +139,7 @@ Version 0.4.1: May 9th, 2014
 **Changes**
 
 * 831af1a Fix lint output regarding UnicodeEncodeErrors (#37)
- 
+
 
 Version 0.4: May 1st, 2014
 ==========================
@@ -209,7 +214,7 @@ Version 0.3.5: September 17th, 2013
 **Changes**
 
 * b432e1b Fix rules default -- Running the linter with the default set of
-  rules will now include malformed variable linting.  
+  rules will now include malformed variable linting.
 * 72083f9 Improve detect missing } with python vars
 * b8f3776 Improve linting docs -- It includes a list of lint rules and what
   they do.

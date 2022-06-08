@@ -12,11 +12,9 @@ be interesting to you.
 Install Dennis and dependencies for development
 ===============================================
 
-1. Clone the repository from https://github.com/willkg/dennis/
+1. Clone the repository from https://github.com/mozilla/dennis/
 2. Create a virtual environment
-3. Run: ``python setup.py develop``
-4. Install some other bits: ``pip install -r requirements-dev.txt``
-
+3. Install dev requirements: ``pip install -r requirements-dev.txt``
 
 This should get you up and running.
 
@@ -25,7 +23,7 @@ Helping out
 ===========
 
 The non-exhaustive list of things to do are in the `issue tracker
-<https://github.com/willkg/dennis/issues>`_.
+<https://github.com/mozilla/dennis/issues>`_.
 
 If you want to write some code or fix a bug or add some docs or in
 some way contribute to Dennis, please do so using the following

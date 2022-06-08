@@ -67,9 +67,9 @@ Get help::
 Project details
 ===============
 
-:Code:          https://github.com/willkg/dennis
+:Code:          https://github.com/mozilla/dennis
 :Documentation: https://dennis.readthedocs.io/
-:Issue tracker: https://github.com/willkg/dennis/issues
+:Issue tracker: https://github.com/mozilla/dennis/issues
 :License:       BSD 3-clause; see LICENSE file
 
 
