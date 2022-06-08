@@ -105,6 +105,10 @@ class TestDubstepTransform(TransformTestCase):
                 ),
             ),
             ("Super browsing", "Super t-t-t-t browsing BWWWWWAAAAAAAaaaaa\u2757"),
+            (
+                "Sentence 1. Sentence 2!",
+                "Sentence 1 . t-t-t-t Sentence 2! BWWWWWWWWAAAAAAAAAAaaaaaaaa\u2757",
+            ),
         ],
     )
     def test_basic(self, text, expected):
