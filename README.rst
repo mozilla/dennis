@@ -41,7 +41,6 @@ Quick start
 Install::
 
     $ pip install dennis
-    $ pip install blessings  # Optional for prettier output
 
 Lint a PO file for problems::
 
