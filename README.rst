@@ -7,7 +7,7 @@ improve quality. Translate POT files to find problems with localization in your
 code. Lint PO files for common problems like variable formatting, mismatched
 HTML, missing variables, etc.
 
-It includes the following subcommands:
+``dennis-cmd`` has the following subcommands:
 
 * **lint**: Lints PO and POT files for problems including errors that can cause
   your production system to crash and problems in strings that can lead to poor
