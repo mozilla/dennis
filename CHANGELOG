@@ -6,8 +6,8 @@ What's new in Dennis
    :local:
 
 
-Version 1.0.0: in development
-=============================
+Version 1.0.0: June 10th, 2022
+==============================
 
 * b38a678 Drop Python 3.5/3.6; add Python 3.9/3.10 (#122, #123, #124, #125)
 * b6d34d7 Redo tarrminal printin' and colorr (#71)
