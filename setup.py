@@ -21,39 +21,38 @@ def get_version():
     return re.search(VSRE, version_file, re.M).group(1)
 
 
+INSTALL_REQUIRES = [
+    "polib>=1.0.8",
+    "click>=6",
+]
+
 setup(
     name="dennis",
     version=get_version(),
     description=(
-        "Utilities for working with PO and POT files to ease development "
+        "Utilities for working with gettext PO and POT files to ease development "
         "and improve localization quality"
     ),
     long_description=open(READMEFILE).read(),
     license="Simplified BSD License",
+    maintainer="Mozilla",
     author="Will Kahn-Greene",
-    author_email="willkg@bluesock.org",
-    keywords="l10n localization PO POT lint translate development",
-    url="https://github.com/willkg/dennis",
+    keywords="l10n localization gettext PO POT lint translate development",
+    url="https://github.com/mozilla/dennis",
     zip_safe=True,
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[
-        "polib>=1.0.8",
-        "click>=6",
-    ],
+    install_requires=INSTALL_REQUIRES,
     entry_points="""
         [console_scripts]
         dennis-cmd=dennis.cmdline:click_run
     """,
     python_requires=">=3.7",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "License :: OSI Approved :: BSD License",
-        "Operating System :: MacOS :: MacOS X",
-        "Operating System :: POSIX",
-        "Operating System :: POSIX :: Linux",
-        "Operating System :: Unix",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
@@ -61,5 +60,6 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3 :: Only",
+        "Topic :: Software Development :: Localization",
     ],
 )

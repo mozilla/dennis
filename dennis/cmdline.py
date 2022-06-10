@@ -491,7 +491,7 @@ def exception_handler(exc_type, exc_value, exc_tb):
     click.echo("Please write up a bug report with the specifics so that ")
     click.echo("we can fix it.")
     click.echo("")
-    click.echo("https://github.com/willkg/dennis/issues")
+    click.echo("https://github.com/mozilla/dennis/issues")
     click.echo("")
     click.echo("Here is some information you can copy and paste into the ")
     click.echo("bug report:")
