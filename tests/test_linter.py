@@ -283,6 +283,18 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
         assert msgs[0].code == "E102"
         assert msgs[0].msg == 'missing right curly-brace: {0]" excede el tamano de {'
 
+        linted_entry = build_linted_entry(
+            "#: kitsune/questions/templates/questions/question_details.html:14\n"
+            'msgid "{q} | {product} Support Forum"\n'
+            'msgstr "{q} | {product}} foo bar"\n'
+        )
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 1
+        assert msgs[0].kind == "err"
+        assert msgs[0].code == "E102"
+        assert msgs[0].msg == "missing right curly-brace: {product}} foo bar"
+
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
 
@@ -323,17 +335,14 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
         assert msgs[0].code == "E103"
         assert msgs[0].msg == "missing left curly-brace: } | product}"
 
+    def test_double_braces(self):
         linted_entry = build_linted_entry(
-            "#: kitsune/questions/templates/questions/question_details.html:14\n"
-            'msgid "{q} | {product} Support Forum"\n'
-            'msgstr "{q} | {product}} foo bar"\n'
+            'msgid "This is {{literal}} brace, {0}, and {{another}}."\n'
+            'msgstr "This is {{literal}} brace, {0}, and {{another}}."\n'
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 1
-        assert msgs[0].kind == "err"
-        assert msgs[0].code == "E103"
-        assert msgs[0].msg == "missing left curly-brace: }}"
+        assert len(msgs) == 0
 
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])

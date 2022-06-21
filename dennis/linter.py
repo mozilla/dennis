@@ -1,4 +1,5 @@
 import re
+import uuid
 from collections import namedtuple
 from itertools import zip_longest
 
@@ -158,16 +159,25 @@ class MalformedMissingRightBraceLintRule(LintRule):
             return []
 
         malformed_re = re.compile(r"(?:\{[^\}]+(?:\{|$))")
+        double_open = str(uuid.uuid4())
+        double_close = str(uuid.uuid4())
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
-            malformed = malformed_re.findall(trstr.msgstr_string)
+            malformed = malformed_re.findall(
+                trstr.msgstr_string.replace("{{", double_open).replace(
+                    "}}", double_close
+                )
+            )
             if not malformed:
                 continue
 
-            malformed = [item.strip() for item in malformed]
+            malformed = [
+                item.strip().replace(double_open, "{{").replace(double_close, "}}")
+                for item in malformed
+            ]
             msgs.append(
                 LintMessage(
                     ERROR,
@@ -195,16 +205,25 @@ class MalformedMissingLeftBraceLintRule(LintRule):
             return []
 
         malformed_re = re.compile(r"(?:(?:^|\})[^\{]*\})")
+        double_open = str(uuid.uuid4())
+        double_close = str(uuid.uuid4())
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
-            malformed = malformed_re.findall(trstr.msgstr_string)
+            malformed = malformed_re.findall(
+                trstr.msgstr_string.replace("{{", double_open).replace(
+                    "}}", double_close
+                )
+            )
             if not malformed:
                 continue
 
-            malformed = [item.strip() for item in malformed]
+            malformed = [
+                item.strip().replace(double_open, "{{").replace(double_close, "}}")
+                for item in malformed
+            ]
             msgs.append(
                 LintMessage(
                     ERROR,
