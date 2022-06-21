@@ -283,6 +283,15 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
         assert msgs[0].code == "E102"
         assert msgs[0].msg == 'missing right curly-brace: {0]" excede el tamano de {'
 
+    def test_double_braces(self):
+        linted_entry = build_linted_entry(
+            'msgid "This is {{literal}} brace, {0}, and {{another}}."\n'
+            'msgstr "This is {{literal}} brace, {0}, and {{another}}."\n'
+        )
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 0
+
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
 

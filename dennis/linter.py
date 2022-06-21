@@ -1,4 +1,5 @@
 import re
+import uuid
 from collections import namedtuple
 from itertools import zip_longest
 
@@ -149,6 +150,7 @@ class MalformedMissingRightBraceLintRule(LintRule):
     num = "E102"
     name = "missingrightbrace"
     desc = "{foo with missing }"
+    regex = r"(?:\{[^\}]+(?:\{|$))"
 
     def lint(self, vartok, linted_entry):
         msgs = []
@@ -157,7 +159,7 @@ class MalformedMissingRightBraceLintRule(LintRule):
         if not vartok.contains("python-brace-format"):
             return []
 
-        malformed_re = re.compile(r"(?:\{[^\}]+(?:\{|$))")
+        malformed_re = re.compile(self.regex)
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -187,6 +189,10 @@ class MalformedMissingLeftBraceLintRule(LintRule):
     name = "missingleftbrace"
     desc = "foo} with missing {"
 
+    def swap(self, string, *, char_a="{", char_b="}"):
+        token = str(uuid.uuid4())
+        return string.replace(char_a, token).replace(char_b, char_a).replace(token, char_b)
+
     def lint(self, vartok, linted_entry):
         msgs = []
 
@@ -194,17 +200,19 @@ class MalformedMissingLeftBraceLintRule(LintRule):
         if not vartok.contains("python-brace-format"):
             return []
 
-        malformed_re = re.compile(r"(?:(?:^|\})[^\{]*\})")
+        malformed_re = re.compile(MalformedMissingRightBraceLintRule.regex)
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
-            malformed = malformed_re.findall(trstr.msgstr_string)
+            malformed = malformed_re.findall(self.swap(trstr.msgstr_string[::-1]))
+            # print(f"{malformed=}")
             if not malformed:
                 continue
-
-            malformed = [item.strip() for item in malformed]
+            
+            malformed = [self.swap(item.strip()[::-1]) for item in malformed]
+            # print(f"{malformed=}")
             msgs.append(
                 LintMessage(
                     ERROR,
