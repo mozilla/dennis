@@ -2,7 +2,7 @@
 # Examples:
 # * 1.0
 # * 1.0.dev0
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # Date in 'YYYYMMDD' or ''
-__releasedate__ = "2022-06-10"
+__releasedate__ = "2022-06-22"
