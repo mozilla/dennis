@@ -5,7 +5,7 @@ What's new in Dennis
 .. contents::
    :local:
 
-Version 1.1.0: June 22th, 2022
+Version 1.1.0: June 22nd, 2022
 ==============================
 
 * cb9f9e5 Handle double braces when linting
