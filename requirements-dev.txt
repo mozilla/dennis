@@ -4,7 +4,7 @@
 black==23.3.0
 check-manifest==0.49
 flake8==4.0.1
-pytest==7.3.1
+pytest==7.4.3
 Sphinx==4.3.2
 tox==3.25.0
 tox-gh-actions==2.9.1
