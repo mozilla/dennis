@@ -15,7 +15,7 @@ clean:  ## Clean build artifacts
 
 .PHONY: lint
 lint:  ## Lint and black reformat files
-	black --target-version=py37 setup.py dennis tests
+	black --target-version=py311 setup.py dennis tests
 	flake8 dennis tests
 
 .PHONY: test
