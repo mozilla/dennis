@@ -18,7 +18,6 @@ from dennis.tools import (
 )
 from dennis.translator import get_available_pipeline_parts, InvalidPipeline, Translator
 
-
 USAGE = "%prog [options] [command] [command-options]"
 VERSION = "dennis " + __version__
 

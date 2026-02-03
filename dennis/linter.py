@@ -10,7 +10,6 @@ from dennis.tools import (
     parse_pofile,
 )
 
-
 IdString = namedtuple("IdString", ("msgid_fields", "msgid_strings"))
 TranslatedString = namedtuple(
     "TranslatedString",
