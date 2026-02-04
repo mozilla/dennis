@@ -5,6 +5,11 @@ What's new in Dennis
 .. contents::
    :local:
 
+Version 1.2.0: February 4th, 2026
+=================================
+
+* 3e18f1e Bump supported Python up to 3.13 ; Remove support for < 3.10
+
 Version 1.1.0: June 22nd, 2022
 ==============================
 
