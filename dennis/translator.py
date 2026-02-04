@@ -7,7 +7,6 @@ import polib
 
 from dennis.tools import VariableTokenizer, all_subclasses
 
-
 DEBUG = False
 
 

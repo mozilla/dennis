@@ -6,7 +6,6 @@ from dennis.tools import (
 )
 from dennis.linter import LintedEntry, LintMessage
 
-
 WARNING = "warn"
 ERROR = "err"
 

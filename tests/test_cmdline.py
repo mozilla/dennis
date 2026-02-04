@@ -137,16 +137,14 @@ class TestTranslate:
         assert result.exit_code == 0
         pot_file = nix_header(fn.read())
         # FIXME: This has the wrong variables, too. We need to fix that, too.
-        assert pot_file == dedent(
-            """\
+        assert pot_file == dedent("""\
             #: test_project/base/views.py:12 test_project/base/views.py:22
             #, python-format
             msgid "%(num)s apple"
             msgid_plural "%(num)s apples"
             msgstr[0] "%(NUM)S APPLE"
             msgstr[1] "%(NUM)S APPLES"
-            """
-        )
+            """)
 
 
 class TestLint:
