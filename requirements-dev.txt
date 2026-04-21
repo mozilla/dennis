@@ -3,7 +3,7 @@ check-manifest==0.51
 flake8==7.3.0
 pytest==9.0.3
 Sphinx==8.1.3
-tox==4.34.1
+tox==4.53.0
 tox-gh-actions==3.5.0
 twine==6.2.0
 wheel==0.46.3
