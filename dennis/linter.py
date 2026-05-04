@@ -403,8 +403,6 @@ class MismatchedHTMLLintRule(LintRule):
 
         from dennis.translator import HTMLExtractorTransform, Token
 
-        html = HTMLExtractorTransform()
-
         def equiv(left, right):
             return left == right
 
@@ -414,6 +412,8 @@ class MismatchedHTMLLintRule(LintRule):
             :raises HTMLParseError: If it's invalid HTML.
 
             """
+            html = HTMLExtractorTransform()
+
             tokens = [
                 token
                 for token in html.transform(vartok, [Token(text)])

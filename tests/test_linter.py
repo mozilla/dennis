@@ -1,4 +1,5 @@
 import polib
+import pytest
 
 from dennis.linter import (
     BadFormatLintRule,
@@ -706,6 +707,31 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
         #
         # [<html <a>>]
         assert msgs[0].msg == 'different html: "</a>" vs. "<a>"'
+
+    @pytest.mark.parametrize(
+        "tag",
+        [
+            # CDATA/RCDATA elements
+            "title",
+            "script",
+            "style",
+            "textarea",
+            "iframe",
+            # Void elements
+            "br",
+            "img",
+            # Normal elements
+            "a",
+            "div",
+        ],
+    )
+    def test_tag(self, tag):
+        linted_entry = build_linted_entry(
+            "#: foo/foo.py:5\n" 'msgid "tag: <{tag}>"\n' 'msgstr "TAG: <{tag}>"\n'.format(tag=tag)
+        )
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 0
 
 
 class TLRTestCase:

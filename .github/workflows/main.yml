@@ -6,6 +6,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
 
     strategy:
       matrix:
