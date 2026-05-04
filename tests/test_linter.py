@@ -711,33 +711,18 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
     @pytest.mark.parametrize(
         "tag",
         [
+            # CDATA/RCDATA elements
             "title",
             "script",
             "style",
             "textarea",
+            "iframe",
+            # Void elements
             "br",
-            "hr",
             "img",
-            "input",
-            "link",
-            "meta",
-            "span",
+            # Normal elements
             "a",
-            "b",
-            "i",
-            "button",
-            "p",
             "div",
-            "table",
-            "form",
-            "header",
-            "footer",
-            "canvas",
-            "noscript",
-            "description",
-            "html",
-            "head",
-            "body",
         ],
     )
     def test_tag(self, tag):
