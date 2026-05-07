@@ -657,6 +657,15 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 0
 
+    def test_fine_when_no_open_tags(self):
+        # No '<' character - fast path
+        linted_entry = build_linted_entry(
+            "#: foo/foo.py:5\n" 'msgid "b>Foo/b>"\n' 'msgstr "b>ARGH/b>"\n'
+        )
+
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 0
+
     def test_fail(self):
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "<b>Foo</b>"\n' 'msgstr "<em>ARGH</em>"\n'
