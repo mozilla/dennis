@@ -106,7 +106,7 @@ class MalformedNoTypeLintRule(LintRule):
     name = "notype"
     desc = "%(count) with no type at the end"
 
-    MALFORMED_RE = re.compile(
+    _MALFORMED_RE = re.compile(
         r"(?:"
         r"%"  # %
         r"[\(][^\)\s]+[\)]"  # things in parens or not
@@ -125,7 +125,7 @@ class MalformedNoTypeLintRule(LintRule):
             if not trstr.msgstr_string:
                 continue
 
-            malformed = self.MALFORMED_RE.findall(trstr.msgstr_string)
+            malformed = self._MALFORMED_RE.findall(trstr.msgstr_string)
             if not malformed:
                 continue
 
@@ -149,9 +149,9 @@ class MalformedMissingRightBraceLintRule(LintRule):
     name = "missingrightbrace"
     desc = "{foo with missing }"
 
-    MALFORMED_RE = re.compile(r"(?:\{[^\}]+(?:\{|$))")
-    DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
-    DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
+    _MALFORMED_RE = re.compile(r"(?:\{[^\}]+(?:\{|$))")
+    _DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
+    _DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
 
     def lint(self, vartok, linted_entry):
         msgs = []
@@ -164,16 +164,16 @@ class MalformedMissingRightBraceLintRule(LintRule):
             if not trstr.msgstr_string:
                 continue
 
-            malformed = self.MALFORMED_RE.findall(
-                trstr.msgstr_string.replace("{{", self.DOUBLE_OPEN).replace(
-                    "}}", self.DOUBLE_CLOSE
+            malformed = self._MALFORMED_RE.findall(
+                trstr.msgstr_string.replace("{{", self._DOUBLE_OPEN).replace(
+                    "}}", self._DOUBLE_CLOSE
                 )
             )
             if not malformed:
                 continue
 
             malformed = [
-                item.strip().replace(self.DOUBLE_OPEN, "{{").replace(self.DOUBLE_CLOSE, "}}")
+                item.strip().replace(self._DOUBLE_OPEN, "{{").replace(self._DOUBLE_CLOSE, "}}")
                 for item in malformed
             ]
             msgs.append(
@@ -195,9 +195,9 @@ class MalformedMissingLeftBraceLintRule(LintRule):
     name = "missingleftbrace"
     desc = "foo} with missing {"
 
-    MALFORMED_RE = re.compile(r"(?:(?:^|\})[^\{]*\})")
-    DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
-    DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
+    _MALFORMED_RE = re.compile(r"(?:(?:^|\})[^\{]*\})")
+    _DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
+    _DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
 
     def lint(self, vartok, linted_entry):
         msgs = []
@@ -210,16 +210,16 @@ class MalformedMissingLeftBraceLintRule(LintRule):
             if not trstr.msgstr_string:
                 continue
 
-            malformed = self.MALFORMED_RE.findall(
-                trstr.msgstr_string.replace("{{", self.DOUBLE_OPEN).replace(
-                    "}}", self.DOUBLE_CLOSE
+            malformed = self._MALFORMED_RE.findall(
+                trstr.msgstr_string.replace("{{", self._DOUBLE_OPEN).replace(
+                    "}}", self._DOUBLE_CLOSE
                 )
             )
             if not malformed:
                 continue
 
             malformed = [
-                item.strip().replace(self.DOUBLE_OPEN, "{{").replace(self.DOUBLE_CLOSE, "}}")
+                item.strip().replace(self._DOUBLE_OPEN, "{{").replace(self._DOUBLE_CLOSE, "}}")
                 for item in malformed
             ]
             msgs.append(
@@ -240,7 +240,7 @@ class BadFormatLintRule(LintRule):
     name = "badformat"
     desc = "% followed by a bad format character"
 
-    SPLITTER = re.compile(r"(\%(?:.|$))")
+    _SPLITTER = re.compile(r"(\%(?:.|$))")
 
     def lint(self, vartok, linted_entry):
         msgs = []
@@ -262,7 +262,7 @@ class BadFormatLintRule(LintRule):
             if not (len(first_token) == 2 and first_token[0] == "%"):
                 continue
 
-            for match in self.SPLITTER.findall(trstr.msgstr_string):
+            for match in self._SPLITTER.findall(trstr.msgstr_string):
                 if len(match) == 1 or match[1] not in "(diouxefGgcrs%":
                     msgs.append(
                         LintMessage(
