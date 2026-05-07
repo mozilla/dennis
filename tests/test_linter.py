@@ -797,3 +797,23 @@ class TestOneCharNamesTLR(TLRTestCase):
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 1
         # FIXME: flesh out this test
+
+
+class TestLintedEntry:
+    def test_strs_is_cached(self):
+        linted_entry = build_linted_entry(
+            '#: foo/foo.py:5\nmsgid "OriginalId"\nmsgstr "OriginalStr"\n'
+        )
+
+        # Access first time to cache the value
+        first_strs = linted_entry.strs
+        assert len(first_strs) == 1
+        assert first_strs[0].msgstr_string == "OriginalStr"
+
+        # Modify underlying poentry
+        linted_entry.poentry.msgstr = "ModifiedStr"
+
+        # Access second time. It should be cached.
+        second_strs = linted_entry.strs
+        assert second_strs is first_strs
+        assert second_strs[0].msgstr_string == "OriginalStr"

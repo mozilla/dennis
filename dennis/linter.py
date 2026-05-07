@@ -1,6 +1,7 @@
 import re
 import uuid
 from collections import namedtuple
+from functools import cached_property
 from itertools import zip_longest
 
 from dennis.tools import (
@@ -57,7 +58,7 @@ class LintedEntry:
 
         return IdString(msgid_fields, msgid_strings)
 
-    @property
+    @cached_property
     def strs(self):
         poentry = self.poentry
         strs = []
