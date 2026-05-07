@@ -434,8 +434,10 @@ class PirateTransform(Transform):
     def nwc(self, c):
         return not self.wc(c)
 
+    _WHITESPACE_RE = re.compile(r"^\s*$")
+
     def is_whitespace(self, s):
-        return re.match("^\\s*$", s) is not None
+        return self._WHITESPACE_RE.match(s) is not None
 
     # List of transform rules. The tuples have:
     #
