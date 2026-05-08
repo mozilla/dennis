@@ -204,8 +204,8 @@ class TestLint:
     @pytest.mark.parametrize(
         "opts, expected_exit_code",
         [
-            ([], 0),
-            (["--strict"], 1),
+            ((), 0),
+            (("--strict",), 1),
         ],
     )
     def test_quiet(self, runner, tmpdir, opts, expected_exit_code):
@@ -215,15 +215,15 @@ class TestLint:
         fn = tmpdir.join("messages.po")
         fn.write(po_file)
 
-        result = runner.invoke(cli, ["lint", "--quiet"] + opts + [str(fn)])
+        result = runner.invoke(cli, ("lint", "--quiet") + opts + (str(fn),))
         assert result.exit_code == expected_exit_code
         assert result.output == ""
 
     @pytest.mark.parametrize(
         "strict_flag, expected_exit_code",
         [
-            ([], 0),
-            (["--strict"], 1),
+            ((), 0),
+            (("--strict",), 1),
         ],
     )
     def test_strict_basic(self, runner, tmpdir, strict_flag, expected_exit_code):
@@ -233,16 +233,16 @@ class TestLint:
         fn = tmpdir.join("messages.po")
         fn.write(po_file)
 
-        result = runner.invoke(cli, ["lint"] + strict_flag + [str(fn)])
+        result = runner.invoke(cli, ("lint",) + strict_flag + (str(fn),))
         assert result.exit_code == expected_exit_code
         assert "Warnings:     1" in result.output
 
     @pytest.mark.parametrize(
         "filter_opts",
         [
-            ["--excluderules", "W301"],
-            ["--rules", "E101"],
-            ["--errorsonly"],
+            ("--excluderules", "W301"),
+            ("--rules", "E101"),
+            ("--errorsonly",),
         ],
     )
     def test_strict_ignores_filtered_warnings(self, runner, tmpdir, filter_opts):
@@ -252,7 +252,7 @@ class TestLint:
         fn = tmpdir.join("messages.po")
         fn.write(po_file)
 
-        result = runner.invoke(cli, ["lint", "--strict"] + filter_opts + [str(fn)])
+        result = runner.invoke(cli, ("lint", "--strict") + filter_opts + (str(fn),))
         assert result.exit_code == 0
         assert "Warnings:" not in result.output
 
