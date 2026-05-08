@@ -140,12 +140,13 @@ def cli():
 )
 @click.option("--reporter", default="", help="Reporter to use for output.")
 @click.option("--errorsonly/--no-errorsonly", default=False, help="Only print errors.")
+@click.option("--strict/--no-strict", default=False, help="Exit with code 1 if there are any warnings.")
 @click.argument("path", nargs=-1)
 @click.pass_context
 @epilog(
     format_formats() + "\n" + format_lint_rules() + "\n" + format_lint_template_rules()
 )
-def lint(ctx, quiet, varformat, rules, excluderules, reporter, errorsonly, path):
+def lint(ctx, quiet, varformat, rules, excluderules, reporter, errorsonly, strict, path):
     """
     Lints .po/.pot files for issues
 
@@ -315,8 +316,11 @@ def lint(ctx, quiet, varformat, rules, excluderules, reporter, errorsonly, path)
             else:
                 click.echo(f"   {warning_count:5}   {error_count:5}  {locale} ({fn})")
 
-    # Return 0 if everything was fine or 1 if there were errors.
-    ctx.exit(code=1 if total_error_count else 0)
+    # Return 0 if everything was fine or 1 if there were errors (or warnings if strict).
+    if strict:
+        ctx.exit(code=1 if (total_error_count or total_warning_count) else 0)
+    else:
+        ctx.exit(code=1 if total_error_count else 0)
 
 
 @cli.command()
