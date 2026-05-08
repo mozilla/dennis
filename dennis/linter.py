@@ -129,7 +129,7 @@ class MalformedNoTypeLintRule(LintRule):
             return tuple(msgs)
 
         for trstr in linted_entry.strs:
-            if not trstr.msgstr_string:
+            if not trstr.msgstr_string or "%" not in trstr.msgstr_string:
                 continue
 
             malformed = self._MALFORMED_RE.findall(trstr.msgstr_string)
@@ -168,7 +168,7 @@ class MalformedMissingRightBraceLintRule(LintRule):
             return ()
 
         for trstr in linted_entry.strs:
-            if not trstr.msgstr_string:
+            if not trstr.msgstr_string or "{" not in trstr.msgstr_string:
                 continue
 
             malformed = self._MALFORMED_RE.findall(
@@ -214,7 +214,7 @@ class MalformedMissingLeftBraceLintRule(LintRule):
             return ()
 
         for trstr in linted_entry.strs:
-            if not trstr.msgstr_string:
+            if not trstr.msgstr_string or "}" not in trstr.msgstr_string:
                 continue
 
             malformed = self._MALFORMED_RE.findall(
@@ -257,7 +257,7 @@ class BadFormatLintRule(LintRule):
             return ()
 
         for trstr in linted_entry.strs:
-            if not trstr.msgstr_string:
+            if not trstr.msgstr_string or "%" not in trstr.msgstr_string:
                 continue
 
             msgid_tokens = list(vartok.extract_tokens(" ".join(trstr.msgid_strings)))

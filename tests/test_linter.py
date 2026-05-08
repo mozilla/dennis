@@ -149,20 +149,21 @@ class TestBadFormatLintRule(LintRuleTestCase):
 class TestMalformedNoTypeLintRule(LintRuleTestCase):
     lintrule = MalformedNoTypeLintRule()
 
-    def test_fine(self):
+    @pytest.mark.parametrize(
+        "msgid, msgstr",
+        [
+            ("Foo", "Oof"),
+            ("Foo: {foo}", "Oof: {foo}"),
+            ("Foo: %s", "Oof: %s"),
+        ],
+        ids=["no format tokens", "brace format (fast path)", "python format"],
+    )
+    def test_fine(self, msgid, msgstr):
         linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "Oof"\n'
+            f'#: foo/foo.py:5\nmsgid "{msgid}"\nmsgstr "{msgstr}"\n'
         )
-
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 0
-
-        linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "Foo: {foo}"\n' 'msgstr "Oof: {foo}"\n'
-        )
-
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
 
     def test_python_var_with_space(self):
         linted_entry = build_linted_entry(
@@ -231,6 +232,19 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
 
 class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
     lintrule = MalformedMissingRightBraceLintRule()
+
+    @pytest.mark.parametrize(
+        "msgid, msgstr",
+        [
+            ("Foo {foo}", "Oof {foo}"),
+            ("Foo {foo}", "Oof foo}"),
+        ],
+        ids=["valid brace format", "no '{' in msgstr (fast path)"],
+    )
+    def test_fine(self, msgid, msgstr):
+        linted_entry = build_linted_entry(f'msgid "{msgid}"\nmsgstr "{msgstr}"\n')
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 0
 
     def test_python_var_missing_right_curly_brace(self):
         linted_entry = build_linted_entry(
@@ -310,6 +324,19 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
 
 class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
     lintrule = MalformedMissingLeftBraceLintRule()
+
+    @pytest.mark.parametrize(
+        "msgid, msgstr",
+        [
+            ("Foo {foo}", "Oof {foo}"),
+            ("Foo {foo}", "Oof {foo"),
+        ],
+        ids=["valid brace format", "no '}' in msgstr (fast path)"],
+    )
+    def test_fine(self, msgid, msgstr):
+        linted_entry = build_linted_entry(f'msgid "{msgid}"\nmsgstr "{msgstr}"\n')
+        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        assert len(msgs) == 0
 
     def test_python_var_missing_left_curly_brace(self):
         linted_entry = build_linted_entry(
@@ -649,20 +676,18 @@ class TestUnchangedLintRule(LintRuleTestCase):
 class TestMismatchedHTMLLintRule(LintRuleTestCase):
     lintrule = MismatchedHTMLLintRule()
 
-    def test_fine(self):
+    @pytest.mark.parametrize(
+        "msgid, msgstr",
+        [
+            ("<b>Foo</b>", "<b>ARGH</b>"),
+            ("b>Foo/b>", "b>ARGH/b>"),
+        ],
+        ids=["valid html", "no '<' in msgstr (fast path)"],
+    )
+    def test_fine(self, msgid, msgstr):
         linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "<b>Foo</b>"\n' 'msgstr "<b>ARGH</b>"\n'
+            f'#: foo/foo.py:5\nmsgid "{msgid}"\nmsgstr "{msgstr}"\n'
         )
-
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert len(msgs) == 0
-
-    def test_fine_when_no_open_tags(self):
-        # No '<' character - fast path
-        linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "b>Foo/b>"\n' 'msgstr "b>ARGH/b>"\n'
-        )
-
         msgs = self.lintrule.lint(self.vartok, linted_entry)
         assert len(msgs) == 0
 
