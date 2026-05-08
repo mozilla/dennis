@@ -82,13 +82,13 @@ class TestBadFormatLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "FOO"\n'
         )
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo %s"\n' 'msgstr "FOO %s"\n'
         )
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_bad_format_character(self):
         linted_entry = build_linted_entry(
@@ -115,7 +115,7 @@ class TestBadFormatLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "%% foo"\n' 'msgstr "%% FOO"\n'
         )
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_not_in_msgid(self):
         # If there are no vars in the msgid, then we don't want to throw errors about stuff we see
@@ -124,7 +124,7 @@ class TestBadFormatLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "foo 50% omg"\n' 'msgstr "FOO 50% OMG"\n'
         )
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_ignore_non_formatting_tokens(self):
         # If the formatting token is actually part of another formatting token, then we want to
@@ -135,7 +135,7 @@ class TestBadFormatLintRule(LintRuleTestCase):
             'msgstr "FOO {startdate:%Y-%m-%d %H:%M} BAR"\n'
         )
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
@@ -143,7 +143,7 @@ class TestBadFormatLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "%s foo"\n' 'msgstr "%a FOO"\n'
         )
         msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
 
 class TestMalformedNoTypeLintRule(LintRuleTestCase):
@@ -162,7 +162,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_python_var_with_space(self):
         linted_entry = build_linted_entry(
@@ -213,7 +213,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
@@ -226,7 +226,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
 
 class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
@@ -305,7 +305,7 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
 
 class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
@@ -355,7 +355,7 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
 
 class TestMissingVarsLintRule(LintRuleTestCase):
@@ -489,7 +489,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgstr "RECENTLY UPDATED THREADS"\n'
         )
         msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
 
 class TestInvalidVarsLintRule(LintRuleTestCase):
@@ -501,14 +501,14 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo: {foo}"\n' 'msgstr "Oof: {foo}"\n'
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_invalid(self):
         linted_entry = build_linted_entry(
@@ -559,7 +559,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_double_percent(self):
         # Double-percent shouldn't be picked up as a variable.
@@ -571,7 +571,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_urlencoded_urls(self):
         # urlencoding uses % and that shouldn't get picked up
@@ -584,7 +584,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_msgid_no_vars(self):
         linted_entry = build_linted_entry(
@@ -594,7 +594,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
@@ -603,7 +603,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
         )
 
         msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == []
+        assert msgs == ()
 
 
 class TestBlankLintRule(LintRuleTestCase):
