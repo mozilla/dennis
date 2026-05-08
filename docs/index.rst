@@ -50,6 +50,10 @@ Lint all your PO files for errors::
 
     $ dennis-cmd lint --errorsonly locale/
 
+Lint all your PO files and fail if there are any errors or warnings::
+
+    $ dennis-cmd lint --strict locale/
+
 Lint a POT file for problems::
 
     $ dennis-cmd lint locale/templates/LC_MESSAGES/messages.pot
