@@ -150,7 +150,7 @@ class VariableTokenizer:
 
     def extract_variable_name(self, text):
         for fmt in self.formats:
-            if re.compile(fmt.regexp).match(text):
+            if re.match(fmt.regexp, text):
                 return fmt.extract_variable_name(text)
 
 

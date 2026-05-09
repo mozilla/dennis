@@ -1,5 +1,4 @@
 import re
-import uuid
 from collections import namedtuple
 from itertools import zip_longest
 
@@ -107,6 +106,14 @@ class MalformedNoTypeLintRule(LintRule):
     name = "notype"
     desc = "%(count) with no type at the end"
 
+    _MALFORMED_RE = re.compile(
+        r"(?:"
+        r"%"  # %
+        r"[\(][^\)\s]+[\)]"  # things in parens or not
+        r"(?:(?=[^diouxefGgcrs])|$)"  # end of string or something that's not a format char
+        r")"
+    )
+
     def lint(self, vartok, linted_entry):
         msgs = []
 
@@ -114,19 +121,11 @@ class MalformedNoTypeLintRule(LintRule):
         if not vartok.contains("python-format"):
             return msgs
 
-        malformed_re = re.compile(
-            r"(?:"
-            r"%"  # %
-            r"[\(][^\)\s]+[\)]"  # things in parens or not
-            r"(?:(?=[^diouxefGgcrs])|$)"  # end of string or something that's not a format char
-            r")"
-        )
-
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
-            malformed = malformed_re.findall(trstr.msgstr_string)
+            malformed = self._MALFORMED_RE.findall(trstr.msgstr_string)
             if not malformed:
                 continue
 
@@ -150,6 +149,10 @@ class MalformedMissingRightBraceLintRule(LintRule):
     name = "missingrightbrace"
     desc = "{foo with missing }"
 
+    _MALFORMED_RE = re.compile(r"(?:\{[^\}]+(?:\{|$))")
+    _DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
+    _DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
+
     def lint(self, vartok, linted_entry):
         msgs = []
 
@@ -157,24 +160,20 @@ class MalformedMissingRightBraceLintRule(LintRule):
         if not vartok.contains("python-brace-format"):
             return []
 
-        malformed_re = re.compile(r"(?:\{[^\}]+(?:\{|$))")
-        double_open = str(uuid.uuid4())
-        double_close = str(uuid.uuid4())
-
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
-            malformed = malformed_re.findall(
-                trstr.msgstr_string.replace("{{", double_open).replace(
-                    "}}", double_close
+            malformed = self._MALFORMED_RE.findall(
+                trstr.msgstr_string.replace("{{", self._DOUBLE_OPEN).replace(
+                    "}}", self._DOUBLE_CLOSE
                 )
             )
             if not malformed:
                 continue
 
             malformed = [
-                item.strip().replace(double_open, "{{").replace(double_close, "}}")
+                item.strip().replace(self._DOUBLE_OPEN, "{{").replace(self._DOUBLE_CLOSE, "}}")
                 for item in malformed
             ]
             msgs.append(
@@ -196,6 +195,10 @@ class MalformedMissingLeftBraceLintRule(LintRule):
     name = "missingleftbrace"
     desc = "foo} with missing {"
 
+    _MALFORMED_RE = re.compile(r"(?:(?:^|\})[^\{]*\})")
+    _DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
+    _DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
+
     def lint(self, vartok, linted_entry):
         msgs = []
 
@@ -203,24 +206,20 @@ class MalformedMissingLeftBraceLintRule(LintRule):
         if not vartok.contains("python-brace-format"):
             return []
 
-        malformed_re = re.compile(r"(?:(?:^|\})[^\{]*\})")
-        double_open = str(uuid.uuid4())
-        double_close = str(uuid.uuid4())
-
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
-            malformed = malformed_re.findall(
-                trstr.msgstr_string.replace("{{", double_open).replace(
-                    "}}", double_close
+            malformed = self._MALFORMED_RE.findall(
+                trstr.msgstr_string.replace("{{", self._DOUBLE_OPEN).replace(
+                    "}}", self._DOUBLE_CLOSE
                 )
             )
             if not malformed:
                 continue
 
             malformed = [
-                item.strip().replace(double_open, "{{").replace(double_close, "}}")
+                item.strip().replace(self._DOUBLE_OPEN, "{{").replace(self._DOUBLE_CLOSE, "}}")
                 for item in malformed
             ]
             msgs.append(
@@ -241,14 +240,14 @@ class BadFormatLintRule(LintRule):
     name = "badformat"
     desc = "% followed by a bad format character"
 
+    _SPLITTER = re.compile(r"(\%(?:.|$))")
+
     def lint(self, vartok, linted_entry):
         msgs = []
 
         # This only applies if one of the variable tokenizers is python-format.
         if not vartok.contains("python-format"):
             return []
-
-        splitter = re.compile(r"(\%(?:.|$))")
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -263,7 +262,7 @@ class BadFormatLintRule(LintRule):
             if not (len(first_token) == 2 and first_token[0] == "%"):
                 continue
 
-            for match in splitter.findall(trstr.msgstr_string):
+            for match in self._SPLITTER.findall(trstr.msgstr_string):
                 if len(match) == 1 or match[1] not in "(diouxefGgcrs%":
                     msgs.append(
                         LintMessage(
