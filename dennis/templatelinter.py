@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from dennis.tools import (
     VariableTokenizer,
     all_subclasses,
@@ -15,7 +16,9 @@ class TemplateLintRule:
     name = ""
     desc = ""
 
-    def lint(self, vartok, linted_entry):
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
         """Takes a linted entry and adds errors and warnings
 
         :arg vartok: the variable tokenizer to use for tokenizing
@@ -33,8 +36,9 @@ class HardToReadNamesTLR(TemplateLintRule):
 
     hard_to_read = ("o", "O", "0", "l", "1")
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         idstr = linted_entry.str
 
@@ -49,7 +53,7 @@ class HardToReadNamesTLR(TemplateLintRule):
 
             for token in msgid_tokens:
                 if token in self.hard_to_read:
-                    msgs.append(
+                    yield (
                         LintMessage(
                             WARNING,
                             linted_entry.poentry.linenum,
@@ -59,7 +63,6 @@ class HardToReadNamesTLR(TemplateLintRule):
                             linted_entry.poentry,
                         )
                     )
-        return tuple(msgs)
 
 
 class OneCharNamesTLR(TemplateLintRule):
@@ -67,8 +70,9 @@ class OneCharNamesTLR(TemplateLintRule):
     name = "onechar"
     desc = "Looks for one character variable names"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
         idstr = linted_entry.str
 
         for s in idstr.msgid_strings:
@@ -82,7 +86,7 @@ class OneCharNamesTLR(TemplateLintRule):
 
             for token in msgid_tokens:
                 if len(token) == 1 and token.isalpha():
-                    msgs.append(
+                    yield (
                         LintMessage(
                             WARNING,
                             linted_entry.poentry.linenum,
@@ -92,7 +96,6 @@ class OneCharNamesTLR(TemplateLintRule):
                             linted_entry.poentry,
                         )
                     )
-        return tuple(msgs)
 
 
 class MultipleUnnamedVarsTLR(TemplateLintRule):
@@ -100,8 +103,9 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
     name = "unnamed"
     desc = "Looks for multiple unnamed variables"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
         idstr = linted_entry.str
 
         for s in idstr.msgid_strings:
@@ -114,7 +118,7 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
             ]
 
             if msgid_tokens.count("") > 1:
-                msgs.append(
+                yield (
                     LintMessage(
                         WARNING,
                         linted_entry.poentry.linenum,
@@ -124,7 +128,6 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
                         linted_entry.poentry,
                     )
                 )
-        return tuple(msgs)
 
 
 def get_lint_rules(with_names=False):
@@ -155,16 +158,12 @@ class TemplateLinter:
 
         skip = parse_dennis_note(poentry.comment)
 
-        msgs = []
-
         # Check the comment to see if what we should ignore.
         for lint_rule in self.rules:
             if skip == "*" or lint_rule.num in skip:
                 continue
 
-            msgs.extend(lint_rule.lint(self.vartok, linted_entry))
-
-        return tuple(msgs)
+            yield from lint_rule.lint(self.vartok, linted_entry)
 
     def verify_file(self, filename_or_string):
         """Verifies strings in file.
