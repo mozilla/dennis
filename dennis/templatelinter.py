@@ -59,7 +59,7 @@ class HardToReadNamesTLR(TemplateLintRule):
                             linted_entry.poentry,
                         )
                     )
-        return msgs
+        return tuple(msgs)
 
 
 class OneCharNamesTLR(TemplateLintRule):
@@ -92,7 +92,7 @@ class OneCharNamesTLR(TemplateLintRule):
                             linted_entry.poentry,
                         )
                     )
-        return msgs
+        return tuple(msgs)
 
 
 class MultipleUnnamedVarsTLR(TemplateLintRule):
@@ -124,7 +124,7 @@ class MultipleUnnamedVarsTLR(TemplateLintRule):
                         linted_entry.poentry,
                     )
                 )
-        return msgs
+        return tuple(msgs)
 
 
 def get_lint_rules(with_names=False):
@@ -165,7 +165,7 @@ class TemplateLinter:
 
             msgs.extend(lint_rule.lint(self.vartok, linted_entry))
 
-        return msgs
+        return tuple(msgs)
 
     def verify_file(self, filename_or_string):
         """Verifies strings in file.
@@ -182,4 +182,4 @@ class TemplateLinter:
         msgs = []
         for entry in po:
             msgs.extend(self.lint_poentry(entry))
-        return msgs
+        return tuple(msgs)

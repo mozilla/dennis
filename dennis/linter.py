@@ -1,6 +1,10 @@
 import re
 from collections import namedtuple
+from dataclasses import dataclass
+from functools import cached_property
 from itertools import zip_longest
+
+from polib import POEntry
 
 from dennis.tools import (
     VariableTokenizer,
@@ -24,25 +28,28 @@ class HTMLParseError(Exception):
     pass
 
 
+@dataclass(frozen=True)
 class LintMessage:
-    def __init__(self, kind, line, col, code, msg, poentry):
-        self.kind = kind
-        self.line = line
-        self.col = col
-        self.code = code
-        self.msg = msg
-        self.poentry = poentry
+    kind: str
+    line: int
+    col: int
+    code: str
+    msg: str
+    poentry: POEntry
 
     def __repr__(self):
-        return "<LintedMessage {} {}:{} {} {}>".format(
+        return "<LintMessage {} {}:{} {} {}>".format(
             self.kind, self.line, self.col, self.code, self.msg
         )
 
 
+@dataclass(frozen=True)
 class LintedEntry:
-    def __init__(self, poentry):
-        self.poentry = poentry
-        self.msgid = poentry.msgid
+    poentry: POEntry
+
+    @property
+    def msgid(self):
+        return self.poentry.msgid
 
     @property
     def str(self):
@@ -56,7 +63,7 @@ class LintedEntry:
 
         return IdString(msgid_fields, msgid_strings)
 
-    @property
+    @cached_property
     def strs(self):
         poentry = self.poentry
         strs = []
@@ -81,7 +88,7 @@ class LintedEntry:
                 )
 
         # List of TranslatedStrings
-        return strs
+        return tuple(strs)
 
 
 class LintRule:
@@ -119,7 +126,7 @@ class MalformedNoTypeLintRule(LintRule):
 
         # This only applies if one of the variable tokenizers is python-format.
         if not vartok.contains("python-format"):
-            return msgs
+            return tuple(msgs)
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -141,7 +148,7 @@ class MalformedNoTypeLintRule(LintRule):
                 )
             )
 
-        return msgs
+        return tuple(msgs)
 
 
 class MalformedMissingRightBraceLintRule(LintRule):
@@ -158,7 +165,7 @@ class MalformedMissingRightBraceLintRule(LintRule):
 
         # This only applies if one of the variable tokenizers is python-brace-format.
         if not vartok.contains("python-brace-format"):
-            return []
+            return ()
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -187,7 +194,7 @@ class MalformedMissingRightBraceLintRule(LintRule):
                 )
             )
 
-        return msgs
+        return tuple(msgs)
 
 
 class MalformedMissingLeftBraceLintRule(LintRule):
@@ -204,7 +211,7 @@ class MalformedMissingLeftBraceLintRule(LintRule):
 
         # This only applies if one of the variable tokenizers is python-brace-format.
         if not vartok.contains("python-brace-format"):
-            return []
+            return ()
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -232,7 +239,7 @@ class MalformedMissingLeftBraceLintRule(LintRule):
                     linted_entry.poentry,
                 )
             )
-        return msgs
+        return tuple(msgs)
 
 
 class BadFormatLintRule(LintRule):
@@ -247,7 +254,7 @@ class BadFormatLintRule(LintRule):
 
         # This only applies if one of the variable tokenizers is python-format.
         if not vartok.contains("python-format"):
-            return []
+            return ()
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -274,7 +281,7 @@ class BadFormatLintRule(LintRule):
                             linted_entry.poentry,
                         )
                     )
-        return msgs
+        return tuple(msgs)
 
 
 class MissingVarsLintRule(LintRule):
@@ -288,7 +295,7 @@ class MissingVarsLintRule(LintRule):
 
         # If there are no variable formats, skip this rule.
         if not vartok.formats:
-            return []
+            return ()
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -334,7 +341,7 @@ class MissingVarsLintRule(LintRule):
                             linted_entry.poentry,
                         )
                     )
-        return msgs
+        return tuple(msgs)
 
 
 class BlankLintRule(LintRule):
@@ -361,7 +368,7 @@ class BlankLintRule(LintRule):
                     )
                 )
 
-        return msgs
+        return tuple(msgs)
 
 
 class UnchangedLintRule(LintRule):
@@ -388,7 +395,7 @@ class UnchangedLintRule(LintRule):
                     )
                 )
 
-        return msgs
+        return tuple(msgs)
 
 
 class MismatchedHTMLLintRule(LintRule):
@@ -438,7 +445,7 @@ class MismatchedHTMLLintRule(LintRule):
                         linted_entry.poentry,
                     )
                 )
-                return msgs
+                return tuple(msgs)
 
             if len(trstr.msgid_strings) > 1:
                 # If this is a plural, then we check to see if the two
@@ -461,7 +468,7 @@ class MismatchedHTMLLintRule(LintRule):
                             linted_entry.poentry,
                         )
                     )
-                    return msgs
+                    return tuple(msgs)
 
                 zipped_parts = zip_longest(
                     msgid_parts, msgid_plural_parts, fillvalue=None
@@ -469,7 +476,7 @@ class MismatchedHTMLLintRule(LintRule):
 
                 for left, right in zipped_parts:
                     if not left or not right or not equiv(left, right):
-                        return []
+                        return ()
 
             try:
                 msgstr_parts = tokenize(trstr.msgstr_string)
@@ -485,7 +492,7 @@ class MismatchedHTMLLintRule(LintRule):
                         linted_entry.poentry,
                     )
                 )
-                return msgs
+                return tuple(msgs)
 
             for left, right in zip_longest(msgid_parts, msgstr_parts, fillvalue=None):
                 if not left or not right or not equiv(left, right):
@@ -502,7 +509,7 @@ class MismatchedHTMLLintRule(LintRule):
                         )
                     )
                     break
-        return msgs
+        return tuple(msgs)
 
 
 class InvalidVarsLintRule(LintRule):
@@ -513,7 +520,7 @@ class InvalidVarsLintRule(LintRule):
     def lint(self, vartok, linted_entry):
         # If there are no variable formats, skip this rule.
         if not vartok.formats:
-            return []
+            return ()
 
         msgs = []
         for trstr in linted_entry.strs:
@@ -541,7 +548,7 @@ class InvalidVarsLintRule(LintRule):
                         linted_entry.poentry,
                     )
                 )
-        return msgs
+        return tuple(msgs)
 
 
 def get_lint_rules(with_names=False):
@@ -582,7 +589,7 @@ class Linter:
 
             msgs.extend(lint_rule.lint(self.vartok, linted_entry))
 
-        return msgs
+        return tuple(msgs)
 
     def verify_file(self, filename_or_string):
         """Verifies strings in file.
@@ -600,4 +607,4 @@ class Linter:
         for entry in po.translated_entries():
             msgs.extend(self.lint_poentry(entry))
 
-        return msgs
+        return tuple(msgs)
