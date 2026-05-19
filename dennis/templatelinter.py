@@ -141,8 +141,7 @@ def get_lint_rules(with_names=False):
 
 def convert_rules(rules_spec):
     lint_rules = get_lint_rules(with_names=True)
-    rules = [lint_rules[rule]() for rule in rules_spec if rule in lint_rules]
-    return rules
+    return tuple(lint_rules[rule]() for rule in rules_spec if rule in lint_rules)
 
 
 class TemplateLinter:

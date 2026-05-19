@@ -412,20 +412,22 @@ class MismatchedHTMLLintRule(LintRule):
         def equiv(left, right):
             return left == right
 
-        def tokenize(text):
+        def tokenize(text: str) -> tuple[Token, ...]:
             """Tokenizes the text using the HTMLExtractorTransform
 
             :raises HTMLParseError: If it's invalid HTML.
 
             """
-            html = HTMLExtractorTransform()
+            if "<" not in text:
+                return ()
 
+            html = HTMLExtractorTransform()
             tokens = [
                 token
                 for token in html.transform(vartok, [Token(text)])
                 if token.type == "html" and not token.s.startswith("&")
             ]
-            return sorted(tokens, key=lambda token: token.s)
+            return tuple(sorted(tokens, key=lambda token: token.s))
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -565,8 +567,7 @@ def get_lint_rules(with_names=False):
 
 def convert_rules(rules_spec):
     lint_rules = get_lint_rules(with_names=True)
-    rules = [lint_rules[rule]() for rule in rules_spec if rule in lint_rules]
-    return rules
+    return tuple(lint_rules[rule]() for rule in rules_spec if rule in lint_rules)
 
 
 class Linter:
