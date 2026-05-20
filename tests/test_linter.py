@@ -81,20 +81,20 @@ class TestBadFormatLintRule(LintRuleTestCase):
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "FOO"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo %s"\n' 'msgstr "FOO %s"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_bad_format_character(self):
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "%s foo"\n' 'msgstr "%a FOO"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E104"
@@ -104,7 +104,7 @@ class TestBadFormatLintRule(LintRuleTestCase):
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "foo %s"\n' 'msgstr "FOO %"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E104"
@@ -114,8 +114,8 @@ class TestBadFormatLintRule(LintRuleTestCase):
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "%% foo"\n' 'msgstr "%% FOO"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_not_in_msgid(self):
         # If there are no vars in the msgid, then we don't want to throw errors about stuff we see
@@ -123,8 +123,8 @@ class TestBadFormatLintRule(LintRuleTestCase):
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "foo 50% omg"\n' 'msgstr "FOO 50% OMG"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_ignore_non_formatting_tokens(self):
         # If the formatting token is actually part of another formatting token, then we want to
@@ -134,16 +134,16 @@ class TestBadFormatLintRule(LintRuleTestCase):
             'msgid "foo {startdate:%Y-%m-%d %H:%M} bar"\n'
             'msgstr "FOO {startdate:%Y-%m-%d %H:%M} BAR"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "%s foo"\n' 'msgstr "%a FOO"\n'
         )
-        msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(vartok, linted_entry))
+        assert msgs == []
 
 
 class TestMalformedNoTypeLintRule(LintRuleTestCase):
@@ -162,7 +162,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
         linted_entry = build_linted_entry(
             f'#: foo/foo.py:5\nmsgid "{msgid}"\nmsgstr "{msgstr}"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_python_var_with_space(self):
@@ -173,7 +173,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
             'msgstr[0] "%(count) zoo"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E101"
@@ -187,7 +187,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
             'msgstr[0] "%(count)"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E101"
@@ -199,7 +199,7 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
             'msgid "%(count)s"\n'
             'msgstr "%(count)!"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E101"
@@ -213,8 +213,8 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
             'msgstr "%(stars)s de %(user)s el %(date)s (%(locale)s)"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
@@ -226,8 +226,8 @@ class TestMalformedNoTypeLintRule(LintRuleTestCase):
             'msgstr[0] "%(count) zoo"\n'
         )
 
-        msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(vartok, linted_entry))
+        assert msgs == []
 
 
 class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
@@ -243,7 +243,7 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
     )
     def test_fine(self, msgid, msgstr):
         linted_entry = build_linted_entry(f'msgid "{msgid}"\nmsgstr "{msgstr}"\n')
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_python_var_missing_right_curly_brace(self):
@@ -253,7 +253,7 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
             'msgstr "{foo) bar is the best thing ever"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E102"
@@ -267,7 +267,7 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
             'msgstr "{foo"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E102"
@@ -280,7 +280,7 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
             'msgstr "Valor para la clave \\"{0}\\" excede el tamano de {1]"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E102"
@@ -292,7 +292,7 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
             'msgstr "Valor para la clave \\"{0]\\" excede el tamano de {1}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E102"
@@ -304,7 +304,7 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
             'msgstr "{q} | {product}} foo bar"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E102"
@@ -318,8 +318,8 @@ class TestMalformedMissingRightBraceLintRule(LintRuleTestCase):
             'msgstr "Valor para la clave \\"{0}\\" excede el tamano de {1]"\n'
         )
 
-        msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(vartok, linted_entry))
+        assert msgs == []
 
 
 class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
@@ -335,7 +335,7 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
     )
     def test_fine(self, msgid, msgstr):
         linted_entry = build_linted_entry(f'msgid "{msgid}"\nmsgstr "{msgstr}"\n')
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_python_var_missing_left_curly_brace(self):
@@ -345,7 +345,7 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
             'msgstr "product}-Hilfeforum"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E103"
@@ -357,7 +357,7 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
             'msgstr "{q} | product}-Hilfeforum"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E103"
@@ -369,7 +369,7 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
             'msgstr "This is {{literal}} brace, {0}, and {{another}}."\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_varformat_empty(self):
@@ -381,8 +381,8 @@ class TestMalformedMissingLeftBraceLintRuleTest(LintRuleTestCase):
             'msgstr "{q} | {product}} foo bar"\n'
         )
 
-        msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(vartok, linted_entry))
+        assert msgs == []
 
 
 class TestMissingVarsLintRule(LintRuleTestCase):
@@ -393,14 +393,14 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "Oof"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo: {foo}"\n' 'msgstr "Oof: {foo}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_missing(self):
@@ -408,7 +408,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo: {foo}"\n' 'msgstr "Oof"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W202"
@@ -420,7 +420,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgstr "Oof: {foo}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W202"
@@ -433,7 +433,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgstr "Oof: {foo} {bar}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W202"
@@ -451,7 +451,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgstr[0] "{n} mooo"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_plurals_not_missing(self):
@@ -465,7 +465,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgstr[0] "1 moo"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_double_percent(self):
@@ -477,7 +477,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgstr "more than 50%% of the traffic"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_urlencoded_urls(self):
@@ -490,7 +490,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgstr "http://example.com/foo%20%E5%B4%A9%E6%BA%83 is best"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_python_format_are_errors_unnamed(self):
@@ -501,7 +501,7 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgid "Recently updated threads about %s"\n'
             'msgstr "RECENTLY UPDATED THREADS"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E202"
@@ -515,8 +515,8 @@ class TestMissingVarsLintRule(LintRuleTestCase):
             'msgid "Recently updated threads about %s"\n'
             'msgstr "RECENTLY UPDATED THREADS"\n'
         )
-        msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(vartok, linted_entry))
+        assert msgs == []
 
 
 class TestInvalidVarsLintRule(LintRuleTestCase):
@@ -527,22 +527,22 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "Oof"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo: {foo}"\n' 'msgstr "Oof: {foo}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_invalid(self):
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo {bar}"\n' 'msgstr "Oof: {foo}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E201"
@@ -554,7 +554,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "Oof: {foo} {bar} {baz}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E201"
@@ -567,7 +567,7 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "Oof: {foo} {bar}"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "err"
         assert msgs[0].code == "E201"
@@ -585,8 +585,8 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr[0] "{n} mooo"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_double_percent(self):
         # Double-percent shouldn't be picked up as a variable.
@@ -597,8 +597,8 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "more than 50%% of the traffic"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_urlencoded_urls(self):
         # urlencoding uses % and that shouldn't get picked up
@@ -610,8 +610,8 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "http://example.com/foo%20%E5%B4%A9%E6%BA%83 is best"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_msgid_no_vars(self):
         linted_entry = build_linted_entry(
@@ -620,8 +620,8 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             'msgstr "http://it.wikipedia.org/wiki/Canvas_%28elemento_HTML%29"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert msgs == []
 
     def test_varformat_empty(self):
         vartok = VariableTokenizer([])
@@ -629,8 +629,8 @@ class TestInvalidVarsLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo {bar}"\n' 'msgstr "Oof: {foo}"\n'
         )
 
-        msgs = self.lintrule.lint(vartok, linted_entry)
-        assert msgs == ()
+        msgs = list(self.lintrule.lint(vartok, linted_entry))
+        assert msgs == []
 
 
 class TestBlankLintRule(LintRuleTestCase):
@@ -641,7 +641,7 @@ class TestBlankLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr ""\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_whitespace(self):
@@ -651,7 +651,7 @@ class TestBlankLintRule(LintRuleTestCase):
                 "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "%s"\n' % data
             )
 
-            msgs = self.lintrule.lint(self.vartok, linted_entry)
+            msgs = list(self.lintrule.lint(self.vartok, linted_entry))
             assert len(msgs) == 1
             assert msgs[0].kind == "warn"
             assert msgs[0].code == "W301"
@@ -666,7 +666,7 @@ class TestUnchangedLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "Foo"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W302"
@@ -688,7 +688,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
         linted_entry = build_linted_entry(
             f'#: foo/foo.py:5\nmsgid "{msgid}"\nmsgstr "{msgstr}"\n'
         )
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
     def test_fail(self):
@@ -696,7 +696,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "<b>Foo</b>"\n' 'msgstr "<em>ARGH</em>"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W303"
@@ -707,7 +707,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "<b>Foo"\n' 'msgstr "<b>ARGH</b>"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W303"
@@ -717,7 +717,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "<b>Foo</b>"\n' 'msgstr "<b>ARGH"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W303"
@@ -728,7 +728,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" + 'msgid "<a>Foo</a>"\n' + 'msgstr "<a>ARGH</\u0430>"\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         assert msgs[0].kind == "warn"
         assert msgs[0].code == "W303"
@@ -764,7 +764,7 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
             "#: foo/foo.py:5\n" 'msgid "tag: <{tag}>"\n' 'msgstr "TAG: <{tag}>"\n'.format(tag=tag)
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 0
 
 
@@ -781,14 +781,14 @@ class TestHardToReadNamesTLR(TLRTestCase):
                 "#: foo/foo.py:5\n" 'msgid "Foo: %(' + c + ')s"\n' 'msgstr ""\n'
             )
 
-            msgs = self.lintrule.lint(self.vartok, linted_entry)
+            msgs = list(self.lintrule.lint(self.vartok, linted_entry))
             assert len(msgs) == 1
 
             linted_entry = build_linted_entry(
                 "#: foo/foo.py:5\n" 'msgid "Foo: {' + c + '}"\n' 'msgstr ""\n'
             )
 
-            msgs = self.lintrule.lint(self.vartok, linted_entry)
+            msgs = list(self.lintrule.lint(self.vartok, linted_entry))
             assert len(msgs) == 1
         # FIXME: flesh out this test
 
@@ -801,14 +801,14 @@ class TestMultipleUnnamedVarsTLR(TLRTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo: %s %s"\n' 'msgstr ""\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
 
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo: {} {}"\n' 'msgstr ""\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         # FIXME: flesh out this test
 
@@ -821,14 +821,14 @@ class TestOneCharNamesTLR(TLRTestCase):
             "#: foo/foo.py:5\n" 'msgid "Foo: %(c)s"\n' 'msgstr ""\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
 
         linted_entry = build_linted_entry(
             "#: foo/foo.py:5\n" 'msgid "Foo: {c}"\n' 'msgstr ""\n'
         )
 
-        msgs = self.lintrule.lint(self.vartok, linted_entry)
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
         # FIXME: flesh out this test
 

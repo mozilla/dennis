@@ -1,4 +1,5 @@
 import re
+from collections.abc import Iterator
 from collections import namedtuple
 from dataclasses import dataclass
 from functools import cached_property
@@ -96,7 +97,9 @@ class LintRule:
     name = ""
     desc = ""
 
-    def lint(self, vartok, linted_entry):
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
         """Takes a linted entry and generates LintMessages
 
         :arg vartok: the variable tokenizer for extracting variables
@@ -121,12 +124,13 @@ class MalformedNoTypeLintRule(LintRule):
         r")"
     )
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         # This only applies if one of the variable tokenizers is python-format.
         if not vartok.contains("python-format"):
-            return tuple(msgs)
+            return
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string or "%" not in trstr.msgstr_string:
@@ -137,7 +141,7 @@ class MalformedNoTypeLintRule(LintRule):
                 continue
 
             malformed = [item.strip() for item in malformed]
-            msgs.append(
+            yield (
                 LintMessage(
                     ERROR,
                     linted_entry.poentry.linenum,
@@ -147,8 +151,6 @@ class MalformedNoTypeLintRule(LintRule):
                     linted_entry.poentry,
                 )
             )
-
-        return tuple(msgs)
 
 
 class MalformedMissingRightBraceLintRule(LintRule):
@@ -160,12 +162,13 @@ class MalformedMissingRightBraceLintRule(LintRule):
     _DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
     _DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         # This only applies if one of the variable tokenizers is python-brace-format.
         if not vartok.contains("python-brace-format"):
-            return ()
+            return
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string or "{" not in trstr.msgstr_string:
@@ -183,7 +186,7 @@ class MalformedMissingRightBraceLintRule(LintRule):
                 item.strip().replace(self._DOUBLE_OPEN, "{{").replace(self._DOUBLE_CLOSE, "}}")
                 for item in malformed
             ]
-            msgs.append(
+            yield (
                 LintMessage(
                     ERROR,
                     linted_entry.poentry.linenum,
@@ -193,8 +196,6 @@ class MalformedMissingRightBraceLintRule(LintRule):
                     linted_entry.poentry,
                 )
             )
-
-        return tuple(msgs)
 
 
 class MalformedMissingLeftBraceLintRule(LintRule):
@@ -206,12 +207,13 @@ class MalformedMissingLeftBraceLintRule(LintRule):
     _DOUBLE_OPEN = "__DENNIS_DOUBLE_OPEN_BRACE__"
     _DOUBLE_CLOSE = "__DENNIS_DOUBLE_CLOSE_BRACE__"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         # This only applies if one of the variable tokenizers is python-brace-format.
         if not vartok.contains("python-brace-format"):
-            return ()
+            return
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string or "}" not in trstr.msgstr_string:
@@ -229,7 +231,7 @@ class MalformedMissingLeftBraceLintRule(LintRule):
                 item.strip().replace(self._DOUBLE_OPEN, "{{").replace(self._DOUBLE_CLOSE, "}}")
                 for item in malformed
             ]
-            msgs.append(
+            yield (
                 LintMessage(
                     ERROR,
                     linted_entry.poentry.linenum,
@@ -239,7 +241,6 @@ class MalformedMissingLeftBraceLintRule(LintRule):
                     linted_entry.poentry,
                 )
             )
-        return tuple(msgs)
 
 
 class BadFormatLintRule(LintRule):
@@ -249,12 +250,13 @@ class BadFormatLintRule(LintRule):
 
     _SPLITTER = re.compile(r"(\%(?:.|$))")
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         # This only applies if one of the variable tokenizers is python-format.
         if not vartok.contains("python-format"):
-            return ()
+            return
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string or "%" not in trstr.msgstr_string:
@@ -271,7 +273,7 @@ class BadFormatLintRule(LintRule):
 
             for match in self._SPLITTER.findall(trstr.msgstr_string):
                 if len(match) == 1 or match[1] not in "(diouxefGgcrs%":
-                    msgs.append(
+                    yield (
                         LintMessage(
                             ERROR,
                             linted_entry.poentry.linenum,
@@ -281,7 +283,6 @@ class BadFormatLintRule(LintRule):
                             linted_entry.poentry,
                         )
                     )
-        return tuple(msgs)
 
 
 class MissingVarsLintRule(LintRule):
@@ -290,12 +291,13 @@ class MissingVarsLintRule(LintRule):
     name = "missingvars"
     desc = "Checks for variables in msgid, but missing in msgstr"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         # If there are no variable formats, skip this rule.
         if not vartok.formats:
-            return ()
+            return
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
@@ -319,7 +321,7 @@ class MissingVarsLintRule(LintRule):
                 ):
                     # If we're looking at python-format variables and one of these is a
                     # python-format variable like %s, then this is an error--not a warning.
-                    msgs.append(
+                    yield (
                         LintMessage(
                             ERROR,
                             linted_entry.poentry.linenum,
@@ -331,7 +333,7 @@ class MissingVarsLintRule(LintRule):
                     )
                 else:
                     # If this is not python-format variables, then this is just a warning.
-                    msgs.append(
+                    yield (
                         LintMessage(
                             WARNING,
                             linted_entry.poentry.linenum,
@@ -341,7 +343,6 @@ class MissingVarsLintRule(LintRule):
                             linted_entry.poentry,
                         )
                     )
-        return tuple(msgs)
 
 
 class BlankLintRule(LintRule):
@@ -349,15 +350,16 @@ class BlankLintRule(LintRule):
     name = "blank"
     desc = "Translated string is only whitespace"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
             if trstr.msgstr_string.isspace():
-                msgs.append(
+                yield (
                     LintMessage(
                         WARNING,
                         linted_entry.poentry.linenum,
@@ -368,23 +370,22 @@ class BlankLintRule(LintRule):
                     )
                 )
 
-        return tuple(msgs)
-
 
 class UnchangedLintRule(LintRule):
     num = "W302"
     name = "unchanged"
     desc = "Makes sure string is actually translated"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
 
             if trstr.msgstr_string in trstr.msgid_strings:
-                msgs.append(
+                yield (
                     LintMessage(
                         WARNING,
                         linted_entry.poentry.linenum,
@@ -395,8 +396,6 @@ class UnchangedLintRule(LintRule):
                     )
                 )
 
-        return tuple(msgs)
-
 
 class MismatchedHTMLLintRule(LintRule):
     num = "W303"
@@ -404,8 +403,9 @@ class MismatchedHTMLLintRule(LintRule):
     name = "html"
     desc = "Checks for matching html between source and translated strings"
 
-    def lint(self, vartok, linted_entry):
-        msgs = []
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
 
         from dennis.translator import HTMLExtractorTransform, Token
 
@@ -437,7 +437,7 @@ class MismatchedHTMLLintRule(LintRule):
                 msgid_parts = tokenize(trstr.msgid_strings[0])
             except HTMLParseError as exc:
                 errmsg = "invalid html: msgid has invalid html {}".format(exc)
-                msgs.append(
+                yield (
                     LintMessage(
                         WARNING,
                         linted_entry.poentry.linenum,
@@ -447,7 +447,7 @@ class MismatchedHTMLLintRule(LintRule):
                         linted_entry.poentry,
                     )
                 )
-                return tuple(msgs)
+                return
 
             if len(trstr.msgid_strings) > 1:
                 # If this is a plural, then we check to see if the two
@@ -460,7 +460,7 @@ class MismatchedHTMLLintRule(LintRule):
                         exc
                     )
 
-                    msgs.append(
+                    yield (
                         LintMessage(
                             WARNING,
                             linted_entry.poentry.linenum,
@@ -470,7 +470,7 @@ class MismatchedHTMLLintRule(LintRule):
                             linted_entry.poentry,
                         )
                     )
-                    return tuple(msgs)
+                    return
 
                 zipped_parts = zip_longest(
                     msgid_parts, msgid_plural_parts, fillvalue=None
@@ -478,13 +478,13 @@ class MismatchedHTMLLintRule(LintRule):
 
                 for left, right in zipped_parts:
                     if not left or not right or not equiv(left, right):
-                        return ()
+                        return
 
             try:
                 msgstr_parts = tokenize(trstr.msgstr_string)
             except HTMLParseError as exc:
                 errmsg = "invalid html: msgstr has invalid html {}".format(exc)
-                msgs.append(
+                yield (
                     LintMessage(
                         WARNING,
                         linted_entry.poentry.linenum,
@@ -494,11 +494,11 @@ class MismatchedHTMLLintRule(LintRule):
                         linted_entry.poentry,
                     )
                 )
-                return tuple(msgs)
+                return
 
             for left, right in zip_longest(msgid_parts, msgstr_parts, fillvalue=None):
                 if not left or not right or not equiv(left, right):
-                    msgs.append(
+                    yield (
                         LintMessage(
                             WARNING,
                             linted_entry.poentry.linenum,
@@ -511,7 +511,6 @@ class MismatchedHTMLLintRule(LintRule):
                         )
                     )
                     break
-        return tuple(msgs)
 
 
 class InvalidVarsLintRule(LintRule):
@@ -519,12 +518,13 @@ class InvalidVarsLintRule(LintRule):
     name = "invalidvars"
     desc = "Checks for variables not in msgid, but in msgstr"
 
-    def lint(self, vartok, linted_entry):
+    def lint(
+        self, vartok: VariableTokenizer, linted_entry: LintedEntry
+    ) -> Iterator[LintMessage]:
         # If there are no variable formats, skip this rule.
         if not vartok.formats:
-            return ()
+            return
 
-        msgs = []
         for trstr in linted_entry.strs:
             if not trstr.msgstr_string:
                 continue
@@ -540,7 +540,7 @@ class InvalidVarsLintRule(LintRule):
             invalid = msgstr_tokens.difference(msgid_tokens)
 
             if invalid:
-                msgs.append(
+                yield (
                     LintMessage(
                         ERROR,
                         linted_entry.poentry.linenum,
@@ -550,7 +550,6 @@ class InvalidVarsLintRule(LintRule):
                         linted_entry.poentry,
                     )
                 )
-        return tuple(msgs)
 
 
 def get_lint_rules(with_names=False):
@@ -581,16 +580,12 @@ class Linter:
 
         skip = parse_dennis_note(poentry.comment)
 
-        msgs = []
-
         # Check the comment to see if what we should ignore.
         for lint_rule in self.rules:
             if skip == "*" or lint_rule.num in skip:
                 continue
 
-            msgs.extend(lint_rule.lint(self.vartok, linted_entry))
-
-        return tuple(msgs)
+            yield from lint_rule.lint(self.vartok, linted_entry)
 
     def verify_file(self, filename_or_string):
         """Verifies strings in file.
