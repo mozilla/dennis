@@ -18,12 +18,13 @@ from dennis.templatelinter import (
     HardToReadNamesTLR,
     OneCharNamesTLR,
     MultipleUnnamedVarsTLR,
+    TemplateLinter,
 )
 from dennis.tools import VariableTokenizer
 from tests import build_po_string
 
 
-class LinterTest:
+class TestLinter:
     def test_linter(self):
         pofile = build_po_string("#: foo/foo.py:5\n" 'msgid "Foo"\n' 'msgstr "Oof"\n')
 
@@ -62,6 +63,68 @@ class LinterTest:
 
         # There were no translated strings, so nothing to lint.
         assert len(msgs) == 0
+
+    def test_verify_file(self):
+        pofile = build_po_string(
+            "#: foo/foo.py:5\n"
+            'msgid "Foo {foo}"\n'
+            'msgstr "Foo {bar}"\n'
+            "\n"
+            "#: bar/bar.py:10\n"
+            'msgid "Bar"\n'
+            'msgstr "Bar"\n'
+        )
+        linter = Linter(["python-brace-format"], ["E201", "W302"])
+        msgs = linter.verify_file(pofile)
+
+        assert len(msgs) == 2
+        assert msgs[0].code == "E201"
+        assert msgs[1].code == "W302"
+
+    def test_lint_poentry(self):
+        pofile = build_po_string(
+            "#: foo/foo.py:5\n" 'msgid "%(count)s bar"\n' 'msgstr "%(count) BAR"\n'
+        )
+        po = polib.pofile(pofile)
+        poentry = list(po)[0]
+
+        linter = Linter(["python-format"], ["E101", "W202"])
+        msgs = list(linter.lint_poentry(poentry))
+
+        assert len(msgs) == 2
+        assert msgs[0].code == "E101"
+        assert msgs[1].code == "W202"
+
+
+class TestTemplateLinter:
+    def test_verify_file(self):
+        pofile = build_po_string(
+            "#: foo/foo.py:5\n"
+            'msgid "Foo {o}"\n'
+            'msgstr ""\n'
+            "\n"
+            "#: bar/bar.py:10\n"
+            'msgid "Bar {} {}"\n'
+            'msgstr ""\n'
+        )
+        linter = TemplateLinter(["python-brace-format"], ["W500", "W502"])
+        msgs = linter.verify_file(pofile)
+
+        assert len(msgs) == 2
+        assert msgs[0].code == "W500"
+        assert msgs[1].code == "W502"
+
+    def test_lint_poentry(self):
+        pofile = build_po_string("#: foo/foo.py:5\n" 'msgid "Foo {o}"\n' 'msgstr ""\n')
+        po = polib.pofile(pofile)
+        poentry = list(po)[0]
+
+        linter = TemplateLinter(["python-brace-format"], ["W500", "W501"])
+        msgs = list(linter.lint_poentry(poentry))
+
+        assert len(msgs) == 2
+        assert msgs[0].code == "W500"
+        assert msgs[1].code == "W501"
 
 
 def build_linted_entry(po_data):
@@ -736,7 +799,9 @@ class TestMismatchedHTMLLintRule(LintRuleTestCase):
     )
     def test_tag(self, tag):
         linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "tag: <{tag}>"\n' 'msgstr "TAG: <{tag}>"\n'.format(tag=tag)
+            "#: foo/foo.py:5\n"
+            'msgid "tag: <{tag}>"\n'
+            'msgstr "TAG: <{tag}>"\n'.format(tag=tag)
         )
 
         msgs = self.lintrule.lint(self.vartok, linted_entry)
