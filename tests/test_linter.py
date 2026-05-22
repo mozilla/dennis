@@ -858,44 +858,85 @@ class TestHardToReadNamesTLR(TLRTestCase):
         # FIXME: flesh out this test
 
 
-class TestMultipleUnnamedVarsTLR(TLRTestCase):
-    lintrule = MultipleUnnamedVarsTLR()
-
-    def test_multi_vars_no_name(self):
-        linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "Foo: %s %s"\n' 'msgstr ""\n'
-        )
-
-        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
-        assert len(msgs) == 1
-
-        linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "Foo: {} {}"\n' 'msgstr ""\n'
-        )
-
-        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
-        assert len(msgs) == 1
-        # FIXME: flesh out this test
-
-
 class TestOneCharNamesTLR(TLRTestCase):
     lintrule = OneCharNamesTLR()
 
+    @pytest.mark.parametrize(
+        "msgid_value",
+        [
+            "Foo: %(id)s {id}",
+            "Foo: {0} {1}",
+        ],
+    )
+    def test_fine(self, msgid_value):
+        linted_entry = build_linted_entry(
+            "#: foo/foo.py:5\n" 'msgid "{}"\n' 'msgstr ""\n'.format(msgid_value)
+        )
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert len(msgs) == 0
+
+    def test_zero_character_names(self):
+        linted_entry = build_linted_entry(
+            "#: foo/foo.py:5\n" 'msgid "Foo: {} %s"\n' 'msgstr ""\n'
+        )
+
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert len(msgs) == 0
+
     def test_one_character_names(self):
         linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "Foo: %(c)s"\n' 'msgstr ""\n'
+            "#: foo/foo.py:5\n" 'msgid "Foo: {x} %(y)s"\n' 'msgstr ""\n'
         )
 
         msgs = list(self.lintrule.lint(self.vartok, linted_entry))
-        assert len(msgs) == 1
+        assert len(msgs) == 2
+        assert msgs[0].kind == "warn"
+        assert msgs[0].code == "W501"
+        assert msgs[1].kind == "warn"
+        assert msgs[1].code == "W501"
+        assert {m.msg for m in msgs} == {
+            'one character variable name "x"',
+            'one character variable name "y"',
+        }
+        # NOTE: not guarantee ordering
 
+
+class TestMultipleUnnamedVarsTLR(TLRTestCase):
+    lintrule = MultipleUnnamedVarsTLR()
+
+    @pytest.mark.parametrize(
+        "msgid_value",
+        [
+            "Foo: {}",
+            "Foo: %s",
+            "Foo: {0} {1}",
+            "Foo: {} %(x)s",
+        ],
+    )
+    def test_fine(self, msgid_value):
         linted_entry = build_linted_entry(
-            "#: foo/foo.py:5\n" 'msgid "Foo: {c}"\n' 'msgstr ""\n'
+            "#: foo/foo.py:5\n" 'msgid "{}"\n' 'msgstr ""\n'.format(msgid_value)
         )
+        msgs = list(self.lintrule.lint(self.vartok, linted_entry))
+        assert len(msgs) == 0
 
+    @pytest.mark.parametrize(
+        "msgid_value",
+        [
+            "Foo: {} {}",
+            "Foo: %s %s",
+            "Foo: {} %s",
+        ],
+    )
+    def test_multiple_unnamed_vars(self, msgid_value):
+        linted_entry = build_linted_entry(
+            "#: foo/foo.py:5\n" 'msgid "{}"\n' 'msgstr ""\n'.format(msgid_value)
+        )
         msgs = list(self.lintrule.lint(self.vartok, linted_entry))
         assert len(msgs) == 1
-        # FIXME: flesh out this test
+        assert msgs[0].kind == "warn"
+        assert msgs[0].code == "W502"
+        assert msgs[0].msg == "multiple variables with no name."
 
 
 class TestLintedEntry:
