@@ -5,6 +5,18 @@ What's new in Dennis
 .. contents::
    :local:
 
+Version 1.3.0: May 24th, 2026
+=============================
+
+* 5ede64d feat: strict mode for lint (#220)
+* 4f5eead perf: Make lint methods generators to avoid intermediate list accumulation
+* d3c50b6 perf: Static string fast path to reduce re.Pattern.findall overhead
+* b7f4bab perf: Fast path for text without HTML tags to reduce tokenization overhead (#221)
+* 7b6337b perf: `@cached_property` for avoiding redundant recomputations (#219)
+* 874c83f perf: Eliminate uuid4() calls (#218)
+* 269284d fix(packaging): exclude tests directory (#203)
+* 932ecb9 Fix W303 false positive for unclosed CDATA/RCDATA tags (#215)
+
 Version 1.2.0: February 4th, 2026
 =================================
 
