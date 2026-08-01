@@ -5,5 +5,5 @@ pytest==9.0.3
 Sphinx==8.1.3
 tox==4.53.1
 tox-gh-actions==3.5.0
-twine==6.2.0
+twine==7.0.0
 wheel==0.47.0
