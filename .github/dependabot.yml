@@ -2,6 +2,16 @@
 
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directories: "/"
+    schedule:
+      interval: daily
+    groups:
+      ssdlc-actions:
+        patterns:
+          - "mozilla/ssdlc-actions/*"
+    cooldown:
+      default-days: 7
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
